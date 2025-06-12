@@ -7,6 +7,8 @@ import PomodoroWidget from "@/app/components/widgets/podoromoWidget";
 import { useEditMode } from "@/app/contexts/editWidgetContext";
 import StickyNotesWidgets from "@/app/components/widgets/stickyNotes";
 import WatchWidget from "@/app/components/widgets/watch";
+import WeatherWidget from "@/app/components/widgets/weather";
+import TodoListWidget from "@/app/components/widgets/todolist";
 
   export default function WidgetClient({ layout }: { layout: any[] }) {
     const [widgets, setWidgets] = useState({
@@ -59,6 +61,8 @@ useEffect(() => {
 }, []);
 
 
+
+
   const handleMinimize = (id: keyof typeof widgets) => {
     setWidgets((prev) => ({
       ...prev,
@@ -90,15 +94,20 @@ useEffect(() => {
         );
       case "todo":
         return (
-          <div>
-            <ul className="list-disc pl-5">
-              <li>Finish layout</li>
-              <li>Make it pretty</li>
-            </ul>
-          </div>
+          <TodoListWidget
+            id="todo"
+            minimized={minimized}
+            onClose={() => handleClose("todo")}
+            onMinimize={() => handleMinimize("todo")}
+          />
         );
       case "weather":
-        return <div>🌦️ Weather widget</div>;
+        return           <WeatherWidget
+            id="weather"
+            minimized={minimized}
+            onClose={() => handleClose("sticky")}
+            onMinimize={() => handleMinimize("sticky")}
+          />;
       case "clock":
         return               <WatchWidget
       id="clock"
