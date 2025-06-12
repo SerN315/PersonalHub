@@ -1,0 +1,116 @@
+@import "../styles.scss";
+@mixin forms {
+  width: 100%;
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  padding-left: 80px;
+  border-radius: 10px;
+  height: 100%;
+  
+  @include respond-to(md) {
+    padding-left: 40px;
+  }
+  @include respond-to(sm) {
+    padding-left: 20px;
+    width: 100%;
+  }
+}
+.login-form {
+width: 50%;
+}
+.register-form {
+  width: 50%;
+}
+
+.login-form-container, .register-form-container {
+  @include forms;
+
+}
+form {
+  width: 80%;
+  @include respond-to(md) {
+    width: 95%;
+  }
+  .subInteraction {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    .rememberMe {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      input {
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        border-radius: 20px;
+      }
+      label {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+.formName {
+  font-size: 2rem;
+  position: relative;
+  top: -10px;
+  font-weight: bolder;
+}
+.titleDescription {
+  .title {
+    font-size: 3rem;
+    font-weight: bolder;
+  }
+  .subTitle {
+    font-size: 1rem;
+    color: $gray-500;
+  }
+}
+button {
+  width: 80%;
+  height: 50px;
+  border-radius: 5px;
+  background-color: $gradient-primary;
+  color: white;
+  @include respond-to(md) {
+    width: 95%;
+  }
+}
+
+.register {
+  display: flex;
+  .registerLink {
+    margin-left: 5px;
+    text-decoration: underline;
+  }
+}
+.error {
+  font-size: 0.9rem;
+  color: $error-color;
+}
+
+.submitButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  .google-login {
+    color: $gray-800;
+    background-color: white;
+    border: 1px solid $gray-400;
+    &:hover {
+      background-color: $gray-500;
+      color: black;
+    }
+  }
+}
+  .submitButton {
+    background-color: $primary-color;
+    &:hover {
+      background: $gradient-primary;
+      color: white;
+    }
+  }
