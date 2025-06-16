@@ -5,8 +5,10 @@ import "@/app/styles/layouts/Nav.scss";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SettingsModal } from "../settings/settings";
 
 export const Nav: React.FC = () => {
+  const [showSettingsModal, setShowSettingsModal] = React.useState(false);
   const pathname = usePathname();
   const hideNav =
     pathname.includes("/auth/login") || pathname.includes("/auth/register");
@@ -106,10 +108,11 @@ export const Nav: React.FC = () => {
       <div className="quickOptions">
         <NavLinkItem
           label="Settings"
-          href="/"
+          href="#"
           isActive={false}
           id="settingButton"
           iconName="SettingsIcon"
+          onclick={() => setShowSettingsModal(true)}
         />
         <NavLinkItem
           label="Logout"
@@ -118,6 +121,15 @@ export const Nav: React.FC = () => {
           id="logoutButton"
           iconName="LogoutIcon"
         />
+        {showSettingsModal && (
+          <SettingsModal
+            isOpen={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+            onSave={() => {
+              setShowSettingsModal(false);
+            }}
+          />
+        )}
       </div>
     </nav>
   );

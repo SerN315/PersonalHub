@@ -1,0 +1,8 @@
+@import "../styles.scss";
+.BaseButton{
+    background-color: $primary-color;
+    &:hover {
+      background: $gradient-primary;
+      color: white;
+    }
+}

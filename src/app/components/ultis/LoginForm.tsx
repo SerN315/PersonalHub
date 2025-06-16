@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import LoginInput from "@/app/components/ui/loginInput";
-
+import BaseButton from "@/app/components/ui/BaseButton";
 
 interface LoginFormProps {
   toggleForm: () => void;
@@ -112,14 +112,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
           </a>
         </div>
       </form>
-      <div className="submitButtons">
-        <button type="submit" form="login-form" className="submitButton">
-          Login
-        </button>
-        <button type="button" className="google-login" disabled>
-          Login with Google (disabled)
-        </button>
-      </div>
+<div className="submitButtons">
+  <BaseButton type="submit" form="login-form">
+    Login
+  </BaseButton>
+  <BaseButton type="button" className="google-login" disabled>
+    Login with Google (disabled)
+  </BaseButton>
+</div>
       <div className="register">
         <p>Don't have an account?</p>
         <a href="#" className="registerLink" onClick={toggleForm}>

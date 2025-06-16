@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import LoginInput from "@/app/components/ui/loginInput";
+import BaseButton from "../ui/BaseButton";
 
 interface RegisterFormProps {
   toggleForm: () => void;
@@ -127,9 +128,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
         />
         {errors.general && <p className="error">{errors.general}</p>}
       </form>
-      <button className="submitButton" type="submit" form="register-form">
+      <BaseButton className="submitButton" type="submit" form="register-form">
         Register
-      </button>
+      </BaseButton>
       <div className="register">
         <p>Already have an account</p>
         <a href="#" className="registerLink" onClick={toggleForm}>

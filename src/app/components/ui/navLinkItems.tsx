@@ -10,6 +10,7 @@ interface NavLinkItemProps {
   isActive?: boolean;
   id?: string;
   iconName?: keyof typeof Icons;
+  onclick?: () => void;
 }
 
 const NavLinkItem: React.FC<NavLinkItemProps> = ({
@@ -18,9 +19,10 @@ const NavLinkItem: React.FC<NavLinkItemProps> = ({
   id,
   isActive = false,
   iconName = "Notification01Icon",
+  onclick = () => {},
 }) => {
   return (
-    <li className="nav-item" id={id}>
+    <li className="nav-item" id={id} onClick={onclick}>
       <Link href={href} className={`nav-link ${isActive ? "active" : ""}`}>
         <BasicIcon icon={iconName} size={20} />
         {label}
