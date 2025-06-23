@@ -1,4 +1,4 @@
-@import "../styles";
+@use "../globals" as *;
 .nav-item {
   display: flex;
   align-items: center;

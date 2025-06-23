@@ -1,4 +1,4 @@
-@import '../styles.scss';
+@use "../globals" as *;
 .pomodoro-widget__container{
     display: flex;
     justify-content: center;

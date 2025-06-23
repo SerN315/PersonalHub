@@ -1,4 +1,4 @@
-@import "../styles.scss";
+@use "../globals" as *;
 .modal-backdrop{
     display: flex;
     justify-content: center;
@@ -45,14 +45,23 @@
                 align-items: center;
                 height: 50px;
                 padding-left: 30px;
+                cursor: pointer;
                 &:hover{
                     background-color: $gray-100;
+                }
+                &.active{
+                    background: $gradient-primary;
+                    color: $gray-100;
+                }
+                span{
+                    user-select: none;
                 }
             }
         }
     }
     .modal__page__content{
-        padding: 20px;
+        width: 80%;
+        padding: 10px;
         h3{
             font-size: $font-size-xl;
             margin-bottom: 10px;

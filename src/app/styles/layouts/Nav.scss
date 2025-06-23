@@ -1,4 +1,4 @@
-@import "../styles.scss";
+@use "../globals" as *;
 .nav {
   height: 100vh;
   width: 250px;

@@ -1,4 +1,4 @@
-@import "../styles.scss";
+@use "../globals" as *;
 .BaseButton{
     background-color: $primary-color;
     &:hover {

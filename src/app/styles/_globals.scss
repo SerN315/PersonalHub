@@ -47,9 +47,19 @@ $warning-color: #F59E0B; // Warnings, yellow alerts
 $info-color: #3B82F6; // Informational elements, secondary actions
 
 // === Gradients for Primary (Blue) Theme ===
-$gradient-primary-light: linear-gradient(135deg, #DBEAFE, #3B82F6); // Subtle blue gradient
-$gradient-primary: linear-gradient(135deg, #0000FF,#1F1FFF,#4949FF,#7879FF,#A3A3FF, #BFBFFF);       // Default primary gradient
-$gradient-primary-deep: linear-gradient(135deg, #2563EB, #1E3A8A);  // Rich, dark blue gradient
+// === Blue Gradient Variants with Complementary Hue Mixing ===
+
+// Light: Sky → Cyan → Light Indigo
+$gradient-primary-light: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+
+// Primary: Blue → Indigo → Violet
+$gradient-primary: linear-gradient(135deg, #00d2ff 0%, #3a47d5 100%);
+
+
+// Deep: Dark Indigo → Blue → Muted Magenta
+$gradient-primary-deep: linear-gradient(135deg, #1CB5E0 0%, #000851 100%);
+
+
 
 // === Gradients for Secondary (Amber) Theme ===
 $gradient-secondary-light: linear-gradient(135deg, #FEF3C7, #F59E0B); // Warm light gradient

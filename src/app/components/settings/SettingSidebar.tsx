@@ -20,7 +20,9 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeTab, onSelect }
             className={activeTab === tab.key ? "active" : ""}
             onClick={() => onSelect(tab.key as SettingsTab)}
           >
+            <span className="texts">
             {tab.label}
+            </span>
           </li>
         ))}
       </ul>
