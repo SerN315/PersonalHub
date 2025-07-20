@@ -18,6 +18,13 @@ import { useThemeStore } from "@/app/utils/store/ThemeStore";
 const SettingAccount: React.FC<SettingAccountProps> = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    email: "",
+    profile_picture: "",
+  });
+
   const [userData, setUserData] = useState({
     name: "",
     username: "",
@@ -30,9 +37,20 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
+    if (isEditing) {
+      setFormData({
+        name: formData.name,
+        username: formData.username,
+        email: formData.email,
+        profile_picture: formData.profile_picture,
+      });
+    }
+  }, [isEditing, formData]);
+
+  useEffect(() => {
     fetchUser()
       .then((user) => {
-        setUserData({
+        setFormData({
           name: user.display_name || "",
           username: user.user_metadata?.username || "",
           email: user.email,
@@ -41,7 +59,6 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       })
       .catch((err) => {
         console.error(err);
-        // window.location.href = "/login"; // Redirect if unauthorized
       });
   }, []);
 
@@ -54,27 +71,42 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
 
   const handleSave = async () => {
     let profile_picture = userData.profile_picture;
+
     if (profileImage) {
       profile_picture = await uploadProfileImage(profileImage);
     }
 
-    await updateUser({
-      display_name: userData.name,
-      username: userData.username,
-      email: userData.email,
-      profile_picture,
-    });
+    const payload: any = {};
+
+    if (formData.name && formData.name !== userData.name) {
+      payload.display_name = formData.name;
+    }
+
+    if (formData.username && formData.username !== userData.username) {
+      payload.username = formData.username;
+    }
+
+    if (formData.email && formData.email !== userData.email) {
+      payload.email = formData.email;
+    }
+
+    if (profileImage) {
+      payload.profile_picture = formData.profile_picture;
+    }
+
+    if (Object.keys(payload).length > 0) {
+      await updateUser(payload);
+
+      const updated = await fetchUser();
+      setUserData({
+        name: updated.display_name || "",
+        username: updated.user_metadata?.username || "",
+        email: updated.email,
+        profile_picture: updated.profile_picture || "",
+      });
+    }
 
     setIsEditing(false);
-
-    // Refresh user data
-    const updated = await fetchUser();
-    setUserData({
-      name: updated.display_name || "",
-      username: updated.user_metadata?.username || "",
-      email: updated.email,
-      profile_picture: updated.profile_picture || "",
-    });
   };
 
   const handleLogout = async () => {
@@ -83,23 +115,34 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
   };
 
   const handlePasswordChange = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert("All fields are required.");
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
-      alert("Passwords do not match");
+      alert("New passwords do not match.");
       return;
     }
 
     try {
       await changePassword(currentPassword, newPassword);
-      alert("Password changed successfully");
+      alert("Password changed successfully.");
       setShowPasswordForm(false);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-      alert(err.message);
+      if (
+        err.message.includes("incorrect") ||
+        err.message.includes("Invalid")
+      ) {
+        alert("The current password is incorrect.");
+      } else {
+        alert("Failed to change password: " + err.message);
+      }
     }
   };
-  const { theme, toggleTheme } = useThemeStore();
 
   return (
     <div className="settings-section">
@@ -110,8 +153,8 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
             <div
               className="settings-section__profile__content__avatar hover-edit-avatar"
               style={{
-                backgroundImage: userData.profile_picture
-                  ? `url(${userData.profile_picture})`
+                backgroundImage: formData.profile_picture
+                  ? `url(${formData.profile_picture})`
                   : `url('/default-avatar.png')`,
               }}
             >
@@ -129,10 +172,10 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
               )}
             </div>
             <div className="settings-section__profile__content__name">
-              {userData.username || "Guest User"}
+              {formData.username || "Guest User"}
             </div>
             <div className="settings-section__profile__content__email">
-              {userData.email}
+              {formData.email}
             </div>
           </div>
 
@@ -149,63 +192,65 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
               <label>Name</label>
               <BaseInput
                 type="text"
-                value={userData.name}
+                value={formData.name}
                 onChange={(e) =>
-                  setUserData({ ...userData, name: e.target.value })
+                  setFormData({ ...formData, name: e.target.value })
                 }
               />
               <label>Username</label>
               <BaseInput
                 type="text"
-                value={userData.username}
+                value={formData.username}
                 onChange={(e) =>
-                  setUserData({ ...userData, username: e.target.value })
+                  setFormData({ ...formData, username: e.target.value })
                 }
               />
               <label>Email</label>
               <BaseInput
                 type="email"
-                value={userData.email}
+                value={formData.email}
                 onChange={(e) =>
-                  setUserData({ ...userData, email: e.target.value })
+                  setFormData({ ...formData, email: e.target.value })
                 }
               />
 
               <div className="settings-section__profile__content__actions__editForm__passwordForm">
                 <label>Password</label>
-                {!showPasswordForm && (
-                  <BaseButton onClick={() => setShowPasswordForm(true)}>
-                    Change Password
-                  </BaseButton>
-                )}
-                {showPasswordForm && (
-                  <>
-                    <label>Current Password</label>
-                    <BaseInput
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                    />
-                    <label>New Password</label>
-                    <BaseInput
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                    />
-                    <label>Confirm New Password</label>
-                    <BaseInput
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-                    <BaseButton onClick={handlePasswordChange}>
-                      Save Password
+                <div className="settings-section__profile__content__actions__editForm__passwordForm__content">
+                  {!showPasswordForm && (
+                    <BaseButton onClick={() => setShowPasswordForm(true)}>
+                      Change Password
                     </BaseButton>
-                    <BaseButton onClick={() => setShowPasswordForm(false)}>
-                      Cancel
-                    </BaseButton>
-                  </>
-                )}
+                  )}
+                  {showPasswordForm && (
+                    <>
+                      <label>Current Password</label>
+                      <BaseInput
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                      />
+                      <label>New Password</label>
+                      <BaseInput
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <label>Confirm New Password</label>
+                      <BaseInput
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                      <BaseButton onClick={handlePasswordChange}>
+                        Save Password
+                      </BaseButton>
+                      <BaseButton onClick={() => setShowPasswordForm(false)}>
+                        Cancel
+                      </BaseButton>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div className="settings-section__profile__content__actions__editForm__controls">

@@ -9,19 +9,7 @@ import {
   SettingsTab,
   SettingsFormData,
 } from "@/app/types/settings";
-import {
-  SettingsModalProps,
-  SettingsTab,
-  SettingsFormData,
-} from "@/app/types/settings";
-import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({
-  isOpen,
-  onClose,
-  onSave,
-  initialData,
-}) => {
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,

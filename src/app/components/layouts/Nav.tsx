@@ -9,7 +9,8 @@ import { SettingsModal } from "../settings/settings";
 import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 export const Nav: React.FC = () => {
-  const { theme, toggleTheme } = useThemeStore();
+  const theme = useThemeStore((state) => state.theme);
+  console.log("Current theme:", theme);
   const [showSettingsModal, setShowSettingsModal] = React.useState(false);
   const pathname = usePathname();
   const hideNav =

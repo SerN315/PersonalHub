@@ -1,5 +1,5 @@
 // components/ThemeRegistry.tsx
-"use client"; // This directive makes this component a Client Component
+"use client";
 
 import { useEffect } from "react";
 import { useThemeStore } from "../utils/store/ThemeStore";
@@ -12,25 +12,50 @@ export default function ThemeRegistry({ children }: ThemeRegistryProps) {
   const { theme, setTheme } = useThemeStore();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Get initial theme if not already set in the store (e.g., first client-side load)
-      // This ensures the Zustand store has the correct initial state.
-      if (!theme || (theme !== "dark" && theme !== "light")) {
-        // Added check for invalid theme
-        const initialTheme =
-          localStorage.getItem("theme") ||
-          (window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light");
-        setTheme(initialTheme); // Update the Zustand store
+    if (typeof window === "undefined") return;
+
+    // Get initial theme from localStorage or system
+    const storedTheme = localStorage.getItem("theme");
+    const systemPrefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    const initialTheme = storedTheme || (systemPrefersDark ? "dark" : "light");
+
+    setTheme(initialTheme);
+
+    // Sync theme class to <html>
+    const applyThemeClass = (newTheme: string) => {
+      document.documentElement.classList.remove("light", "dark");
+      document.documentElement.classList.add(newTheme);
+    };
+
+    applyThemeClass(initialTheme); // Initial apply
+
+    // Listen to system theme changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+      // Only update if user hasn’t explicitly set theme in localStorage
+      if (!storedTheme) {
+        const newTheme = e.matches ? "dark" : "light";
+        setTheme(newTheme);
+        applyThemeClass(newTheme);
       }
+    };
 
-      // Always ensure the correct class is on the documentElement
-      document.documentElement.classList.remove("dark", "light");
-      document.documentElement.classList.add(theme);
-    }
-  }, [theme, setTheme]); // Re-run if theme or setTheme changes
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
 
-  return <>{children}</>; // Render children as is, the theme logic applies to document.documentElement
+    return () => {
+      mediaQuery.removeEventListener("change", handleSystemThemeChange);
+    };
+  }, [setTheme]);
+
+  // Always apply theme class if Zustand theme changes manually
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(theme);
+  }, [theme]);
+
+  return <>{children}</>;
 }
