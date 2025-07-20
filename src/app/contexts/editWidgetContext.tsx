@@ -7,7 +7,11 @@ const EditModeContext = createContext<{
   setEditMode: (val: boolean) => void;
 }>({ editMode: false, setEditMode: () => {} });
 
-export const EditModeProvider = ({ children }: { children: React.ReactNode }) => {
+export const EditModeProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [editMode, setEditMode] = useState(false);
   return (
     <EditModeContext.Provider value={{ editMode, setEditMode }}>

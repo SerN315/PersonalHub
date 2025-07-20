@@ -61,9 +61,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
           return;
         }
 
-        console.log("Logged in user:", data.user);
-        window.location.href = "/dashboard"; 
-        localStorage.setItem("access_token", data.access_token);
+        window.location.href = "/dashboard";
 
         // Redirect or trigger login success flow
       } catch (err) {
@@ -75,7 +73,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
       }
     }
   };
-
 
   return (
     <div className="login-form-container">
@@ -112,14 +109,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
           </a>
         </div>
       </form>
-<div className="submitButtons">
-  <BaseButton type="submit" form="login-form">
-    Login
-  </BaseButton>
-  <BaseButton type="button" className="google-login" disabled>
-    Login with Google (disabled)
-  </BaseButton>
-</div>
+      <div className="submitButtons">
+        <BaseButton type="submit" form="login-form">
+          Login
+        </BaseButton>
+        <BaseButton type="button" className="google-login" disabled>
+          Login with Google (disabled)
+        </BaseButton>
+      </div>
       <div className="register">
         <p>Don't have an account?</p>
         <a href="#" className="registerLink" onClick={toggleForm}>

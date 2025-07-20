@@ -2,7 +2,6 @@ import React from "react";
 import { SettingsSidebarProps } from "@/app/types/settings";
 import { SettingsTab } from "@/app/types/settings";
 
-
 const tabs = [
   { key: "Profile", label: "Profile" },
   { key: "Account", label: "Account" },
@@ -10,7 +9,10 @@ const tabs = [
   { key: "Theme", label: "Theme" },
 ];
 
-const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeTab, onSelect }) => {
+const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
+  activeTab,
+  onSelect,
+}) => {
   return (
     <div className="settings-sidebar">
       <ul>
@@ -20,9 +22,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeTab, onSelect }
             className={activeTab === tab.key ? "active" : ""}
             onClick={() => onSelect(tab.key as SettingsTab)}
           >
-            <span className="texts">
-            {tab.label}
-            </span>
+            <span className="texts">{tab.label}</span>
           </li>
         ))}
       </ul>

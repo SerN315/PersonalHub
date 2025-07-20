@@ -6,7 +6,10 @@ interface GeneralSettingsProps {
   onChange: (key: keyof SettingsFormData, value: any) => void;
 }
 
-const GeneralSettings: React.FC<GeneralSettingsProps> = ({ data, onChange }) => {
+const GeneralSettings: React.FC<GeneralSettingsProps> = ({
+  data,
+  onChange,
+}) => {
   return (
     <div className="settings-section">
       <h3>General Settings</h3>

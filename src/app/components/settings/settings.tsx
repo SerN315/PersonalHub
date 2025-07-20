@@ -1,18 +1,26 @@
-// settings/SettingsModal.tsx
 import React, { useState } from "react";
 import "@/app/styles/layouts/settings.scss";
 import BaseIcon from "@/app/components/ultis/icons";
 import SettingsSidebar from "./SettingSidebar";
 import SettingsProfile from "./SettingAccount";
 import SettingsAccount from "./GeneralSettings";
-import { SettingsModalProps, SettingsTab, SettingsFormData } from "@/app/types/settings";
+import {
+  SettingsModalProps,
+  SettingsTab,
+  SettingsFormData,
+} from "@/app/types/settings";
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onSave, initialData }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  initialData,
+}) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("Profile");
   const [form, setForm] = useState<SettingsFormData>(
     initialData || { username: "", email: "", language: "en", image: null }
   );
-
+  const userId = localStorage.getItem("userIdCookie");
   const handleChange = (key: keyof SettingsFormData, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -24,7 +32,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
   };
 
   if (!isOpen) return null;
-
   return (
     <div className="modal-backdrop">
       <div className="modal">

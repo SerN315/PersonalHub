@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import BaseWidget from "./BaseWidget";
-import "../../styles/widgets/stickyNotes.scss"; 
+import "../../styles/widgets/stickyNotes.scss";
 import WidgetProps from "@/app/types/widget";
 
 export default function StickyNotesWidgets(props: WidgetProps) {
@@ -10,15 +10,23 @@ export default function StickyNotesWidgets(props: WidgetProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const TAGS = [
-    { label: "Urgent", color: "rgb(255 169 169)", bg: "#FF4C38", dc:"rgb(123 0 0)" },   // light red
-    { label: "Chill", color: "rgb(129 227 255)", bg: "#50B2FC",dc:"rgb(0 84 112)" },    // light blue
-    { label: "ASAP", color: " #faad14", bg: "#FED800",dc:"#705f00" },     // light yellow
+    {
+      label: "Urgent",
+      color: "rgb(255 169 169)",
+      bg: "#FF4C38",
+      dc: "rgb(123 0 0)",
+    }, // light red
+    {
+      label: "Chill",
+      color: "rgb(129 227 255)",
+      bg: "#50B2FC",
+      dc: "rgb(0 84 112)",
+    }, // light blue
+    { label: "ASAP", color: " #faad14", bg: "#FED800", dc: "#705f00" }, // light yellow
   ];
 
   const handleTagClick = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev[0] === tag ? [] : [tag]
-    );
+    setSelectedTags((prev) => (prev[0] === tag ? [] : [tag]));
     setDropdownOpen(false);
   };
 
@@ -28,7 +36,10 @@ export default function StickyNotesWidgets(props: WidgetProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
@@ -37,8 +48,8 @@ export default function StickyNotesWidgets(props: WidgetProps) {
   }, []);
 
   // 🟡 Get background color from selected tag
-  const selectedTag = TAGS.find(tag => tag.label === selectedTags[0]);
-  const backgroundColor = selectedTag?.bg || "#FED800"; 
+  const selectedTag = TAGS.find((tag) => tag.label === selectedTags[0]);
+  const backgroundColor = selectedTag?.bg || "#FED800";
 
   return (
     <BaseWidget title="Sticky Note" {...props}>
@@ -53,7 +64,7 @@ export default function StickyNotesWidgets(props: WidgetProps) {
               <span className="tag-placeholder">+ Add tag</span>
             ) : (
               selectedTags.map((tagLabel) => {
-                const tag = TAGS.find(t => t.label === tagLabel);
+                const tag = TAGS.find((t) => t.label === tagLabel);
                 return (
                   <span
                     key={tagLabel}
@@ -95,9 +106,12 @@ export default function StickyNotesWidgets(props: WidgetProps) {
         />
 
         <div className="stickyNote__container__decor">
-          <div className="DecorShape" style={{
-            borderLeft: `50px solid ${selectedTag?.dc || "#705f00"}`,
-          }}></div>
+          <div
+            className="DecorShape"
+            style={{
+              borderLeft: `50px solid ${selectedTag?.dc || "#705f00"}`,
+            }}
+          ></div>
         </div>
       </div>
     </BaseWidget>

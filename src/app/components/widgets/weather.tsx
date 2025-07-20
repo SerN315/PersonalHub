@@ -3,8 +3,7 @@ import BaseWidget from "./BaseWidget";
 import "../../styles/widgets/weather.scss";
 import WidgetProps from "@/app/types/widget";
 
-
-const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY; 
+const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
 console.log("Weather API Key:", API_KEY);
 
 export default function WeatherWidget(props: WidgetProps) {

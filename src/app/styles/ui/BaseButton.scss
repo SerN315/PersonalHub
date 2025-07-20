@@ -1,8 +1,10 @@
 @use "../globals" as *;
-.BaseButton{
-    background-color: $primary-color;
-    &:hover {
-      background: $gradient-primary;
-      color: white;
-    }
+
+.BaseButton {
+  background: $primary-color;
+
+  &:hover {
+    background: $gradient-primary;
+    color: white;
+  }
 }
