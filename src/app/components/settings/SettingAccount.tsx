@@ -13,6 +13,7 @@ import BaseInput from "@/app/components/ui/BaseInput";
 import BaseButton from "../ui/BaseButton";
 import "@/app/styles/settings/settingAccount.scss";
 import BasicIcon from "../ultis/icons";
+import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 const SettingAccount: React.FC<SettingAccountProps> = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -98,6 +99,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       alert(err.message);
     }
   };
+  const { theme, toggleTheme } = useThemeStore();
 
   return (
     <div className="settings-section">

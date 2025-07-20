@@ -6,8 +6,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SettingsModal } from "../settings/settings";
+import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 export const Nav: React.FC = () => {
+  const { theme, toggleTheme } = useThemeStore();
   const [showSettingsModal, setShowSettingsModal] = React.useState(false);
   const pathname = usePathname();
   const hideNav =
@@ -123,6 +125,7 @@ export const Nav: React.FC = () => {
         />
         {showSettingsModal && (
           <SettingsModal
+            theme={theme}
             isOpen={showSettingsModal}
             onClose={() => setShowSettingsModal(false)}
             onSave={() => {

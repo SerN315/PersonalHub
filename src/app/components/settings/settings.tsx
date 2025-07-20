@@ -9,6 +9,12 @@ import {
   SettingsTab,
   SettingsFormData,
 } from "@/app/types/settings";
+import {
+  SettingsModalProps,
+  SettingsTab,
+  SettingsFormData,
+} from "@/app/types/settings";
+import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
@@ -16,7 +22,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSave,
   initialData,
 }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  initialData,
+  theme,
+}) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("Profile");
+
   const [form, setForm] = useState<SettingsFormData>(
     initialData || { username: "", email: "", language: "en", image: null }
   );
@@ -34,7 +48,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   if (!isOpen) return null;
   return (
     <div className="modal-backdrop">
-      <div className="modal">
+      <div className={`modal ${theme}`}>
         <div className="modal__header">
           <h2>Settings</h2>
           <div className="close-icon" onClick={onClose}>
@@ -54,9 +68,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             )}
           </div>
         </div>
-        {/* <div className="modal__footer">
-          <button className="btn btn-save" onClick={handleSubmit}>Save changes</button>
-        </div> */}
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ export interface SettingsModalProps {
   onClose: () => void;
   onSave: (data: SettingsFormData) => void;
   initialData?: SettingsFormData;
+  theme?: string;
 }
 
 export interface SettingAccountProps {
