@@ -13,100 +13,120 @@ import BaseInput from "@/app/components/ui/BaseInput";
 import BaseButton from "../ui/BaseButton";
 import "@/app/styles/settings/settingAccount.scss";
 import BasicIcon from "../ultis/icons";
-import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 const SettingAccount: React.FC<SettingAccountProps> = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    username: "",
-    email: "",
-    profile_picture: "",
-  });
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false); // loading indicator
 
+  // This holds the actual user data displayed in the UI
   const [userData, setUserData] = useState({
     name: "",
     username: "",
     email: "",
-    profile_picture: "",
+    avatar_url: "",
   });
+
+  // This holds the form data for editing (separate from display data)
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    email: "",
+    avatar_url: "",
+  });
+
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Initialize form data with user data when entering edit mode
   useEffect(() => {
     if (isEditing) {
       setFormData({
-        name: formData.name,
-        username: formData.username,
-        email: formData.email,
-        profile_picture: formData.profile_picture,
+        name: userData.name,
+        username: userData.username,
+        email: userData.email,
+        avatar_url: userData.avatar_url,
       });
     }
-  }, [isEditing, formData]);
+  }, [isEditing, userData]);
 
+  // Fetch user data on component mount
   useEffect(() => {
     fetchUser()
       .then((user) => {
-        setFormData({
+        const fetchedUserData = {
           name: user.display_name || "",
           username: user.user_metadata?.username || "",
           email: user.email,
-          profile_picture: user.profile_picture || "",
-        });
+          avatar_url: user.user_metadata?.avatar_url || "",
+        };
+        console.log("Fetched user data:", fetchedUserData);
+        setUserData(fetchedUserData);
+        setFormData(fetchedUserData);
       })
       .catch((err) => {
         console.error(err);
       });
   }, []);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setProfileImage(file);
+      setPreviewUrl(URL.createObjectURL(file)); // preview
+
+      try {
+        const uploadedUrl = await uploadProfileImage(file); // Upload to /api/upload-avatar
+        setFormData({ ...formData, avatar_url: uploadedUrl }); // Update form with new avatar URL
+      } catch (err: any) {
+        console.error("Image upload failed:", err.message);
+        alert("Failed to upload image. Please try again.");
+      }
     }
   };
 
   const handleSave = async () => {
-    let profile_picture = userData.profile_picture;
+    setSaving(true);
+    try {
+      const payload: any = {};
 
-    if (profileImage) {
-      profile_picture = await uploadProfileImage(profileImage);
+      if (formData.name && formData.name !== userData.name) {
+        payload.display_name = formData.name;
+      }
+      if (formData.username && formData.username !== userData.username) {
+        payload.username = formData.username;
+      }
+      if (formData.email && formData.email !== userData.email) {
+        payload.email = formData.email;
+      }
+      if (formData.avatar_url && formData.avatar_url !== userData.avatar_url) {
+        payload.avatar_url = formData.avatar_url;
+      }
+
+      if (Object.keys(payload).length > 0) {
+        await updateUser(payload);
+        const updated = await fetchUser();
+        const updatedUserData = {
+          name: updated.display_name || "",
+          username: updated.user_metadata?.username || "",
+          email: updated.email,
+          avatar_url: updated.avatar_url || "",
+        };
+        setUserData(updatedUserData);
+      }
+
+      setIsEditing(false);
+      setProfileImage(null);
+      setPreviewUrl(null);
+    } catch (err: any) {
+      console.error("Failed to save profile:", err);
+      alert("Failed to save profile: " + err.message);
+    } finally {
+      setSaving(false);
     }
-
-    const payload: any = {};
-
-    if (formData.name && formData.name !== userData.name) {
-      payload.display_name = formData.name;
-    }
-
-    if (formData.username && formData.username !== userData.username) {
-      payload.username = formData.username;
-    }
-
-    if (formData.email && formData.email !== userData.email) {
-      payload.email = formData.email;
-    }
-
-    if (profileImage) {
-      payload.profile_picture = formData.profile_picture;
-    }
-
-    if (Object.keys(payload).length > 0) {
-      await updateUser(payload);
-
-      const updated = await fetchUser();
-      setUserData({
-        name: updated.display_name || "",
-        username: updated.user_metadata?.username || "",
-        email: updated.email,
-        profile_picture: updated.profile_picture || "",
-      });
-    }
-
-    setIsEditing(false);
   };
 
   const handleLogout = async () => {
@@ -153,8 +173,10 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
             <div
               className="settings-section__profile__content__avatar hover-edit-avatar"
               style={{
-                backgroundImage: formData.profile_picture
-                  ? `url(${formData.profile_picture})`
+                backgroundImage: previewUrl
+                  ? `url(${previewUrl})`
+                  : userData.avatar_url
+                  ? `url(${userData.avatar_url})`
                   : `url('/default-avatar.png')`,
               }}
             >
@@ -167,15 +189,25 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      opacity: 0,
+                      cursor: "pointer",
+                      zIndex: 10,
+                    }}
                   />
                 </>
               )}
             </div>
             <div className="settings-section__profile__content__name">
-              {formData.username || "Guest User"}
+              {userData.username || "Guest User"}
             </div>
             <div className="settings-section__profile__content__email">
-              {formData.email}
+              {userData.email}
             </div>
           </div>
 
@@ -254,8 +286,19 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
               </div>
 
               <div className="settings-section__profile__content__actions__editForm__controls">
-                <BaseButton onClick={handleSave}>Save</BaseButton>
-                <BaseButton onClick={() => setIsEditing(false)}>
+                <BaseButton onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save"}
+                </BaseButton>
+                <BaseButton
+                  onClick={() => {
+                    setIsEditing(false);
+                    setProfileImage(null);
+                    setShowPasswordForm(false);
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                >
                   Cancel
                 </BaseButton>
               </div>
