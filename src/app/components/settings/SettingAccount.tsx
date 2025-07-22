@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  fetchUser,
   updateUser,
   logoutUser,
   uploadProfileImage,
@@ -13,22 +12,18 @@ import BaseInput from "@/app/components/ui/BaseInput";
 import BaseButton from "../ui/BaseButton";
 import "@/app/styles/settings/settingAccount.scss";
 import BasicIcon from "../ultis/icons";
+import { LoadingSpinner } from "../ultis/loadingSpinner";
+import { useUserStore } from "@/app/utils/store/userStore";
 
 const SettingAccount: React.FC<SettingAccountProps> = () => {
+  // Use the store directly for user, loading, and fetched
+  const { user, setUser, loading, fetched } = useUserStore();
+
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false); // loading indicator
+  const [saving, setSaving] = useState(false);
 
-  // This holds the actual user data displayed in the UI
-  const [userData, setUserData] = useState({
-    name: "",
-    username: "",
-    email: "",
-    avatar_url: "",
-  });
-
-  // This holds the form data for editing (separate from display data)
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -36,51 +31,34 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
     avatar_url: "",
   });
 
+  const isLoggedIn = !!user?.email;
+
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Initialize form data with user data when entering edit mode
+  // Sync formData with user when editing starts
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && user) {
       setFormData({
-        name: userData.name,
-        username: userData.username,
-        email: userData.email,
-        avatar_url: userData.avatar_url,
+        name: user.name || "",
+        username: user.username || "",
+        email: user.email || "",
+        avatar_url: user.avatar_url || "",
       });
     }
-  }, [isEditing, userData]);
-
-  // Fetch user data on component mount
-  useEffect(() => {
-    fetchUser()
-      .then((user) => {
-        const fetchedUserData = {
-          name: user.display_name || "",
-          username: user.user_metadata?.username || "",
-          email: user.email,
-          avatar_url: user.user_metadata?.avatar_url || "",
-        };
-        console.log("Fetched user data:", fetchedUserData);
-        setUserData(fetchedUserData);
-        setFormData(fetchedUserData);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []);
+  }, [isEditing, user]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setProfileImage(file);
-      setPreviewUrl(URL.createObjectURL(file)); // preview
+      setPreviewUrl(URL.createObjectURL(file));
 
       try {
-        const uploadedUrl = await uploadProfileImage(file); // Upload to /api/upload-avatar
-        setFormData({ ...formData, avatar_url: uploadedUrl }); // Update form with new avatar URL
+        const uploadedUrl = await uploadProfileImage(file);
+        setFormData({ ...formData, avatar_url: uploadedUrl });
       } catch (err: any) {
         console.error("Image upload failed:", err.message);
         alert("Failed to upload image. Please try again.");
@@ -93,29 +71,27 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
     try {
       const payload: any = {};
 
-      if (formData.name && formData.name !== userData.name) {
+      if (formData.name && formData.name !== user?.name) {
         payload.display_name = formData.name;
       }
-      if (formData.username && formData.username !== userData.username) {
+      if (formData.username && formData.username !== user?.username) {
         payload.username = formData.username;
       }
-      if (formData.email && formData.email !== userData.email) {
+      if (formData.email && formData.email !== user?.email) {
         payload.email = formData.email;
       }
-      if (formData.avatar_url && formData.avatar_url !== userData.avatar_url) {
+      if (formData.avatar_url && formData.avatar_url !== user?.avatar_url) {
         payload.avatar_url = formData.avatar_url;
       }
 
       if (Object.keys(payload).length > 0) {
         await updateUser(payload);
-        const updated = await fetchUser();
-        const updatedUserData = {
-          name: updated.display_name || "",
-          username: updated.user_metadata?.username || "",
-          email: updated.email,
-          avatar_url: updated.avatar_url || "",
-        };
-        setUserData(updatedUserData);
+        setUser({
+          name: formData.name,
+          username: formData.username,
+          email: formData.email,
+          avatar_url: formData.avatar_url,
+        });
       }
 
       setIsEditing(false);
@@ -131,6 +107,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
 
   const handleLogout = async () => {
     await logoutUser();
+    setUser(null);
     window.location.href = "/auth/login";
   };
 
@@ -163,7 +140,11 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       }
     }
   };
-
+  console.log("User from store:", user);
+  // Only show loading spinner while fetching user info
+  if (loading || !fetched) {
+    return <LoadingSpinner />;
+  }
   return (
     <div className="settings-section">
       <div className="settings-section__decoration"></div>
@@ -175,9 +156,9 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
               style={{
                 backgroundImage: previewUrl
                   ? `url(${previewUrl})`
-                  : userData.avatar_url
-                  ? `url(${userData.avatar_url})`
-                  : `url('/default-avatar.png')`,
+                  : user?.avatar_url
+                  ? `url(${user.avatar_url})`
+                  : `url('/Blank-Avatar.webp')`,
               }}
             >
               {isEditing && (
@@ -204,17 +185,25 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
               )}
             </div>
             <div className="settings-section__profile__content__name">
-              {userData.username || "Guest User"}
+              {user?.username || "Guest User"}
             </div>
             <div className="settings-section__profile__content__email">
-              {userData.email}
+              {user?.email || ""}
             </div>
           </div>
 
-          {!isEditing && (
+          {isLoggedIn && !isEditing ? (
             <div className="settings-section__profile__edit">
               <BaseButton onClick={() => setIsEditing(true)}>
                 Edit Profile
+              </BaseButton>
+            </div>
+          ) : (
+            <div className="settings-section__profile__edit">
+              <BaseButton
+                onClick={() => (window.location.href = "/auth/login")}
+              >
+                Login
               </BaseButton>
             </div>
           )}
@@ -305,15 +294,18 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
             </div>
           )}
         </div>
-
-        <div className="settings-section__buttonsContainer">
-          <div className="settings-section__buttonsContainer__logout">
-            <BaseButton onClick={handleLogout}>Logout</BaseButton>
+        {isLoggedIn && (
+          <div className="settings-section__buttonsContainer">
+            <>
+              <div className="settings-section__buttonsContainer__logout">
+                <BaseButton onClick={handleLogout}>Logout</BaseButton>
+              </div>
+              <div className="settings-section__buttonsContainer__delete">
+                <BaseButton disabled>Delete Account</BaseButton>
+              </div>
+            </>
           </div>
-          <div className="settings-section__buttonsContainer__delete">
-            <BaseButton disabled>Delete Account</BaseButton>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

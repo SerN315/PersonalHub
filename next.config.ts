@@ -5,11 +5,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:5000///api/:path*",
+        destination: "https://personalhub-back.onrender.com///api/:path*",
       },
     ];
   },
 };
 
 export default nextConfig;
-//https://personalhub-back.onrender.com
+//https://personalhub-back.onrender.com///api/:path* (server test)
+//http://localhost:5000///api/:path* ( local test )
