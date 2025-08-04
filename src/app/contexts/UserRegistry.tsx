@@ -21,6 +21,7 @@ export default function UserRegistry({
 
         if (user?.email) {
           setUser({
+            id: user.id || "",
             name: user.display_name || "",
             username: user.user_metadata?.username || "",
             email: user.email || "",

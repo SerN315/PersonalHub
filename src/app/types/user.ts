@@ -1,4 +1,5 @@
 export interface UserData {
+  id: string;
   name: string;
   email: string;
   username: string;
@@ -17,4 +18,6 @@ export interface UserState {
   setUser: (user: UserData | null) => void;
   setLoading: (loading: boolean) => void;
   setFetched: (fetched: boolean) => void;
+  fetchUser: () => Promise<void>;
+  logout: () => void;
 }

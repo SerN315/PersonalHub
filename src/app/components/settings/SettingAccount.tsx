@@ -87,6 +87,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       if (Object.keys(payload).length > 0) {
         await updateUser(payload);
         setUser({
+          id: user?.id || "",
           name: formData.name,
           username: formData.username,
           email: formData.email,

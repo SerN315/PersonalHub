@@ -98,7 +98,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />
-        {errors.general && <p className="error">{errors.general}</p>}
+        {errors.general && (
+          <p className="error text-red-500">{errors.general}</p>
+        )}
         <div className="subInteraction">
           <div className="rememberMe">
             <input type="checkbox" />
