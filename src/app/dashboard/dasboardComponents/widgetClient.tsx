@@ -75,12 +75,25 @@ export default function WidgetClient() {
       const loadedData: Record<string, Widget> = {};
 
       userWidgets.forEach((widget: Widget) => {
+        // Handle position data that might be stored as string or object
+        let position;
+        if (typeof widget.position === "string") {
+          try {
+            position = JSON.parse(widget.position);
+          } catch (e) {
+            console.error("Failed to parse position string:", widget.position);
+            position = { x: 0, y: 0, w: 4, h: 1 }; // fallback
+          }
+        } else {
+          position = widget.position;
+        }
+
         loadedLayout.push({
           i: widget.id,
-          x: widget.position.x,
-          y: widget.position.y,
-          w: widget.position.w,
-          h: widget.position.h,
+          x: Number(position.x),
+          y: Number(position.y),
+          w: Number(position.w),
+          h: Number(position.h),
           ...(defaultLayoutMap[widget.type]?.minW && {
             minW: defaultLayoutMap[widget.type].minW,
           }),
@@ -106,7 +119,19 @@ export default function WidgetClient() {
   const saveLayoutToServer = async () => {
     if (!user?.id) return;
     try {
-      await saveUserWidgetLayout(user.id, layout, widgets);
+      // Ensure position data is properly formatted as objects, not strings
+      const formattedLayout = layout.map((item) => ({
+        i: item.i,
+        x: Number(item.x),
+        y: Number(item.y),
+        w: Number(item.w),
+        h: Number(item.h),
+        // Remove any string conversion and ensure it's a proper object
+        ...(item.minW && { minW: Number(item.minW) }),
+        ...(item.minH && { minH: Number(item.minH) }),
+      }));
+
+      await saveUserWidgetLayout(user.id, formattedLayout, widgets);
     } catch (error) {
       console.error("Failed to save layout:", error);
     }
@@ -152,7 +177,12 @@ export default function WidgetClient() {
       const newWidget = await createWidget({
         user_id: user.id,
         type,
-        position: { x, y, w, h },
+        position: {
+          x: Number(x),
+          y: Number(y),
+          w: Number(w),
+          h: Number(h),
+        },
         data: {},
       });
 
@@ -162,12 +192,12 @@ export default function WidgetClient() {
         ...prev,
         {
           i: id,
-          x,
-          y,
-          w,
-          h,
-          ...(minW && { minW }),
-          ...(minH && { minH }),
+          x: Number(x),
+          y: Number(y),
+          w: Number(w),
+          h: Number(h),
+          ...(minW && { minW: Number(minW) }),
+          ...(minH && { minH: Number(minH) }),
         },
       ]);
 

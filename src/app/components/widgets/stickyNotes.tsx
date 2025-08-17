@@ -15,14 +15,22 @@ export default function StickyNotesWidgets(props: WidgetProps) {
       color: "rgb(255 169 169)",
       bg: "#FF4C38",
       dc: "rgb(123 0 0)",
+      textColor: "#fff",
     }, // light red
     {
       label: "Chill",
       color: "rgb(129 227 255)",
       bg: "#50B2FC",
       dc: "rgb(0 84 112)",
+      textColor: "#fff",
     }, // light blue
-    { label: "ASAP", color: " #faad14", bg: "#FED800", dc: "#705f00" }, // light yellow
+    {
+      label: "ASAP",
+      color: " #faad14",
+      bg: "#FED800",
+      dc: "#705f00",
+      textColor: "black",
+    }, // light yellow
   ];
 
   const handleTagClick = (tag: string) => {
@@ -103,6 +111,9 @@ export default function StickyNotesWidgets(props: WidgetProps) {
           value={note}
           onChange={handleNoteChange}
           placeholder="Write your note here..."
+          style={{
+            color: selectedTag?.textColor || "black",
+          }}
         />
 
         <div className="stickyNote__container__decor">

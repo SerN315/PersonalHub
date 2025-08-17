@@ -1,30 +1,35 @@
 @use "../globals" as *;
-.stickyNote__container{
+
+.stickyNote__container {
     width: 100%;
     height: 100%;
     background-color: #FED800;
     display: flex;
     flex-direction: row-reverse;
-        &__tags__container{
-            z-index: 1000;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            &__selected{
-                width: 100px;
-                height: 100%;
-                            display: flex;
+
+    &__tags__container {
+        z-index: 1000;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+
+        &__selected {
+            width: 100px;
+            height: 100%;
+            display: flex;
             justify-content: center;
             flex-direction: column;
             text-align: center;
-            }
-        &__tag{
-                    width: 100px;
-        padding: 5px;
-        border-radius: 10px;
-        font-size: $font-size-lg;
         }
-        &__dropdown{
+
+        &__tag {
+            width: 100px;
+            padding: 5px;
+            border-radius: 10px;
+            font-size: $font-size-lg;
+        }
+
+        &__dropdown {
             margin-top: 10px;
             display: flex;
             flex-direction: column;
@@ -32,25 +37,30 @@
         }
 
     }
-    textarea{
+
+    textarea {
         padding: 10px;
         width: 100%;
         height: 100%;
-        &:focus{
+
+        &:focus {
             outline: none;
         }
     }
-    &__decor{
+
+    &__decor {
         position: absolute;
         bottom: 50px;
         right: 50px;
-        .DecorShape{
-        width: 0;
-        height: 0;;
-        border-left: 50px solid #705f00;
-        border-right: 50px solid transparent;
-        border-bottom: 50px solid transparent;
-        position: absolute;
+
+        .DecorShape {
+            width: 0;
+            height: 0;
+            ;
+            border-left: 50px solid #705f00;
+            border-right: 50px solid transparent;
+            border-bottom: 50px solid transparent;
+            position: absolute;
         }
     }
 }
