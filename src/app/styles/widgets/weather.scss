@@ -8,8 +8,6 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     padding: 5%;
     box-sizing: border-box;
 
@@ -27,19 +25,15 @@
         font-weight: $font-weight-bold;
         color: white;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        margin-bottom: 0.5em;
-        text-align: center;
         z-index: 2;
         position: relative;
     }
 
     .weather__temp {
-        font-size: clamp(1.5rem, 8vw, 4rem);
+        font-size: clamp(1.5rem, 8vw, 2.5rem);
         font-weight: $font-weight-bold;
         color: white;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        margin-bottom: 0.2em;
-        text-align: center;
         z-index: 2;
         position: relative;
     }
@@ -48,7 +42,6 @@
         font-size: clamp(0.7rem, 3vw, 1.2rem);
         color: white;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        text-align: center;
         z-index: 2;
         position: relative;
         opacity: 0.9;

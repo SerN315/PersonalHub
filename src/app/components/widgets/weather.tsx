@@ -4,7 +4,6 @@ import "../../styles/widgets/weather.scss";
 import WidgetProps from "@/app/types/widget";
 
 const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
-console.log("Weather API Key:", API_KEY);
 
 // Weather condition to GIF mapping with randomization
 const getWeatherBackground = (
@@ -104,16 +103,19 @@ export default function WeatherWidget(props: WidgetProps) {
   const currentBackground = useRef<string>("");
 
   useEffect(() => {
-    // Get user's geolocation
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+        const days = 1;
         const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${latitude},${longitude}`;
-
+        const forcastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=${days}`;
         try {
           const response = await fetch(url);
+          const forecastResponse = await fetch(forcastUrl);
+          const forecastData = await forecastResponse.json();
           const data = await response.json();
           console.log("Weather data:", data);
+          console.log("Forecast:", forecastData);
 
           const newCondition = data.current.condition.text;
 

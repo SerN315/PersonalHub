@@ -26,7 +26,7 @@ import { useUserStore } from "@/app/utils/store/userStore";
 const defaultLayoutMap: Record<string, any> = {
   sticky: { w: 4, h: 1 },
   todo: { w: 4, h: 1 },
-  weather: { w: 4, h: 1 },
+  weather: { w: 4, h: 1, maxW: 6, maxH: 3, minH: 2, minW: 2 },
   pomodoro: { w: 2, h: 2, minW: 2 },
   clock: { w: 4, h: 3, minW: 3, minH: 3 },
 };
@@ -99,6 +99,12 @@ export default function WidgetClient() {
           }),
           ...(defaultLayoutMap[widget.type]?.minH && {
             minH: defaultLayoutMap[widget.type].minH,
+          }),
+          ...(defaultLayoutMap[widget.type]?.maxW && {
+            maxW: defaultLayoutMap[widget.type].maxW,
+          }),
+          ...(defaultLayoutMap[widget.type]?.maxH && {
+            maxH: defaultLayoutMap[widget.type].maxH,
           }),
         });
 
