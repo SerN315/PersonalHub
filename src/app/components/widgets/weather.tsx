@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react";
 import BaseWidget from "./BaseWidget";
 import "../../styles/widgets/weather.scss";
 import WidgetProps from "@/app/types/widget";
-
+import Image from "next/image";
 const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
-
 // Weather condition to GIF mapping with randomization
 const getWeatherBackground = (
   condition: string,
@@ -98,6 +98,9 @@ export default function WeatherWidget(props: WidgetProps) {
     condition: "Unknown",
   });
 
+  // Add state for hourly forecast
+  const [hourly, setHourly] = useState<any[]>([]);
+
   // Store the previous condition and current background
   const previousCondition = useRef<string>("Unknown");
   const currentBackground = useRef<string>("");
@@ -135,6 +138,16 @@ export default function WeatherWidget(props: WidgetProps) {
             temperature: Math.round(data.current.temp_c).toString(),
             condition: newCondition,
           });
+          // Set hourly forecast (first day)
+          if (
+            forecastData &&
+            forecastData.forecast &&
+            forecastData.forecast.forecastday &&
+            forecastData.forecast.forecastday[0] &&
+            forecastData.forecast.forecastday[0].hour
+          ) {
+            setHourly(forecastData.forecast.forecastday[0].hour);
+          }
         } catch (error) {
           console.error("Failed to fetch weather:", error);
         }
@@ -143,6 +156,7 @@ export default function WeatherWidget(props: WidgetProps) {
         console.error("Geolocation error:", err);
       }
     );
+    // Check for compact mode based on props or window size
   }, []);
 
   return (
@@ -160,6 +174,28 @@ export default function WeatherWidget(props: WidgetProps) {
         <div className="weather__location">{weather.location}</div>
         <div className="weather__temp">{weather.temperature}°C</div>
         <div className="weather__condition">{weather.condition}</div>
+        <div className="weather__forecastList">
+          {hourly.map((hour, idx) => (
+            <div className="weather__forecastItem" key={idx}>
+              <div className="weather__forecastTime">
+                {new Date(hour.time).getHours()}:00
+              </div>
+              <div className="weather__forecastIcon">
+                <Image
+                  className="weather__forecastIcon__img"
+                  src={hour.condition.icon}
+                  alt={hour.condition.text}
+                  width={32}
+                  height={32}
+                  unoptimized
+                />
+              </div>
+              <div className="weather__forecastTemp">
+                {Math.round(hour.temp_c)}°C
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </BaseWidget>
   );
