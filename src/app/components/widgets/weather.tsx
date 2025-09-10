@@ -100,6 +100,11 @@ export default function WeatherWidget(props: WidgetProps) {
 
   // Add state for hourly forecast
   const [hourly, setHourly] = useState<any[]>([]);
+  const forecastListRef = useRef<HTMLDivElement>(null);
+
+  // Track if parent is at max height
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showForecast, setShowForecast] = useState(true);
 
   // Store the previous condition and current background
   const previousCondition = useRef<string>("Unknown");
@@ -159,10 +164,64 @@ export default function WeatherWidget(props: WidgetProps) {
     // Check for compact mode based on props or window size
   }, []);
 
+  // Auto-scroll to the current hour in the forecast list
+  useEffect(() => {
+    if (hourly.length === 0 || !forecastListRef.current) return;
+    const now = new Date();
+    const currentHour = now.getHours();
+    // Find the index of the next hour (or current hour if available)
+    let scrollToIdx = hourly.findIndex(
+      (h) => new Date(h.time).getHours() >= currentHour
+    );
+    if (scrollToIdx === -1) scrollToIdx = 0; // fallback to first
+
+    // Get the forecast item element and scroll so it's at the left/start
+    const forecastList = forecastListRef.current;
+    const forecastItems = forecastList.querySelectorAll(
+      ".weather__forecastItem"
+    );
+    if (forecastItems[scrollToIdx]) {
+      const item = forecastItems[scrollToIdx] as HTMLElement;
+      // Scroll so the item is at the left/start of the container
+      forecastList.scrollTo({
+        left: item.offsetLeft,
+        behavior: "smooth",
+      });
+    }
+  }, [hourly]);
+
+  useEffect(() => {
+    if (!forecastListRef.current) return;
+
+    const el = forecastListRef.current;
+
+    const checkHeight = () => {
+      const isNotOverflowing = el.scrollHeight <= el.clientHeight + 2;
+      setShowForecast(isNotOverflowing);
+    };
+
+    // Initial check
+    checkHeight();
+
+    // Observe size changes
+    const resizeObserver = new window.ResizeObserver(checkHeight);
+    resizeObserver.observe(el);
+
+    // Also observe parent in case its size changes
+    if (el.parentElement) {
+      resizeObserver.observe(el.parentElement);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [hourly]);
+
   return (
     <BaseWidget title="Weather" {...props}>
       <div
         className="weather__container"
+        ref={containerRef}
         style={{
           backgroundImage: `url("${currentBackground.current}")`,
           backgroundRepeat: "no-repeat",
@@ -174,9 +233,17 @@ export default function WeatherWidget(props: WidgetProps) {
         <div className="weather__location">{weather.location}</div>
         <div className="weather__temp">{weather.temperature}°C</div>
         <div className="weather__condition">{weather.condition}</div>
-        <div className="weather__forecastList">
+        <div
+          className="weather__forecastList"
+          ref={forecastListRef}
+          style={{ opacity: showForecast ? 1 : 0 }}
+        >
           {hourly.map((hour, idx) => (
-            <div className="weather__forecastItem" key={idx}>
+            <div
+              className="weather__forecastItem"
+              key={idx}
+              style={{ display: "inline-block" }}
+            >
               <div className="weather__forecastTime">
                 {new Date(hour.time).getHours()}:00
               </div>
