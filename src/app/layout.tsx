@@ -4,6 +4,7 @@ import "@/app/globals.css";
 import { Nav } from "@/app/components/layouts/Nav";
 import { EditModeProvider } from "@/app/contexts/editWidgetContext";
 import ThemeRegistry from "./contexts/ThemeRegistry";
+import UserRegistry from "./contexts/UserRegistry";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,9 @@ export default function RootLayout({
         <Nav />
         <main className="flex-1">
           <ThemeRegistry>
-            <EditModeProvider>{children}</EditModeProvider>
+            <UserRegistry>
+              <EditModeProvider>{children}</EditModeProvider>
+            </UserRegistry>
           </ThemeRegistry>
         </main>
       </body>

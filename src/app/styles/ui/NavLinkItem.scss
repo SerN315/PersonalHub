@@ -1,4 +1,5 @@
 @use "../globals" as *;
+
 .nav-item {
   display: flex;
   align-items: center;
@@ -8,13 +9,16 @@
   padding: 20px 10px;
   font-size: $font-size-base;
   transition: all 0.1s ease-in-out;
+
   &:hover {
     background: $gradient-primary;
     color: white;
   }
+
   .nav-link {
     display: flex;
     gap: 5px;
+
     &.active {
       background: $gradient-primary;
       color: white;

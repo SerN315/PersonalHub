@@ -1,4 +1,3 @@
-// settings/SettingsModal.tsx
 import React, { useState } from "react";
 import "@/app/styles/layouts/settings.scss";
 import BaseIcon from "@/app/components/ultis/icons";
@@ -10,7 +9,6 @@ import {
   SettingsTab,
   SettingsFormData,
 } from "@/app/types/settings";
-import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
@@ -24,7 +22,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [form, setForm] = useState<SettingsFormData>(
     initialData || { username: "", email: "", language: "en", image: null }
   );
-
+  const userId = localStorage.getItem("userIdCookie");
   const handleChange = (key: keyof SettingsFormData, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -36,7 +34,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   if (!isOpen) return null;
-
   return (
     <div className="modal-backdrop">
       <div className={`modal ${theme}`}>

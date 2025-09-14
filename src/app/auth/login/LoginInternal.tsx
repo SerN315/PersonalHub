@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import LoginForm from "@/app/components/ultis/LoginForm";
 import RegisterForm from "@/app/components/ultis/RegisterForm";
@@ -13,6 +13,13 @@ import { useThemeStore } from "@/app/utils/store/ThemeStore";
 const LoginInternal: React.FC = () => {
   const [isLoginForm, setIsLoginForm] = useState(true);
   const { theme, toggleTheme } = useThemeStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
   const toggleForm = () => {
     setIsLoginForm(!isLoginForm);
   };
