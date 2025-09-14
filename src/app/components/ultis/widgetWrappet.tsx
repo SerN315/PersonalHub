@@ -5,7 +5,6 @@ import { useEditMode } from "@/app/contexts/editWidgetContext";
 import BasicIcon from "./icons";
 import * as Icons from "@hugeicons/core-free-icons";
 
-
 type WidgetWrapperProps = {
   title: string;
   onClose?: () => void;
@@ -29,16 +28,16 @@ export default function WidgetWrapper({
       ref={wrapperRef}
       className={`widgetWrapper ${editMode ? "edit-mode" : ""}`}
     >
-            <div className={`widgetWrapper__drag-handle ${editMode ? "show" : ""}`}>
+      <div className={`widgetWrapper__drag-handle ${editMode ? "show" : ""}`}>
         <div className={`widgetWrapper__controls ${editMode ? "show" : ""}`}>
-          {onClose && editMode  && (
+          {onClose && editMode && (
             <button
               onClick={(e) => {
                 onClose();
               }}
               className="close-button"
             >
-              <BasicIcon icon ="CancelCircleIcon" size={24} color="red" />
+              <BasicIcon icon="CancelCircleIcon" size={24} color="red" />
             </button>
           )}
         </div>

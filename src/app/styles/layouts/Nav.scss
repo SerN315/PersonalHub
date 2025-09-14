@@ -1,4 +1,5 @@
-@import "../styles.scss";
+@use "../globals" as *;
+
 .nav {
   height: 100vh;
   width: 250px;
@@ -9,47 +10,58 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+
   .topHalf {
     display: flex;
     gap: 5px;
     flex-direction: column;
   }
+
   .nav-lists {
     .menu-title {
       font-size: $font-size-sm;
       margin: 5px;
       color: $gray-500;
     }
+
     .nav-list_menu {
       margin: 10px 0;
     }
+
     .nav-list_widgetMenu {
       margin: 10px 0;
     }
   }
+
   .nav-user {
     padding: 10px;
     border-radius: 15px;
+
     &:hover {
       background: $gradient-primary;
       color: white;
+
       .email {
         color: white;
       }
+
       .interactiveButtons {
         color: black;
       }
     }
+
     .user__container {
       display: flex;
       align-items: center;
       justify-content: space-between;
       transition: all 0.1s ease-in-out;
     }
+
     .userInfo {
       display: flex;
       align-items: center;
     }
+
     .user__image {
       width: 50px;
       height: 50px;
@@ -58,16 +70,19 @@
       border-radius: 10px;
       margin-right: 10px;
     }
+
     .userName {
       font-size: $font-size-base;
       font-weight: $font-weight-bold;
     }
+
     .email {
       font-size: $font-size-sm;
       color: $gray-600;
     }
   }
 }
+
 .quickOptions {
   border-top: 1px solid $gray-300;
   padding: 15px 0 5px 0;

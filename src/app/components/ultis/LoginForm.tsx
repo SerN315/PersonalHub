@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import LoginInput from "@/app/components/ui/loginInput";
-
+import BaseButton from "@/app/components/ui/BaseButton";
 
 interface LoginFormProps {
   toggleForm: () => void;
@@ -61,9 +61,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
           return;
         }
 
-        console.log("Logged in user:", data.user);
-        window.location.href = "/dashboard"; 
-        localStorage.setItem("access_token", data.access_token);
+        window.location.href = "/dashboard";
 
         // Redirect or trigger login success flow
       } catch (err) {
@@ -75,7 +73,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
       }
     }
   };
-
 
   return (
     <div className="login-form-container">
@@ -101,7 +98,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />
-        {errors.general && <p className="error">{errors.general}</p>}
+        {errors.general && (
+          <p className="error text-red-500">{errors.general}</p>
+        )}
         <div className="subInteraction">
           <div className="rememberMe">
             <input type="checkbox" />
@@ -113,12 +112,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
         </div>
       </form>
       <div className="submitButtons">
-        <button type="submit" form="login-form" className="submitButton">
+        <BaseButton type="submit" form="login-form">
           Login
-        </button>
-        <button type="button" className="google-login" disabled>
+        </BaseButton>
+        <BaseButton type="button" className="google-login" disabled>
           Login with Google (disabled)
-        </button>
+        </BaseButton>
       </div>
       <div className="register">
         <p>Don't have an account?</p>

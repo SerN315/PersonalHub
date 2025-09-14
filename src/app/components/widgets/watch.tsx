@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import BaseWidget from "./BaseWidget";
-import "../../styles/widgets/AnalogClock.scss"; 
+import "../../styles/widgets/AnalogClock.scss";
 import WidgetProps from "@/app/types/widget";
 
 const AnalogClock: React.FC<{ paused?: boolean }> = ({ paused }) => {
@@ -8,7 +8,7 @@ const AnalogClock: React.FC<{ paused?: boolean }> = ({ paused }) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true); 
+    setMounted(true);
   }, []);
 
   useEffect(() => {

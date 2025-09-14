@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import Input from "./BaseInput";
+import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 interface LoginInputProps {
   label?: string;
@@ -16,6 +17,7 @@ const LoginInput: FC<LoginInputProps> = ({
   onChange,
   type,
 }) => {
+  const { theme, toggleTheme } = useThemeStore();
   return (
     <Input
       type={type}
@@ -23,6 +25,10 @@ const LoginInput: FC<LoginInputProps> = ({
       value={value}
       onChange={onChange}
       placeholder={`Enter your ${label}`}
+      style={{
+        backgroundColor: theme === "dark" ? "#1a1a1a" : "#ffffff",
+        color: theme === "dark" ? "#ffffff" : "#000000",
+      }}
     />
   );
 };

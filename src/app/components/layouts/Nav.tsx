@@ -5,8 +5,20 @@ import "@/app/styles/layouts/Nav.scss";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SettingsModal } from "../settings/settings";
+import { useThemeStore } from "@/app/utils/store/ThemeStore";
+import { useUserStore } from "@/app/utils/store/userStore";
+import { fetchUser } from "@/app/apis/settings";
 
 export const Nav: React.FC = () => {
+  const theme = useThemeStore((state) => state.theme);
+  const { user, loading, fetched } = useUserStore();
+  React.useEffect(() => {
+    if (!fetched) {
+      fetchUser();
+    }
+  }, [fetched, fetchUser]);
+  const [showSettingsModal, setShowSettingsModal] = React.useState(false);
   const pathname = usePathname();
   const hideNav =
     pathname.includes("/auth/login") || pathname.includes("/auth/register");
@@ -19,15 +31,19 @@ export const Nav: React.FC = () => {
               <div className="userInfo">
                 <div
                   className="user__image"
-                  style={{ backgroundImage: "url('/motivation.jpg')" }}
+                  style={{
+                    backgroundImage: user
+                      ? `url(${user.avatar_url})`
+                      : "url('/motivation.jpg')",
+                  }}
                 ></div>
                 <div className="user__texts">
-                  <h2 className="userName">UserName</h2>
-                  <h3 className="email">Email@gmail.com</h3>
+                  <h2 className="userName">{user?.username || "UserName"}</h2>
+                  <h3 className="email">{user?.email || "Email@gmail.com"}</h3>
                 </div>
               </div>
             </Link>
-            <div className="interactiveButtons">V</div>
+            <div className="interactiveButtons"></div>
           </div>
         </div>
         <div className="nav-controller">
@@ -106,10 +122,11 @@ export const Nav: React.FC = () => {
       <div className="quickOptions">
         <NavLinkItem
           label="Settings"
-          href="/"
+          href="#"
           isActive={false}
           id="settingButton"
           iconName="SettingsIcon"
+          onclick={() => setShowSettingsModal(true)}
         />
         <NavLinkItem
           label="Logout"
@@ -118,6 +135,16 @@ export const Nav: React.FC = () => {
           id="logoutButton"
           iconName="LogoutIcon"
         />
+        {showSettingsModal && (
+          <SettingsModal
+            theme={theme}
+            isOpen={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+            onSave={() => {
+              setShowSettingsModal(false);
+            }}
+          />
+        )}
       </div>
     </nav>
   );

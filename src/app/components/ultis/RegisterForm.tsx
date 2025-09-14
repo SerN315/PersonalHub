@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import LoginInput from "@/app/components/ui/loginInput";
+import BaseButton from "../ui/BaseButton";
 
 interface RegisterFormProps {
   toggleForm: () => void;
@@ -51,44 +52,42 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  if (validateFields()) {
-    try {
-      const res = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    if (validateFields()) {
+      try {
+        const res = await fetch("/api/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!res.ok) {
-        console.error("Signup failed:", data.error);
+        if (!res.ok) {
+          console.error("Signup failed:", data.error);
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            general: data.error || "Failed to register. Please try again.",
+          }));
+          return;
+        }
+
+        console.log("User registered:", data.user);
+        window.location.href = "/auth/login";
+
+        // TODO: Redirect or show success
+      } catch (error) {
+        console.error("Registration error:", error);
         setErrors((prevErrors) => ({
           ...prevErrors,
-          general: data.error || "Failed to register. Please try again.",
+          general: "An unexpected error occurred during registration.",
         }));
-        return;
       }
-
-      console.log("User registered:", data.user);
-      window.location.href = "/auth/login";
-      localStorage.setItem("access_token", data.access_token);
-
-      // TODO: Redirect or show success
-    } catch (error) {
-      console.error("Registration error:", error);
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        general: "An unexpected error occurred during registration.",
-      }));
     }
-  }
-};
-
+  };
 
   return (
     <div className="register-form-container">
@@ -127,9 +126,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
         />
         {errors.general && <p className="error">{errors.general}</p>}
       </form>
-      <button className="submitButton" type="submit" form="register-form">
+      <BaseButton className="submitButton" type="submit" form="register-form">
         Register
-      </button>
+      </BaseButton>
       <div className="register">
         <p>Already have an account</p>
         <a href="#" className="registerLink" onClick={toggleForm}>

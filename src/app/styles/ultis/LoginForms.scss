@@ -1,4 +1,4 @@
-@import "../styles.scss";
+@use "../globals" as *;
 @mixin forms {
   width: 100%;
   flex-direction: column;
@@ -107,10 +107,3 @@ button {
     }
   }
 }
-  .submitButton {
-    background-color: $primary-color;
-    &:hover {
-      background: $gradient-primary;
-      color: white;
-    }
-  }
