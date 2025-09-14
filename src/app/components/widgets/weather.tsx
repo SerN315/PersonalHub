@@ -106,9 +106,9 @@ export default function WeatherWidget(props: WidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showForecast, setShowForecast] = useState(true);
 
-  // Carousel state
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [itemsPerView, setItemsPerView] = useState(3); // Default items per view
+  // Carousel state (used in ResizeObserver logic)
+  const [, setCurrentSlide] = useState(0);
+  const [, setItemsPerView] = useState(3); // Default items per view
 
   // Store the previous condition and current background
   const previousCondition = useRef<string>("Unknown");
@@ -222,7 +222,6 @@ export default function WeatherWidget(props: WidgetProps) {
   // Check if navigation buttons should be shown
   const canGoPrev = currentPageIndex > 0;
   const canGoNext = currentPageIndex < hourlyPages.length - 1;
-  const currentPageData = hourlyPages[currentPageIndex] || [];
 
   useEffect(() => {
     if (

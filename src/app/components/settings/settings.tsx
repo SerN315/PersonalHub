@@ -13,6 +13,7 @@ import {
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onSave,
   initialData,
   theme,
@@ -22,15 +23,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [form, setForm] = useState<SettingsFormData>(
     initialData || { username: "", email: "", language: "en", image: null }
   );
-  const userId = localStorage.getItem("userIdCookie");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (key: keyof SettingsFormData, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(form);
-    onClose();
   };
 
   if (!isOpen) return null;

@@ -1,24 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
-import { X, Minus } from "lucide-react";
+import React, { useRef } from "react";
 import "@/app/styles/ultis/widgetWrapper.scss";
 import { useEditMode } from "@/app/contexts/editWidgetContext";
 import BasicIcon from "./icons";
-import * as Icons from "@hugeicons/core-free-icons";
 
 type WidgetWrapperProps = {
   title: string;
   onClose?: () => void;
-  onMinimize?: () => void;
   children: React.ReactNode;
-  minimized?: boolean;
 };
 
 export default function WidgetWrapper({
-  title,
   onClose,
-  onMinimize,
   children,
-  minimized = false,
 }: WidgetWrapperProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { editMode } = useEditMode();
@@ -32,7 +25,7 @@ export default function WidgetWrapper({
         <div className={`widgetWrapper__controls ${editMode ? "show" : ""}`}>
           {onClose && editMode && (
             <button
-              onClick={(e) => {
+              onClick={() => {
                 onClose();
               }}
               className="close-button"
@@ -43,7 +36,7 @@ export default function WidgetWrapper({
         </div>
       </div>
 
-      {!minimized && <div className="widgetWrapper__inner">{children}</div>}
+      <div className="widgetWrapper__inner">{children}</div>
     </div>
   );
 }

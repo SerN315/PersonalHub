@@ -33,7 +33,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
 
   const isLoggedIn = !!user?.email;
 
-  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [, setProfileImage] = useState<File | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -59,6 +59,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       try {
         const uploadedUrl = await uploadProfileImage(file);
         setFormData({ ...formData, avatar_url: uploadedUrl });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error("Image upload failed:", err.message);
         alert("Failed to upload image. Please try again.");
@@ -69,6 +70,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {};
 
       if (formData.name && formData.name !== user?.name) {
@@ -98,6 +100,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       setIsEditing(false);
       setProfileImage(null);
       setPreviewUrl(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("Failed to save profile:", err);
       alert("Failed to save profile: " + err.message);
@@ -130,6 +133,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (
         err.message.includes("incorrect") ||

@@ -17,6 +17,7 @@ export interface SettingsModalProps {
 
 export interface SettingAccountProps {
   data: SettingsFormData;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onChange: (key: keyof SettingsFormData, value: any) => void;
 }
 

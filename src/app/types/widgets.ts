@@ -11,6 +11,7 @@ export interface Widget {
         h: number;
       }
     | string; // Handle both object and stringified JSON
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
   created_at?: string;
   updated_at?: string;

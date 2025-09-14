@@ -79,7 +79,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
       {/* <h1 className="formName">Login</h1> */}
       <div className="titleDescription">
         <h1 className="title">Welcome Back</h1>
-        <h2 className="subTitle">Let's login to begin productive</h2>
+        <h2 className="subTitle">Let&apos;s login to begin productive</h2>
       </div>
       <form onSubmit={handleSubmit} id="login-form">
         <p>Email</p>
@@ -120,7 +120,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
         </BaseButton>
       </div>
       <div className="register">
-        <p>Don't have an account?</p>
+        <p>Don&apos;t have an account?</p>
         <a href="#" className="registerLink" onClick={toggleForm}>
           Register
         </a>

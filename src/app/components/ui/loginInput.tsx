@@ -17,7 +17,7 @@ const LoginInput: FC<LoginInputProps> = ({
   onChange,
   type,
 }) => {
-  const { theme, toggleTheme } = useThemeStore();
+  const { theme } = useThemeStore();
   return (
     <Input
       type={type}

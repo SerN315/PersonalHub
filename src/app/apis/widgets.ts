@@ -1,3 +1,43 @@
+// TypeScript interfaces
+interface WidgetPosition {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface WidgetData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; // Generic data structure for widget-specific data
+}
+
+interface CreateWidgetData {
+  user_id: string;
+  type: string;
+  position: WidgetPosition;
+  data?: WidgetData;
+}
+
+interface UpdateWidgetData {
+  position?: WidgetPosition;
+  data?: WidgetData;
+}
+
+interface LayoutItem {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface WidgetStates {
+  [widgetId: string]: {
+    visible: boolean;
+    minimized: boolean;
+  };
+}
+
 // GET all widgets for a user
 export const getUserWidgets = async (userId: string) => {
   try {
@@ -21,12 +61,7 @@ export const getUserWidgets = async (userId: string) => {
 };
 
 // CREATE a new widget
-export const createWidget = async (widgetData: {
-  user_id: string;
-  type: string;
-  position: { x: number; y: number; w: number; h: number };
-  data?: any;
-}) => {
+export const createWidget = async (widgetData: CreateWidgetData) => {
   try {
     const response = await fetch("/api/widgets", {
       method: "POST",
@@ -51,10 +86,7 @@ export const createWidget = async (widgetData: {
 // UPDATE a widget's position and data
 export const updateWidget = async (
   widgetId: string,
-  updateData: {
-    position?: { x: number; y: number; w: number; h: number };
-    data?: any;
-  }
+  updateData: UpdateWidgetData
 ) => {
   try {
     const response = await fetch(`/api/widgets/${widgetId}`, {
@@ -101,8 +133,8 @@ export const deleteWidget = async (widgetId: string) => {
 // BULK save/update all widgets for a user (useful for layout changes)
 export const saveUserWidgetLayout = async (
   userId: string,
-  layout: Array<{ i: string; x: number; y: number; w: number; h: number }>,
-  widgetStates: Record<string, { visible: boolean; minimized: boolean }>
+  layout: LayoutItem[],
+  widgetStates: WidgetStates
 ) => {
   try {
     const response = await fetch(`/api/widgets/${userId}/layout`, {
