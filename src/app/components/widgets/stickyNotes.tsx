@@ -30,7 +30,7 @@ export default function StickyNotesWidgets(props: WidgetProps) {
       bg: "#FED800",
       dc: "#705f00",
       textColor: "black",
-    }, // light yellow
+    },
   ];
 
   const handleTagClick = (tag: string) => {

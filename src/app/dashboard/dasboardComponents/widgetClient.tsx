@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -28,8 +26,8 @@ import { useUserStore } from "@/app/utils/store/userStore";
 const defaultLayoutMap: Record<string, any> = {
   sticky: { w: 4, h: 1 },
   todo: { w: 4, h: 1 },
-  weather: { w: 4, h: 1, maxW: 6, maxH: 3, minH: 2, minW: 2 },
-  pomodoro: { w: 2, h: 2, minW: 2 },
+  weather: { w: 4, h: 1, maxW: 7, maxH: 3, minH: 2, minW: 2 },
+  pomodoro: { w: 2, h: 2, minW: 2, maxW: 5, maxH: 4 },
   clock: { w: 4, h: 3, minW: 3, minH: 3 },
 };
 
@@ -56,6 +54,29 @@ export default function WidgetClient() {
     }
   }, [user?.id]);
 
+  // Memoized save function to prevent recreation on every render
+  const saveLayoutToServer = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      // Ensure position data is properly formatted as objects, not strings
+      const formattedLayout = layout.map((item) => ({
+        i: item.i,
+        x: Number(item.x),
+        y: Number(item.y),
+        w: Number(item.w),
+        h: Number(item.h),
+        // Remove any string conversion and ensure it's a proper object
+        ...(item.minW && { minW: Number(item.minW) }),
+        ...(item.minH && { minH: Number(item.minH) }),
+      }));
+
+      await saveUserWidgetLayout(user.id, formattedLayout, widgets);
+    } catch (error) {
+      console.error("Failed to save layout:", error);
+    }
+  }, [user?.id, layout, widgets]);
+
+  // Debounced save effect - only save layout changes, not widget state changes
   useEffect(() => {
     if (!isLoading && user?.id && layout.length > 0) {
       const timeoutId = setTimeout(() => {
@@ -63,7 +84,7 @@ export default function WidgetClient() {
       }, 1000);
       return () => clearTimeout(timeoutId);
     }
-  }, [layout, widgets, isLoading, user?.id]);
+  }, [layout, isLoading, user?.id, saveLayoutToServer]);
 
   const loadWidgets = async () => {
     if (!user?.id) return;
@@ -124,139 +145,134 @@ export default function WidgetClient() {
     }
   };
 
-  const saveLayoutToServer = async () => {
-    if (!user?.id) return;
-    try {
-      // Ensure position data is properly formatted as objects, not strings
-      const formattedLayout = layout.map((item) => ({
-        i: item.i,
-        x: Number(item.x),
-        y: Number(item.y),
-        w: Number(item.w),
-        h: Number(item.h),
-        // Remove any string conversion and ensure it's a proper object
-        ...(item.minW && { minW: Number(item.minW) }),
-        ...(item.minH && { minH: Number(item.minH) }),
-      }));
-
-      await saveUserWidgetLayout(user.id, formattedLayout, widgets);
-    } catch (error) {
-      console.error("Failed to save layout:", error);
-    }
-  };
-
+  // Combined mouse event handlers for better performance
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    const onMouseDown = () => {
-      timer = setTimeout(() => setEditMode(true), 600);
-    };
-    const onMouseUp = () => clearTimeout(timer);
-    document.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("mouseup", onMouseUp);
-    return () => {
-      document.removeEventListener("mousedown", onMouseDown);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-  }, []);
 
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
+    const handleMouseDown = (e: MouseEvent) => {
+      // Check if clicked inside any widget
       const widgets = document.querySelectorAll(".widgetWrapper");
       let clickedInside = false;
       widgets.forEach((el) => {
         if (el.contains(e.target as Node)) clickedInside = true;
       });
-      if (!clickedInside) setEditMode(false);
+
+      if (clickedInside) {
+        // Start long press timer for edit mode
+        timer = setTimeout(() => setEditMode(true), 600);
+      } else {
+        // Exit edit mode if clicked outside
+        setEditMode(false);
+      }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
-  const addWidget = async (type: string) => {
-    if (!user?.id) return;
+    const handleMouseUp = () => {
+      clearTimeout(timer);
+    };
 
-    const base = defaultLayoutMap[type];
-    if (!base) return;
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("mouseup", handleMouseUp);
 
-    const { w, h, minW, minH } = base;
-    const { x, y } = getNextPosition(layout, w, h);
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("mouseup", handleMouseUp);
+      clearTimeout(timer);
+    };
+  }, [setEditMode]);
 
-    try {
-      const newWidget = await createWidget({
-        user_id: user.id,
-        type,
-        position: {
-          x: Number(x),
-          y: Number(y),
-          w: Number(w),
-          h: Number(h),
-        },
-        data: {},
-      });
+  const addWidget = useCallback(
+    async (type: string) => {
+      if (!user?.id) return;
 
-      const id = newWidget.id;
+      const base = defaultLayoutMap[type];
+      if (!base) return;
 
-      setLayout((prev) => [
-        ...prev,
-        {
-          i: id,
-          x: Number(x),
-          y: Number(y),
-          w: Number(w),
-          h: Number(h),
-          ...(minW && { minW: Number(minW) }),
-          ...(minH && { minH: Number(minH) }),
-        },
-      ]);
+      const { w, h, minW, minH, maxW, maxH } = base;
+      const { x, y } = getNextPosition(layout, w, h);
 
-      setWidgets((prev) => ({
-        ...prev,
-        [id]: { visible: true, minimized: false },
-      }));
+      try {
+        const newWidget = await createWidget({
+          user_id: user.id,
+          type,
+          position: {
+            x: Number(x),
+            y: Number(y),
+            w: Number(w),
+            h: Number(h),
+          },
+          data: {},
+        });
 
-      setWidgetData((prev) => ({
-        ...prev,
-        [id]: newWidget,
-      }));
-    } catch (error) {
-      console.error("Failed to add widget:", error);
-    }
-  };
+        const id = newWidget.id;
 
-  const handleClose = async (widgetId: string) => {
-    if (!user?.id) return;
+        setLayout((prev) => [
+          ...prev,
+          {
+            i: id,
+            x: Number(x),
+            y: Number(y),
+            w: Number(w),
+            h: Number(h),
+            ...(minW && { minW: Number(minW) }),
+            ...(minH && { minH: Number(minH) }),
+            ...(maxW && { maxW: Number(maxW) }),
+            ...(maxH && { maxH: Number(maxH) }),
+          },
+        ]);
 
-    try {
-      await deleteWidget(widgetId);
+        setWidgets((prev) => ({
+          ...prev,
+          [id]: { visible: true, minimized: false },
+        }));
 
-      setWidgets((prev) => {
-        const updated = { ...prev };
-        delete updated[widgetId];
-        return updated;
-      });
+        setWidgetData((prev) => ({
+          ...prev,
+          [id]: newWidget,
+        }));
+      } catch (error) {
+        console.error("Failed to add widget:", error);
+      }
+    },
+    [user?.id, layout]
+  );
 
-      setLayout((prev) => prev.filter((item) => item.i !== widgetId));
+  const handleClose = useCallback(
+    async (widgetId: string) => {
+      if (!user?.id) return;
 
-      setWidgetData((prev) => {
-        const updated = { ...prev };
-        delete updated[widgetId];
-        return updated;
-      });
-    } catch (error) {
-      console.error("Failed to delete widget:", error);
-    }
-  };
+      try {
+        await deleteWidget(widgetId);
 
-  const handleMinimize = (id: string) => {
+        setWidgets((prev) => {
+          const updated = { ...prev };
+          delete updated[widgetId];
+          return updated;
+        });
+
+        setLayout((prev) => prev.filter((item) => item.i !== widgetId));
+
+        setWidgetData((prev) => {
+          const updated = { ...prev };
+          delete updated[widgetId];
+          return updated;
+        });
+      } catch (error) {
+        console.error("Failed to delete widget:", error);
+      }
+    },
+    [user?.id]
+  );
+
+  const handleMinimize = useCallback((id: string) => {
     setWidgets((prev) => ({
       ...prev,
       [id]: { ...prev[id], minimized: !prev[id].minimized },
     }));
-  };
+  }, []);
 
-  const onLayoutChange = (newLayout: any[]) => {
+  const onLayoutChange = useCallback((newLayout: any[]) => {
     setLayout(newLayout);
-  };
+  }, []);
 
   const COLS = 12;
   function getNextPosition(
@@ -288,34 +304,42 @@ export default function WidgetClient() {
     return { x: 0, y: 0 };
   }
 
-  const renderWidget = (type: string, id: string) => {
-    const minimized = widgets[id]?.minimized;
+  const renderWidget = useCallback(
+    (type: string, id: string) => {
+      const minimized = widgets[id]?.minimized;
 
-    const commonProps = {
-      id,
-      minimized,
-      onClose: () => handleClose(id),
-      onMinimize: () => handleMinimize(id),
-    };
+      const commonProps = {
+        id,
+        minimized,
+        onClose: () => handleClose(id),
+        onMinimize: () => handleMinimize(id),
+      };
 
-    switch (type) {
-      case "clock":
-        return <WatchWidget {...commonProps} paused={editMode} />;
-      case "sticky":
-        return <StickyNotesWidgets {...commonProps} />;
-      case "todo":
-        return <TodoListWidget {...commonProps} />;
-      case "weather":
-        return <WeatherWidget {...commonProps} />;
-      case "pomodoro":
-        return <PomodoroWidget {...commonProps} />;
-      default:
-        return null;
-    }
-  };
+      switch (type) {
+        case "clock":
+          return <WatchWidget {...commonProps} paused={editMode} />;
+        case "sticky":
+          return <StickyNotesWidgets {...commonProps} />;
+        case "todo":
+          return <TodoListWidget {...commonProps} />;
+        case "weather":
+          return <WeatherWidget {...commonProps} />;
+        case "pomodoro":
+          return <PomodoroWidget {...commonProps} />;
+        default:
+          return null;
+      }
+    },
+    [widgets, editMode, handleClose, handleMinimize]
+  );
 
-  const availableWidgets = widgetOptions.filter(
-    (opt) => !Object.values(widgetData).some((w) => w.type === opt.id)
+  // Memoized available widgets calculation
+  const availableWidgets = useMemo(
+    () =>
+      widgetOptions.filter(
+        (opt) => !Object.values(widgetData).some((w) => w.type === opt.id)
+      ),
+    [widgetData]
   );
 
   return (
@@ -368,6 +392,9 @@ export default function WidgetClient() {
           onLayoutChange={onLayoutChange}
           onDragStop={onLayoutChange}
           onResizeStop={onLayoutChange}
+          resizeHandles={["se"]}
+          preventCollision={false}
+          compactType="vertical"
         >
           {layout.map((item) => {
             const id = item.i;
