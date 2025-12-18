@@ -1,95 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import BaseWidget from "./BaseWidget";
 import "../../styles/widgets/weather.scss";
 import WidgetProps from "@/app/types/widget";
 import Image from "next/image";
+import {
+  getWeatherIcon,
+  getWeatherBackground,
+} from "@/app/utils/weatherMappings";
+
 const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
-// Weather condition to GIF mapping with randomization
-const getWeatherBackground = (
-  condition: string,
-  previousCondition?: string,
-  currentBackground?: string
-): string => {
-  const conditionLower = condition.toLowerCase();
-
-  // If the condition hasn't changed, return the same background
-  if (previousCondition === condition && currentBackground) {
-    return currentBackground;
-  }
-
-  // Helper function to randomly select from an array
-  const randomSelect = (options: string[]): string => {
-    return options[Math.floor(Math.random() * options.length)];
-  };
-
-  // Sunny/Clear conditions - only one option available
-  if (conditionLower.includes("sunny")) {
-    return "/ImageforPH/sunnypixel-vmake.gif"; // Only one sunny file available
-  }
-
-  if (conditionLower.includes("clear")) {
-    return "/ImageforPH/cuterelaxingontumbler_.gif"; // Only one clear file available
-  }
-
-  // Rainy conditions - only one option available
-  if (
-    conditionLower.includes("rain") ||
-    conditionLower.includes("drizzle") ||
-    conditionLower.includes("shower") ||
-    conditionLower.includes("precipitation")
-  ) {
-    return "/ImageforPH/rain2.gif"; // Only one rain file available
-  }
-
-  // Snow conditions - 2 options available
-  if (
-    conditionLower.includes("snow") ||
-    conditionLower.includes("blizzard") ||
-    conditionLower.includes("flurries") ||
-    conditionLower.includes("sleet")
-  ) {
-    return randomSelect([
-      "/ImageforPH/snowing.gif",
-      "/ImageforPH/snowing2.gif",
-    ]);
-  }
-
-  // Thunderstorm conditions - 2 options available
-  if (
-    conditionLower.includes("thunder") ||
-    conditionLower.includes("storm") ||
-    conditionLower.includes("lightning")
-  ) {
-    return randomSelect([
-      "/ImageforPH/thunderstorm.gif",
-      "/ImageforPH/thunderstom2.webp",
-    ]);
-  }
-
-  // Partly cloudy conditions - only one option available
-  if (
-    conditionLower.includes("partly cloudy") ||
-    conditionLower.includes("partly sunny") ||
-    conditionLower.includes("scattered clouds")
-  ) {
-    return "/ImageforPH/partlycloudy.gif";
-  }
-
-  // Cloudy/Overcast/Foggy conditions - 2 options available
-  if (
-    conditionLower.includes("cloudy") ||
-    conditionLower.includes("overcast") ||
-    conditionLower.includes("fog") ||
-    conditionLower.includes("mist") ||
-    conditionLower.includes("haze")
-  ) {
-    return randomSelect(["/ImageforPH/foggy.gif", "/ImageforPH/foggy 2.gif"]);
-  }
-
-  // Default fallback
-  return "/ImageforPH/foggy 2.gif";
-};
 
 export default function WeatherWidget(props: WidgetProps) {
   const [weather, setWeather] = useState({
@@ -210,19 +130,18 @@ export default function WeatherWidget(props: WidgetProps) {
     setCurrentSlide(0);
   }, [hourly]);
 
-  // Carousel navigation functions for pages
-  const nextPage = () => {
+  // Memoized carousel navigation functions for pages
+  const nextPage = useCallback(() => {
     setCurrentPageIndex((prev) => Math.min(prev + 1, hourlyPages.length - 1));
-  };
+  }, [hourlyPages.length]);
 
-  const prevPage = () => {
+  const prevPage = useCallback(() => {
     setCurrentPageIndex((prev) => Math.max(prev - 1, 0));
-  };
+  }, []);
 
   // Check if navigation buttons should be shown
   const canGoPrev = currentPageIndex > 0;
   const canGoNext = currentPageIndex < hourlyPages.length - 1;
-  const currentPageData = hourlyPages[currentPageIndex] || [];
 
   useEffect(() => {
     if (
@@ -362,7 +281,11 @@ export default function WeatherWidget(props: WidgetProps) {
                       <div className="weather__forecastIcon">
                         <Image
                           className="weather__forecastIcon__img"
-                          src={hour.condition.icon}
+                          // Use the WeatherAPI condition code and is_day flag to pick the right PNG
+                          src={getWeatherIcon(
+                            hour.condition?.code,
+                            hour.is_day
+                          )}
                           alt={hour.condition.text}
                           width={32}
                           height={32}
