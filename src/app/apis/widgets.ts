@@ -1,28 +1,4 @@
 // TypeScript interfaces
-interface WidgetPosition {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-interface WidgetData {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any; // Generic data structure for widget-specific data
-}
-
-interface CreateWidgetData {
-  user_id: string;
-  type: string;
-  position: WidgetPosition;
-  data?: WidgetData;
-}
-
-interface UpdateWidgetData {
-  position?: WidgetPosition;
-  data?: WidgetData;
-}
-
 interface LayoutItem {
   i: string;
   x: number;
