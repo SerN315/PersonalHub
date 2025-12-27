@@ -377,7 +377,6 @@ export default function WidgetClient() {
                   }}
                   className="widgetDropdown__item"
                 >
-                  <BasicIcon icon={widget.icon as keyof typeof icons} />
                   {widget.name}
                 </button>
               ))}
