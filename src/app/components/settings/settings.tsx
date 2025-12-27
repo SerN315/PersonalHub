@@ -13,8 +13,6 @@ import {
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onSave,
   initialData,
   theme,
 }) => {
@@ -23,8 +21,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [form, setForm] = useState<SettingsFormData>(
     initialData || { username: "", email: "", language: "en", image: null }
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleChange = (key: keyof SettingsFormData, value: any) => {
+  const handleChange = (key: keyof SettingsFormData, value: unknown) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 

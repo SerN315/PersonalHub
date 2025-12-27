@@ -33,7 +33,6 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
 
   const isLoggedIn = !!user?.email;
 
-  const [, setProfileImage] = useState<File | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -50,18 +49,17 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
     }
   }, [isEditing, user]);
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setProfileImage(file);
       setPreviewUrl(URL.createObjectURL(file));
 
       try {
         const uploadedUrl = await uploadProfileImage(file);
         setFormData({ ...formData, avatar_url: uploadedUrl });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        console.error("Image upload failed:", err.message);
+      } catch (err: unknown) {
+        const error = err as Error;
+        console.error("Image upload failed:", error.message);
         alert("Failed to upload image. Please try again.");
       }
     }
@@ -70,8 +68,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const payload: any = {};
+      const payload: Record<string, unknown> = {};
 
       if (formData.name && formData.name !== user?.name) {
         payload.display_name = formData.name;
@@ -98,12 +95,11 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       }
 
       setIsEditing(false);
-      setProfileImage(null);
       setPreviewUrl(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error("Failed to save profile:", err);
-      alert("Failed to save profile: " + err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error("Failed to save profile:", error);
+      alert("Failed to save profile: " + error.message);
     } finally {
       setSaving(false);
     }
@@ -133,15 +129,15 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as Error;
       if (
-        err.message.includes("incorrect") ||
-        err.message.includes("Invalid")
+        error.message.includes("incorrect") ||
+        error.message.includes("Invalid")
       ) {
         alert("The current password is incorrect.");
       } else {
-        alert("Failed to change password: " + err.message);
+        alert("Failed to change password: " + error.message);
       }
     }
   };
@@ -174,7 +170,7 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleImageChange}
+                    onChange={handleImageUpload}
                     style={{
                       position: "absolute",
                       top: 0,
@@ -286,7 +282,6 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
                 <BaseButton
                   onClick={() => {
                     setIsEditing(false);
-                    setProfileImage(null);
                     setShowPasswordForm(false);
                     setCurrentPassword("");
                     setNewPassword("");

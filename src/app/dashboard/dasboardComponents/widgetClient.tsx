@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import GridLayout from "react-grid-layout";
+import GridLayout, { Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { icons } from "hugeicons-react";
@@ -23,8 +23,17 @@ import { Widget, WidgetLayout, WidgetState } from "@/app/types/widgets";
 import { useUserStore } from "@/app/utils/store/userStore";
 
 // Default layout map by type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const defaultLayoutMap: Record<string, any> = {
+const defaultLayoutMap: Record<
+  string,
+  {
+    w: number;
+    h: number;
+    maxW?: number;
+    maxH?: number;
+    minW?: number;
+    minH?: number;
+  }
+> = {
   sticky: { w: 4, h: 1 },
   todo: { w: 4, h: 1 },
   weather: { w: 4, h: 1, maxW: 7, maxH: 3, minH: 2, minW: 2 },
@@ -41,8 +50,7 @@ const widgetOptions = [
 ];
 
 export default function WidgetClient() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [layout, setLayout] = useState<any[]>([]);
+  const [layout, setLayout] = useState<Layout[]>([]);
   const [widgets, setWidgets] = useState<Record<string, WidgetState>>({});
   const [widgetData, setWidgetData] = useState<Record<string, Widget>>({});
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -272,14 +280,12 @@ export default function WidgetClient() {
     }));
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onLayoutChange = useCallback((newLayout: any[]) => {
+  const onLayoutChange = useCallback((newLayout: Layout[]) => {
     setLayout(newLayout);
   }, []);
 
   const COLS = 12;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function getNextPosition(currentLayout: any[], widgetW: number) {
+  function getNextPosition(currentLayout: Layout[], widgetW: number) {
     const occupied: number[] = Array(COLS).fill(0);
 
     currentLayout.forEach(({ x, y, w, h }) => {

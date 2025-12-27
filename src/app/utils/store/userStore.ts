@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
 import { UserState } from "@/app/types/user";
 
 export const useUserStore = create<UserState>()(

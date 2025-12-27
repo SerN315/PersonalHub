@@ -9,14 +9,7 @@ export const fetchUser = async () => {
 };
 
 // Update user info
-interface UserUpdates {
-  display_name?: string;
-  username?: string;
-  email?: string;
-  profile_picture?: string;
-}
-
-export const updateUser = async (updates: UserUpdates) => {
+export const updateUser = async (updates: Record<string, unknown>) => {
   const res = await axios.patch("/api/update-profile", updates, {
     withCredentials: true,
   });

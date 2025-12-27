@@ -4,7 +4,7 @@ import { useEditMode } from "@/app/contexts/editWidgetContext";
 import BasicIcon from "./icons";
 
 type WidgetWrapperProps = {
-  title: string;
+  title?: string;
   onClose?: () => void;
   children: React.ReactNode;
 };

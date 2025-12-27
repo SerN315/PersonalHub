@@ -3,8 +3,7 @@ import { SettingsFormData } from "@/app/types/settings";
 
 interface GeneralSettingsProps {
   data: SettingsFormData;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onChange: (key: keyof SettingsFormData, value: any) => void;
+  onChange: (key: keyof SettingsFormData, value: unknown) => void;
 }
 
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({
