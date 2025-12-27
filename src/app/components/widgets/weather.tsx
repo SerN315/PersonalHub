@@ -26,10 +26,6 @@ export default function WeatherWidget(props: WidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showForecast, setShowForecast] = useState(true);
 
-  // Carousel state
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [itemsPerView, setItemsPerView] = useState(3); // Default items per view
-
   // Store the previous condition and current background
   const previousCondition = useRef<string>("Unknown");
   const currentBackground = useRef<string>("");
@@ -107,10 +103,9 @@ export default function WeatherWidget(props: WidgetProps) {
     };
 
     const itemsPerPage = calculateItemsPerView();
-    setItemsPerView(itemsPerPage);
 
     // Group hourly data into pages
-    const pages: any[][] = [];
+    const pages: { time: string; temp: number; icon: string }[][] = [];
     for (let i = 0; i < hourly.length; i += itemsPerPage) {
       pages.push(hourly.slice(i, i + itemsPerPage));
     }
@@ -127,7 +122,6 @@ export default function WeatherWidget(props: WidgetProps) {
     // Calculate which page the current hour is in
     const currentPage = Math.floor(currentHourIdx / itemsPerPage);
     setCurrentPageIndex(currentPage);
-    setCurrentSlide(0);
   }, [hourly]);
 
   // Memoized carousel navigation functions for pages
@@ -166,10 +160,9 @@ export default function WeatherWidget(props: WidgetProps) {
     // Recalculate pages based on new container size
     const recalculatePages = () => {
       const newItemsPerPage = calculateItemsPerView();
-      setItemsPerView(newItemsPerPage);
 
       // Group hourly data into new pages
-      const newPages: any[][] = [];
+      const newPages: { time: string; temp: number; icon: string }[][] = [];
       for (let i = 0; i < hourly.length; i += newItemsPerPage) {
         newPages.push(hourly.slice(i, i + newItemsPerPage));
       }

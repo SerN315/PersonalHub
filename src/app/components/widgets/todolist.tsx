@@ -165,7 +165,7 @@ export default function TodoListWidget(props: WidgetProps) {
         <div className="todoList__header">
           <h3>Your Tasks</h3>
           <div className="todoList__timeLeft">
-            {completedCount}/{todos.length}
+            {completedCount}/{todos.length} · Completed
           </div>
         </div>
         <div className="todoList__content">
@@ -209,7 +209,11 @@ export default function TodoListWidget(props: WidgetProps) {
                   </div>
                   <span className="todoList__items__Text">{todo.text}</span>
 
-                  <span className="todoList__items__Type">{todo.type}</span>
+                  <span
+                    className={`todoList__items__Type type-${todo.type.toLowerCase()}`}
+                  >
+                    {todo.type}
+                  </span>
                   <button
                     className="todoList__items__deleteBtn"
                     onClick={() => handleRemoveTodo(todo.id)}

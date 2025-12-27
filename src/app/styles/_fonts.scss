@@ -1,0 +1,66 @@
+// Bold Pixels Font
+// A pixel-perfect display font for headers and decorative text
+// License: See /public/boldpixels/license.txt
+
+@font-face {
+    font-family: 'Bold Pixels';
+    src: url('/boldpixels/BoldPixels.woff2') format('woff2'),
+        url('/boldpixels/BoldPixels.woff') format('woff'),
+        url('/boldpixels/BoldPixels.ttf') format('truetype'),
+        url('/boldpixels/BoldPixels.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+// Utility class for using Bold Pixels font
+.font-bold-pixels {
+    font-family: 'Bold Pixels', 'Courier New', monospace;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+// Size variants for the pixel font
+.font-bold-pixels-sm {
+    @extend .font-bold-pixels;
+    font-size: 0.875rem; // 14px
+}
+
+.font-bold-pixels-base {
+    @extend .font-bold-pixels;
+    font-size: 1rem; // 16px
+}
+
+.font-bold-pixels-lg {
+    @extend .font-bold-pixels;
+    font-size: 1.25rem; // 20px
+}
+
+.font-bold-pixels-xl {
+    @extend .font-bold-pixels;
+    font-size: 1.5rem; // 24px
+}
+
+.font-bold-pixels-2xl {
+    @extend .font-bold-pixels;
+    font-size: 2rem; // 32px
+}
+
+.font-bold-pixels-3xl {
+    @extend .font-bold-pixels;
+    font-size: 3rem; // 48px
+}
+
+// Mixin for easy integration
+@mixin bold-pixels($size: 1rem) {
+    font-family: 'Bold Pixels', 'Courier New', monospace;
+    font-size: $size;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+}

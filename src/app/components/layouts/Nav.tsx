@@ -2,7 +2,6 @@
 import React from "react";
 import NavLinkItem from "../ui/navLinkItems";
 import "@/app/styles/layouts/Nav.scss";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SettingsModal } from "../settings/settings";
@@ -12,7 +11,7 @@ import { fetchUser } from "@/app/apis/settings";
 
 export const Nav: React.FC = () => {
   const theme = useThemeStore((state) => state.theme);
-  const { user, loading, fetched } = useUserStore();
+  const { user, fetched } = useUserStore();
   React.useEffect(() => {
     if (!fetched) {
       fetchUser();

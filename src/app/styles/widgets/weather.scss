@@ -1,6 +1,8 @@
 @use "../globals" as *;
+@use "../fonts" as *;
 
 .weather__container {
+  font-family: 'Bold Pixels', 'Courier New', monospace;
   width: 100%;
   height: 100%;
   background-position: center;
@@ -21,7 +23,7 @@
   }
 
   .weather__location {
-    font-size: clamp(0.8rem, 4vw, 1.5rem);
+    font-size: clamp(1rem, 4vw, 2rem);
     font-weight: $font-weight-bold;
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
@@ -39,7 +41,7 @@
   }
 
   .weather__condition {
-    font-size: clamp(0.7rem, 3vw, 1rem);
+    font-size: clamp(0.7rem, 3vw, 1.5rem);
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     z-index: 2;
@@ -138,6 +140,8 @@
 
     .weather__forecastTime {
       margin-bottom: 5px;
+      font-size: clamp(1rem, 3vw, 1.25rem);
+
     }
 
     .weather__forecastIcon {
@@ -154,6 +158,7 @@
 
     .weather__forecastTemp {
       font-weight: $font-weight-bold;
+      font-size: clamp(0.6rem, 3vw, 1.25rem);
     }
   }
 }
