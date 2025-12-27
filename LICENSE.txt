@@ -1,0 +1,82 @@
+COMMERCIAL LICENSE AGREEMENT
+
+PersonalHub - Dashboard Template
+Copyright (c) 2025
+
+This software and associated documentation files (the "Software") are licensed, not sold.
+
+GRANT OF LICENSE
+
+Subject to the terms of this agreement, the purchaser is granted a non-exclusive, 
+non-transferable license to use the Software.
+
+PERMITTED USES:
+
+1. Personal Use: Use the Software for personal projects without limitation.
+
+2. Commercial Use: Use the Software for commercial purposes, including but not limited to:
+   - Client projects (freelance work)
+   - Internal business applications
+   - Commercial web applications
+   - SaaS products (built using this template)
+
+3. Modifications: Modify, customize, and create derivative works based on the Software.
+
+4. Multiple Sites: Deploy the Software on unlimited websites and applications.
+
+RESTRICTIONS:
+
+1. No Reselling: You may NOT resell, redistribute, or sublicense the Software in its 
+   original or modified form as a template, starter kit, or similar product.
+
+2. No Redistribution: You may NOT distribute the source code publicly (GitHub public repos, 
+   open source projects, etc.) or make it available for download by others.
+
+3. No Competing Products: You may NOT use the Software to create competing template 
+   products or starter kits.
+
+4. Attribution: While not required, attribution in the footer or documentation is appreciated.
+
+LIFETIME UPDATES:
+
+This license includes access to all future updates and improvements of the Software at no 
+additional cost. Updates will be available through your Gumroad library.
+
+SUPPORT:
+
+Email support is provided for setup, configuration, and technical issues. Response time 
+is typically within 24 hours. Support does not include custom feature development or 
+extensive customization assistance.
+
+WARRANTY DISCLAIMER:
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE 
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+DEALINGS IN THE SOFTWARE.
+
+LIMITATION OF LIABILITY:
+
+IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR 
+CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF 
+BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR ANY OTHER 
+PECUNIARY LOSS) ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE.
+
+TERMINATION:
+
+This license is effective until terminated. Your rights under this license will terminate 
+automatically without notice if you fail to comply with any term of this agreement.
+
+ENTIRE AGREEMENT:
+
+This agreement constitutes the entire agreement between the parties concerning the subject 
+matter hereof.
+
+For questions about this license, contact: [your-email@example.com]
+
+---
+
+By downloading and using this Software, you acknowledge that you have read this agreement, 
+understand it, and agree to be bound by its terms and conditions.

@@ -3,7 +3,6 @@ import Link from "next/link";
 import "@/app/styles/ui/NavLinkItem.scss";
 import BasicIcon from "../ultis/icons";
 import * as Icons from "@hugeicons/core-free-icons";
-import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 interface NavLinkItemProps {
   label: string;

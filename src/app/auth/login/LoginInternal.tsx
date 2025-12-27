@@ -12,7 +12,7 @@ import { useThemeStore } from "@/app/utils/store/ThemeStore";
 
 const LoginInternal: React.FC = () => {
   const [isLoginForm, setIsLoginForm] = useState(true);
-  const { theme, toggleTheme } = useThemeStore();
+  const { theme } = useThemeStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

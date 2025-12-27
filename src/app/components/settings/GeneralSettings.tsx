@@ -3,7 +3,7 @@ import { SettingsFormData } from "@/app/types/settings";
 
 interface GeneralSettingsProps {
   data: SettingsFormData;
-  onChange: (key: keyof SettingsFormData, value: any) => void;
+  onChange: (key: keyof SettingsFormData, value: unknown) => void;
 }
 
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({

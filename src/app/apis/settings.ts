@@ -9,7 +9,7 @@ export const fetchUser = async () => {
 };
 
 // Update user info
-export const updateUser = async (updates: any) => {
+export const updateUser = async (updates: Record<string, unknown>) => {
   const res = await axios.patch("/api/update-profile", updates, {
     withCredentials: true,
   });

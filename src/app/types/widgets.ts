@@ -11,7 +11,7 @@ export interface Widget {
         h: number;
       }
     | string; // Handle both object and stringified JSON
-  data?: any;
+  data?: Record<string, unknown>;
   created_at?: string;
   updated_at?: string;
 }

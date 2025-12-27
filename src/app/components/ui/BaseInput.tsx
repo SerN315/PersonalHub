@@ -2,11 +2,10 @@ import React, { FC, InputHTMLAttributes } from "react";
 import "@/app/styles/ui/BaseInput.scss";
 import { useThemeStore } from "@/app/utils/store/ThemeStore";
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
   error?: string;
 }
 
-const Input: FC<InputProps> = ({ label, error, ...props }) => {
+const Input: FC<InputProps> = ({ error, ...props }) => {
   const theme = useThemeStore((state) => state.theme); // Get current theme
   return (
     <div className={`input-wrapper`}>

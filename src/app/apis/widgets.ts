@@ -25,7 +25,7 @@ export const createWidget = async (widgetData: {
   user_id: string;
   type: string;
   position: { x: number; y: number; w: number; h: number };
-  data?: any;
+  data?: Record<string, unknown>;
 }) => {
   try {
     const response = await fetch("/api/widgets", {
@@ -53,7 +53,7 @@ export const updateWidget = async (
   widgetId: string,
   updateData: {
     position?: { x: number; y: number; w: number; h: number };
-    data?: any;
+    data?: Record<string, unknown>;
   }
 ) => {
   try {
