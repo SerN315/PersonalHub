@@ -58,12 +58,6 @@ export default function WidgetClient() {
   const user = useUserStore((state) => state.user);
   const { editMode, setEditMode } = useEditMode();
 
-  useEffect(() => {
-    if (user?.id) {
-      loadWidgets();
-    }
-  }, [user?.id]);
-
   // Memoized save function to prevent recreation on every render
   const saveLayoutToServer = useCallback(async () => {
     if (!user?.id) return;
@@ -96,7 +90,7 @@ export default function WidgetClient() {
     }
   }, [layout, isLoading, user?.id, saveLayoutToServer]);
 
-  const loadWidgets = async () => {
+  const loadWidgets = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -153,7 +147,13 @@ export default function WidgetClient() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadWidgets();
+    }
+  }, [user?.id, loadWidgets]);
 
   // Combined mouse event handlers for better performance
   useEffect(() => {

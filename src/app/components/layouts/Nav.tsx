@@ -16,7 +16,7 @@ export const Nav: React.FC = () => {
     if (!fetched) {
       fetchUser();
     }
-  }, [fetched, fetchUser]);
+  }, [fetched]); // fetchUser is external function, not a dependency
   const [showSettingsModal, setShowSettingsModal] = React.useState(false);
   const pathname = usePathname();
   const hideNav =

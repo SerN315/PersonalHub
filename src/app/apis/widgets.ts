@@ -1,3 +1,43 @@
+// TypeScript interfaces
+interface WidgetPosition {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface WidgetData {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; // Generic data structure for widget-specific data
+}
+
+interface CreateWidgetData {
+  user_id: string;
+  type: string;
+  position: WidgetPosition;
+  data?: WidgetData;
+}
+
+interface UpdateWidgetData {
+  position?: WidgetPosition;
+  data?: WidgetData;
+}
+
+interface LayoutItem {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface WidgetStates {
+  [widgetId: string]: {
+    visible: boolean;
+    minimized: boolean;
+  };
+}
+
 // GET all widgets for a user
 export const getUserWidgets = async (userId: string) => {
   try {
@@ -101,8 +141,8 @@ export const deleteWidget = async (widgetId: string) => {
 // BULK save/update all widgets for a user (useful for layout changes)
 export const saveUserWidgetLayout = async (
   userId: string,
-  layout: Array<{ i: string; x: number; y: number; w: number; h: number }>,
-  widgetStates: Record<string, { visible: boolean; minimized: boolean }>
+  layout: LayoutItem[],
+  widgetStates: WidgetStates
 ) => {
   try {
     const response = await fetch(`/api/widgets/${userId}/layout`, {

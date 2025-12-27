@@ -6,15 +6,12 @@ import BasicIcon from "./icons";
 type WidgetWrapperProps = {
   title?: string;
   onClose?: () => void;
-  onMinimize?: () => void;
   children: React.ReactNode;
-  minimized?: boolean;
 };
 
 export default function WidgetWrapper({
   onClose,
   children,
-  minimized = false,
 }: WidgetWrapperProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { editMode } = useEditMode();
@@ -39,7 +36,7 @@ export default function WidgetWrapper({
         </div>
       </div>
 
-      {!minimized && <div className="widgetWrapper__inner">{children}</div>}
+      <div className="widgetWrapper__inner">{children}</div>
     </div>
   );
 }
