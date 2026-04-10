@@ -107,10 +107,10 @@ export const Nav: React.FC = () => {
             />
 
             <NavLinkItem
-              label="Calendar"
-              href="/"
+              label="Dictionary"
+              href="/dictionary"
               isActive={false}
-              iconName="CalendarIcon"
+              iconName="BookOpen01Icon"
             />
           </ul>
           <ul className="nav-list_menu">

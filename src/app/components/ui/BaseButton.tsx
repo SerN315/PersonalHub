@@ -17,7 +17,7 @@ const BaseButton: React.FC<BaseButtonProps> = ({
   disabled = false, // Default to false
   form = undefined,
 }) => {
-  const buttonClass = className ? className : "BaseButton";
+  const buttonClass = className ? className : "p-3 pl-5 pr-5 border border-gray-300 rounded-lg bg-blue-500";
 
   return (
     <button

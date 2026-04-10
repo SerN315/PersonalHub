@@ -10,6 +10,7 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -48,7 +49,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, rememberMe }),
         });
 
         const data = await res.json();
@@ -103,8 +104,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
         )}
         <div className="subInteraction">
           <div className="rememberMe">
-            <input type="checkbox" />
-            <label>Remember me</label>
+            <input
+              id="rememberMe"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            <label htmlFor="rememberMe">Remember me</label>
           </div>
           <a href="#" className="forgotPassword">
             Forgot Password?
