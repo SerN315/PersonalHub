@@ -1,4 +1,4 @@
-export type MeaningLanguage = "en" | "vi" | "ja" | "zh";
+export type MeaningLanguage = "en" | "vi" | "ja" | "zh" | "fr";
 
 export interface DictionaryEntry {
   id: string;
@@ -19,6 +19,7 @@ export interface DictionaryEntry {
 
 export interface DictionaryWordResult {
   word: string;
+  canonicalWord?: string;
   source: string;
   language?: MeaningLanguage;
   exists: boolean;
@@ -31,7 +32,8 @@ export interface DictionaryWordResult {
 
 export interface DictionaryCacheResponse {
   saveMissing: boolean;
-  language?: MeaningLanguage;
+  sourceLanguage?: MeaningLanguage;
+  targetLanguage?: MeaningLanguage;
   count: number;
   results: DictionaryWordResult[];
 }
@@ -39,7 +41,8 @@ export interface DictionaryCacheResponse {
 export const processDictionaryWords = async (
   words: string[],
   set = "CACHE",
-  language: MeaningLanguage = "en"
+  sourceLanguage: MeaningLanguage = "en",
+  targetLanguage: MeaningLanguage = "en"
 ): Promise<DictionaryCacheResponse> => {
   const response = await fetch("/api/vocab/cache", {
     method: "POST",
@@ -50,7 +53,8 @@ export const processDictionaryWords = async (
       words,
       saveMissing: true,
       set,
-      language,
+      sourceLanguage,
+      targetLanguage,
     }),
   });
 
