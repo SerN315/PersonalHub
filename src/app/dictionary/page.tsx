@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import Input from "@/app/components/ui/BaseInput";
@@ -19,6 +19,7 @@ const languageLabels: Record<MeaningLanguage, string> = {
   ja: "Japanese",
   zh: "Chinese",
   fr: "French",
+  nl: "Dutch",
 };
 
 const parseWordTokens = (value: string) =>
@@ -61,7 +62,7 @@ export default function DictionaryPage() {
   };
 
   const handleInputKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (
-    event
+    event,
   ) => {
     if (event.key === "Enter" || event.key === ",") {
       event.preventDefault();
@@ -89,7 +90,7 @@ export default function DictionaryPage() {
         tags,
         "CACHE",
         sourceLanguage,
-        targetLanguage
+        targetLanguage,
       );
       setResults(response.results ?? []);
     } catch (err) {
@@ -139,22 +140,52 @@ export default function DictionaryPage() {
           Entries: index === 0 ? item.totalEntries : "",
         }));
       }),
-    [results]
+    [results],
   );
 
-  const handleDownloadExcel = () => {
+  const handleDownloadExcel = async () => {
     if (exportRows.length === 0) return;
 
-    const worksheet = XLSX.utils.json_to_sheet(exportRows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Dictionary");
-    XLSX.writeFile(workbook, `dictionary-${sourceLanguage}-to-${targetLanguage}.xlsx`);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Dictionary");
+
+    worksheet.columns = [
+      { header: "Word", key: "Word", width: 24 },
+      { header: "Meaning", key: "Meaning", width: 48 },
+      { header: "Source", key: "Source", width: 18 },
+      { header: "Entries", key: "Entries", width: 12 },
+    ];
+
+    exportRows.forEach((row) => {
+      worksheet.addRow(row);
+    });
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `dictionary-${sourceLanguage}-to-${targetLanguage}.xlsx`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
   };
 
   const handleDownloadPdf = () => {
     if (exportRows.length === 0) return;
 
-    const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4",
+    });
     doc.setFontSize(14);
     doc.text("Dictionary Export", 40, 36);
 
@@ -237,7 +268,9 @@ export default function DictionaryPage() {
                   {meanings.length > 0 ? (
                     meanings.map((meaning) => (
                       <li key={`${item.word}-${meaning}`}>
-                        <span className="dictionary-meaningChip">{meaning}</span>
+                        <span className="dictionary-meaningChip">
+                          {meaning}
+                        </span>
                       </li>
                     ))
                   ) : (
@@ -265,7 +298,10 @@ export default function DictionaryPage() {
           <div className="dictionary-card__meanings">
             {meanings.length > 0 ? (
               meanings.map((meaning, index) => (
-                <span key={`${item.word}-${index}`} className="dictionary-meaningChip">
+                <span
+                  key={`${item.word}-${index}`}
+                  className="dictionary-meaningChip"
+                >
                   {meaning}
                 </span>
               ))
@@ -286,7 +322,8 @@ export default function DictionaryPage() {
         <header className="dictionary-panel__header">
           <h1>Dictionary</h1>
           <p>
-            Add words as tags, choose start and target language, then press Process.
+            Add words as tags, choose start and target language, then press
+            Process.
           </p>
         </header>
 
@@ -346,11 +383,23 @@ export default function DictionaryPage() {
               <option value="tree">Tree View</option>
             </select>
 
-            <BaseButton className="p-3 border border-gray-300 rounded-lg bg-blue-500" onClick={processWords} disabled={!canProcess}>
+            <BaseButton
+              className="p-3 border border-gray-300 rounded-lg bg-blue-500"
+              onClick={processWords}
+              disabled={!canProcess}
+            >
               {loading ? "Processing..." : "Process"}
             </BaseButton>
 
-            <BaseButton className="dictionary-clearButton p-3 border border-gray-300 rounded-md" onClick={clearAll} disabled={tags.length === 0 && results.length === 0 && wordInput.trim() === ""} > 
+            <BaseButton
+              className="dictionary-clearButton p-3 border border-gray-300 rounded-md"
+              onClick={clearAll}
+              disabled={
+                tags.length === 0 &&
+                results.length === 0 &&
+                wordInput.trim() === ""
+              }
+            >
               Clear
             </BaseButton>
 
