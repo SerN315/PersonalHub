@@ -13,6 +13,7 @@
     "@hugeicons/react": "^1.0.5",
     "@supabase/supabase-js": "^2.50.2",
     "axios": "^1.9.0",
+    "exceljs": "^4.4.0",
     "firebase": "^11.6.1",
     "hugeicons-react": "^0.3.0",
     "jspdf": "^4.2.1",
@@ -28,7 +29,6 @@
     "sass": "^1.87.0",
     "scss": "^0.2.4",
     "storybook": "^8.6.12",
-    "xlsx": "^0.18.5",
     "zustand": "^5.0.6"
   },
   "devDependencies": {

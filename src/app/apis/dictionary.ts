@@ -1,9 +1,12 @@
-export type MeaningLanguage = "en" | "vi" | "ja" | "zh" | "fr";
+export type MeaningLanguage = "en" | "vi" | "ja" | "zh" | "fr" | "nl";
 
 export interface DictionaryEntry {
   id: string;
   word: string;
   meaning: string | null;
+  meaningEn?: string | null;
+  meaningFr?: string | null;
+  meaningNl?: string | null;
   meaningVi?: string | null;
   meaningJa?: string | null;
   meaningZh?: string | null;
@@ -44,7 +47,8 @@ export const processDictionaryWords = async (
   sourceLanguage: MeaningLanguage = "en",
   targetLanguage: MeaningLanguage = "en"
 ): Promise<DictionaryCacheResponse> => {
-  const response = await fetch("/api/vocab/cache", {
+  // Use language-specific endpoint for cleaner routing and better optimization per language
+  const response = await fetch(`/api/vocab/cache/${sourceLanguage}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -53,7 +57,6 @@ export const processDictionaryWords = async (
       words,
       saveMissing: true,
       set,
-      sourceLanguage,
       targetLanguage,
     }),
   });
