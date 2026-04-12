@@ -18,6 +18,7 @@ const languageLabels: Record<MeaningLanguage, string> = {
   vi: "Vietnamese",
   ja: "Japanese",
   zh: "Chinese",
+  fr: "French",
 };
 
 const parseWordTokens = (value: string) =>
@@ -31,7 +32,8 @@ type OutputFormat = "cards" | "table" | "tree";
 export default function DictionaryPage() {
   const [wordInput, setWordInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [language, setLanguage] = useState<MeaningLanguage>("en");
+  const [sourceLanguage, setSourceLanguage] = useState<MeaningLanguage>("en");
+  const [targetLanguage, setTargetLanguage] = useState<MeaningLanguage>("en");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [results, setResults] = useState<DictionaryWordResult[]>([]);
@@ -83,7 +85,12 @@ export default function DictionaryPage() {
     setError("");
 
     try {
-      const response = await processDictionaryWords(tags, "CACHE", language);
+      const response = await processDictionaryWords(
+        tags,
+        "CACHE",
+        sourceLanguage,
+        targetLanguage
+      );
       setResults(response.results ?? []);
     } catch (err) {
       const message =
@@ -141,7 +148,7 @@ export default function DictionaryPage() {
     const worksheet = XLSX.utils.json_to_sheet(exportRows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Dictionary");
-    XLSX.writeFile(workbook, `dictionary-${language}.xlsx`);
+    XLSX.writeFile(workbook, `dictionary-${sourceLanguage}-to-${targetLanguage}.xlsx`);
   };
 
   const handleDownloadPdf = () => {
@@ -164,7 +171,7 @@ export default function DictionaryPage() {
       headStyles: { fillColor: [30, 41, 59] },
     });
 
-    doc.save(`dictionary-${language}.pdf`);
+    doc.save(`dictionary-${sourceLanguage}-to-${targetLanguage}.pdf`);
   };
 
   const renderResults = () => {
@@ -279,7 +286,7 @@ export default function DictionaryPage() {
         <header className="dictionary-panel__header">
           <h1>Dictionary</h1>
           <p>
-            Add words as tags, choose meaning language, then press Process.
+            Add words as tags, choose start and target language, then press Process.
           </p>
         </header>
 
@@ -296,16 +303,31 @@ export default function DictionaryPage() {
           </div>
 
           <div className="dictionary-panel__toolbar">
-            <label htmlFor="meaning-language">Meaning Language</label>
+            <label htmlFor="source-language">Start Language</label>
             <select
-              id="meaning-language"
-              value={language}
+              id="source-language"
+              value={sourceLanguage}
               onChange={(event) =>
-                setLanguage(event.target.value as MeaningLanguage)
+                setSourceLanguage(event.target.value as MeaningLanguage)
               }
             >
               {Object.entries(languageLabels).map(([value, label]) => (
-                <option key={value} value={value}>
+                <option key={`source-${value}`} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+
+            <label htmlFor="target-language">Target Meaning</label>
+            <select
+              id="target-language"
+              value={targetLanguage}
+              onChange={(event) =>
+                setTargetLanguage(event.target.value as MeaningLanguage)
+              }
+            >
+              {Object.entries(languageLabels).map(([value, label]) => (
+                <option key={`target-${value}`} value={value}>
                   {label}
                 </option>
               ))}
