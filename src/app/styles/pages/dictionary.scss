@@ -136,6 +136,20 @@
     font-size: 13px;
   }
 
+  &__metaRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 8px 0 6px;
+  }
+
+  &__equivalent {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
   &__meanings {
     display: flex;
     flex-wrap: wrap;
@@ -161,6 +175,24 @@
   border-color: #e2e8f0;
 }
 
+.dictionary-typeGroup {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dictionary-wordTypeChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ecfccb;
+  color: #3f6212;
+  border: 1px solid #bef264;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
 .dictionary-tableWrap {
   overflow-x: auto;
 }
@@ -182,7 +214,11 @@
   }
 
   td:nth-child(2) {
-    min-width: 220px;
+    min-width: 180px;
+  }
+
+  td:nth-child(3) {
+    min-width: 140px;
   }
 
   th {
@@ -211,6 +247,20 @@
       margin: 0 0 8px;
       color: #64748b;
       font-size: 13px;
+    }
+
+    .dictionary-tree__metaRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 6px 0 4px;
+    }
+
+    .dictionary-tree__equivalent {
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 600;
     }
 
     ul {

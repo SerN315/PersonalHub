@@ -3,6 +3,12 @@ export type MeaningLanguage = "en" | "vi" | "ja" | "zh" | "fr" | "nl";
 export interface DictionaryEntry {
   id: string;
   word: string;
+  wordVi?: string | null;
+  wordJa?: string | null;
+  wordZh?: string | null;
+  wordFr?: string | null;
+  wordNl?: string | null;
+  wordType?: string | null;
   meaning: string | null;
   meaningEn?: string | null;
   meaningFr?: string | null;
@@ -23,12 +29,14 @@ export interface DictionaryEntry {
 export interface DictionaryWordResult {
   word: string;
   canonicalWord?: string;
+  equivalentWord?: string;
   source: string;
   language?: MeaningLanguage;
   exists: boolean;
   totalEntries: number;
   meanings: string[];
   displayMeanings?: string[];
+  wordTypes?: string[];
   text: string;
   entries: DictionaryEntry[];
 }
@@ -47,8 +55,7 @@ export const processDictionaryWords = async (
   sourceLanguage: MeaningLanguage = "en",
   targetLanguage: MeaningLanguage = "en"
 ): Promise<DictionaryCacheResponse> => {
-  // Use language-specific endpoint for cleaner routing and better optimization per language
-  const response = await fetch(`/api/vocab/cache/${sourceLanguage}`, {
+  const response = await fetch(`/api/vocab/cache`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -57,13 +64,34 @@ export const processDictionaryWords = async (
       words,
       saveMissing: true,
       set,
+      sourceLanguage,
       targetLanguage,
     }),
   });
 
-  const data = await response.json();
+  const responseText = await response.text();
+  let data: DictionaryCacheResponse & { error?: string } | null = null;
+
+  if (responseText.trim().length > 0) {
+    try {
+      data = JSON.parse(responseText) as DictionaryCacheResponse & {
+        error?: string;
+      };
+    } catch {
+      data = null;
+    }
+  }
+
   if (!response.ok) {
-    throw new Error(data?.error || "Failed to process dictionary words");
+    throw new Error(
+      data?.error ||
+        responseText.trim() ||
+        "Failed to process dictionary words"
+    );
+  }
+
+  if (!data) {
+    throw new Error("Invalid JSON response from dictionary endpoint");
   }
 
   return data;

@@ -117,15 +117,25 @@ export default function DictionaryPage() {
     return item.meanings;
   };
 
+  const resolveEquivalentWord = (item: DictionaryWordResult) =>
+    item.equivalentWord ?? item.canonicalWord ?? item.word;
+
+  const resolveWordTypes = (item: DictionaryWordResult) => item.wordTypes ?? [];
+
   const exportRows = useMemo(
     () =>
       results.flatMap((item) => {
         const meanings = resolveMeaning(item);
+        const equivalentWord = resolveEquivalentWord(item);
+        const wordTypes = resolveWordTypes(item);
+        const wordTypeLabel = wordTypes.join(", ");
 
         if (meanings.length === 0) {
           return [
             {
               Word: item.word,
+              Equivalent: equivalentWord,
+              Type: wordTypeLabel,
               Meaning: "",
               Source: item.source,
               Entries: item.totalEntries,
@@ -135,6 +145,8 @@ export default function DictionaryPage() {
 
         return meanings.map((meaning, index) => ({
           Word: index === 0 ? item.word : "",
+          Equivalent: index === 0 ? equivalentWord : "",
+          Type: index === 0 ? wordTypeLabel : "",
           Meaning: meaning,
           Source: index === 0 ? item.source : "",
           Entries: index === 0 ? item.totalEntries : "",
@@ -151,6 +163,8 @@ export default function DictionaryPage() {
 
     worksheet.columns = [
       { header: "Word", key: "Word", width: 24 },
+      { header: "Equivalent", key: "Equivalent", width: 24 },
+      { header: "Type", key: "Type", width: 18 },
       { header: "Meaning", key: "Meaning", width: 48 },
       { header: "Source", key: "Source", width: 18 },
       { header: "Entries", key: "Entries", width: 12 },
@@ -191,9 +205,11 @@ export default function DictionaryPage() {
 
     autoTable(doc, {
       startY: 52,
-      head: [["Word", "Meaning", "Source", "Entries"]],
+      head: [["Word", "Equivalent", "Type", "Meaning", "Source", "Entries"]],
       body: exportRows.map((row) => [
         String(row.Word ?? ""),
+        String(row.Equivalent ?? ""),
+        String(row.Type ?? ""),
         String(row.Meaning ?? ""),
         String(row.Source ?? ""),
         String(row.Entries ?? ""),
@@ -213,6 +229,8 @@ export default function DictionaryPage() {
             <thead>
               <tr>
                 <th>Word</th>
+                <th>Equivalent</th>
+                <th>Type</th>
                 <th>Meanings</th>
                 <th>Source</th>
                 <th>Entries</th>
@@ -221,11 +239,16 @@ export default function DictionaryPage() {
             <tbody>
               {results.map((item) => {
                 const meanings = resolveMeaning(item);
+                const equivalentWord = resolveEquivalentWord(item);
+                const wordTypes = resolveWordTypes(item);
+                const typeLabel = wordTypes.join(", ");
 
                 if (meanings.length === 0) {
                   return (
                     <tr key={item.word}>
                       <td>{item.word}</td>
+                      <td>{equivalentWord}</td>
+                      <td>{typeLabel || "-"}</td>
                       <td>
                         <span className="dictionary-meaningChip dictionary-meaningChip--empty">
                           No meaning found
@@ -240,6 +263,27 @@ export default function DictionaryPage() {
                 return meanings.map((meaning, meaningIndex) => (
                   <tr key={`${item.word}-${meaningIndex}`}>
                     <td>{meaningIndex === 0 ? item.word : ""}</td>
+                    <td>{meaningIndex === 0 ? equivalentWord : ""}</td>
+                    <td>
+                      {meaningIndex === 0 ? (
+                        typeLabel ? (
+                          <div className="dictionary-typeGroup">
+                            {wordTypes.map((wordType) => (
+                              <span
+                                key={`${item.word}-${wordType}`}
+                                className="dictionary-wordTypeChip"
+                              >
+                                {wordType}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          "-"
+                        )
+                      ) : (
+                        ""
+                      )}
+                    </td>
                     <td>
                       <span className="dictionary-meaningChip">{meaning}</span>
                     </td>
@@ -259,10 +303,29 @@ export default function DictionaryPage() {
         <div className="dictionary-tree">
           {results.map((item) => {
             const meanings = resolveMeaning(item);
+            const equivalentWord = resolveEquivalentWord(item);
+            const wordTypes = resolveWordTypes(item);
 
             return (
               <div key={item.word} className="dictionary-tree__node">
                 <h3>{item.word}</h3>
+                <div className="dictionary-tree__metaRow">
+                  <span className="dictionary-tree__equivalent">
+                    Equivalent: {equivalentWord}
+                  </span>
+                  {wordTypes.length > 0 ? (
+                    <div className="dictionary-typeGroup">
+                      {wordTypes.map((wordType) => (
+                        <span
+                          key={`${item.word}-${wordType}`}
+                          className="dictionary-wordTypeChip"
+                        >
+                          {wordType}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
                 <p>Source: {item.source}</p>
                 <ul>
                   {meanings.length > 0 ? (
@@ -290,10 +353,29 @@ export default function DictionaryPage() {
 
     return results.map((item) => {
       const meanings = resolveMeaning(item);
+      const equivalentWord = resolveEquivalentWord(item);
+      const wordTypes = resolveWordTypes(item);
 
       return (
         <article key={item.word} className="dictionary-card">
           <h3>{item.word}</h3>
+          <div className="dictionary-card__metaRow">
+            <span className="dictionary-card__equivalent">
+              Equivalent: {equivalentWord}
+            </span>
+            {wordTypes.length > 0 ? (
+              <div className="dictionary-typeGroup">
+                {wordTypes.map((wordType) => (
+                  <span
+                    key={`${item.word}-${wordType}`}
+                    className="dictionary-wordTypeChip"
+                  >
+                    {wordType}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
           <p className="dictionary-card__source">Source: {item.source}</p>
           <div className="dictionary-card__meanings">
             {meanings.length > 0 ? (
