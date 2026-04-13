@@ -45,12 +45,19 @@
   @include respond-to(sm) {
     border-radius: 0;
   }
+  .return_toHome {
+    padding-left: "50px";
+    @include respond-to(sm) {
+      padding-left: 0px;
+    }
+  }
 }
 .decorImage {
-  width: 50%;
-  height: 100%;
+  width: 40%;
+  height: 85%;
   position: absolute;
-  right: 0;
+  right: 6.5%;
+  max-height: fit-content;
   @include respond-to(sm) {
     display: none;
   }
@@ -59,26 +66,16 @@
     border-radius: 0 20px 20px 0;
   }
 }
-// .register-form {
-//   gap: 30px;
-//   position: absolute;
-//   left: 0;
-//   opacity: 0;
-//   transform: translateX(100%);
-//   transition: all 0.5s ease-in-out;
-//   &.show {
-//     opacity: 1;
-//     transform: translateX(0);
-//   }
-// }
-// .login-form {
-//   position: absolute;
-//   left: 0;
-//   opacity: 1;
-//   transform: translateX(0);
-//   transition: all 0.5s ease-in-out;
-//   &.hidden {
-//     opacity: 0;
-//     transform: translateX(-100%);
-//   }
-// }
+.register-form {
+  .submitButton {
+    background-color: $primary-color;
+  }
+@include respond-to(sm) {
+    width: 100%;
+  }
+}
+.login-form {
+  @include respond-to(sm) {
+    width: 100%;
+  }
+}

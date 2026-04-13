@@ -1,13 +1,14 @@
+@use "../globals" as *;
 .dictionary-page {
   min-height: 100vh;
   padding: 28px;
-  background: linear-gradient(135deg, #f7fafc 0%, #e6eef7 100%);
+  background: var(--background);
 }
 
 .dictionary-panel {
   max-width: 960px;
   margin: 0 auto;
-  background: #ffffff;
+  background: var(--background);
   border-radius: 18px;
   box-shadow: 0 16px 40px rgba(34, 51, 84, 0.12);
   padding: 24px;
@@ -19,11 +20,11 @@
       font-size: 28px;
       font-weight: 700;
       margin-bottom: 4px;
-      color: #1e293b;
+      color: var(--foreground);
     }
 
     p {
-      color: #475569;
+      color: var(--foreground);
     }
   }
 
@@ -50,7 +51,7 @@
     label {
       font-size: 14px;
       font-weight: 600;
-      color: #334155;
+      color: var(--foreground);
     }
 
     select {
@@ -58,8 +59,8 @@
       border-radius: 10px;
       padding: 10px 12px;
       min-width: 180px;
-      background: #fff;
-      color: #0f172a;
+      background: var(--background);
+      color: var(--foreground);
     }
   }
 }
@@ -93,6 +94,9 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  @include respond-to(md) {
+    border-radius: 12px;
+  }
 
   &:hover {
     background: #e2e8f0;
@@ -122,17 +126,17 @@
   border-radius: 12px;
   padding: 12px 14px;
   margin-bottom: 10px;
-  background: #ffffff;
+  background: var(--background);
 
   h3 {
     margin: 0;
-    color: #0f172a;
+    color: var(--foreground);
     font-size: 18px;
   }
 
   &__source {
     margin: 4px 0 8px;
-    color: #64748b;
+    color: var(--foreground);
     font-size: 13px;
   }
 
@@ -145,7 +149,7 @@
   }
 
   &__equivalent {
-    color: #0f172a;
+    color: var(--foreground);
     font-size: 13px;
     font-weight: 600;
   }

@@ -32,11 +32,11 @@ const LoginInternal: React.FC = () => {
       }}
     >
       <Link
+      className="return_toHome"
         href="/"
         style={{
           position: "absolute",
           top: "50px",
-          paddingLeft: "50px",
           fontWeight: "600",
           display: "flex",
           alignItems: "center",
@@ -69,15 +69,6 @@ const LoginInternal: React.FC = () => {
         }}
       >
         <RegisterForm toggleForm={toggleForm} />
-      </div>
-      <div className="decorImage">
-        <Image
-          alt="The Storm"
-          src="/604723-DmC-Devil-May-Cry-Vergil-4K.jpg"
-          layout="fill"
-          objectFit="cover"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        ></Image>
       </div>
     </div>
   );

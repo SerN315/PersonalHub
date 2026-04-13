@@ -10,7 +10,7 @@ interface NavLinkItemProps {
   isActive?: boolean;
   id?: string;
   iconName?: keyof typeof Icons;
-  onclick?: () => void;
+  onclick?: () => void | Promise<void>;
 }
 
 const NavLinkItem: React.FC<NavLinkItemProps> = ({
@@ -19,11 +19,25 @@ const NavLinkItem: React.FC<NavLinkItemProps> = ({
   id,
   isActive = false,
   iconName = "Notification01Icon",
-  onclick = () => {},
+  onclick,
 }) => {
+  const handleClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (href === "#") {
+      e.preventDefault();
+    }
+
+    if (onclick) {
+      await onclick();
+    }
+  };
+
   return (
-    <li className={`nav-item`} id={id} onClick={onclick}>
-      <Link href={href} className={`nav-link ${isActive ? "active" : ""}`}>
+    <li className={`nav-item`} id={id}>
+      <Link
+        href={href}
+        className={`nav-link ${isActive ? "active" : ""}`}
+        onClick={handleClick}
+      >
         <BasicIcon icon={iconName} size={20} />
         {label}
       </Link>

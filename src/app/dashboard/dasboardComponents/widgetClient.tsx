@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import GridLayout, { Layout } from "react-grid-layout";
+import GridLayout, { Layout, Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { icons } from "hugeicons-react";
@@ -49,8 +49,38 @@ const widgetOptions = [
   { id: "weather", name: "Weather", icon: "CloudIcon" },
 ];
 
+const ResponsiveGridLayout = WidthProvider(Responsive);
+const BREAKPOINTS = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
+const COLS_BY_BREAKPOINT = { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 };
+
+type BreakpointKey = keyof typeof COLS_BY_BREAKPOINT;
+
+function scaleLayoutForCols(
+  sourceLayout: Layout[],
+  fromCols: number,
+  toCols: number
+): Layout[] {
+  return sourceLayout.map((item) => {
+    const ratio = toCols / fromCols;
+    const minW = item.minW ?? 1;
+    const maxAllowedW = Math.max(minW, Math.min(item.maxW ?? toCols, toCols));
+    const scaledW = Math.round(item.w * ratio);
+    const w = Math.max(minW, Math.min(maxAllowedW, scaledW || minW));
+    const maxX = Math.max(0, toCols - w);
+    const scaledX = Math.round(item.x * ratio);
+
+    return {
+      ...item,
+      x: Math.max(0, Math.min(maxX, scaledX)),
+      w,
+    };
+  });
+}
+
 export default function WidgetClient() {
   const [layout, setLayout] = useState<Layout[]>([]);
+  const [currentBreakpoint, setCurrentBreakpoint] =
+    useState<BreakpointKey>("lg");
   const [widgets, setWidgets] = useState<Record<string, WidgetState>>({});
   const [widgetData, setWidgetData] = useState<Record<string, Widget>>({});
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -280,9 +310,14 @@ export default function WidgetClient() {
     }));
   }, []);
 
-  const onLayoutChange = useCallback((newLayout: Layout[]) => {
-    setLayout(newLayout);
-  }, []);
+  const onLayoutChange = useCallback(
+    (newLayout: Layout[]) => {
+      const fromCols = COLS_BY_BREAKPOINT[currentBreakpoint] ?? 12;
+      const normalizedLayout = scaleLayoutForCols(newLayout, fromCols, 12);
+      setLayout(normalizedLayout);
+    },
+    [currentBreakpoint]
+  );
 
   const COLS = 12;
   function getNextPosition(currentLayout: Layout[], widgetW: number) {
@@ -348,6 +383,25 @@ export default function WidgetClient() {
     [widgetData]
   );
 
+  const responsiveLayouts = useMemo(
+    () => ({
+      lg: layout,
+      md: scaleLayoutForCols(layout, 12, COLS_BY_BREAKPOINT.md),
+      sm: scaleLayoutForCols(layout, 12, COLS_BY_BREAKPOINT.sm),
+      xs: scaleLayoutForCols(layout, 12, COLS_BY_BREAKPOINT.xs),
+      xxs: scaleLayoutForCols(layout, 12, COLS_BY_BREAKPOINT.xxs),
+    }),
+    [layout]
+  );
+
+  if (!user?.id) {
+    return (
+      <div className="dashboard-lock" role="status" aria-live="polite">
+        ( login to use widgets )
+      </div>
+    );
+  }
+
   return (
     <div className="WidgetAdder">
       <div className="WidgetAdder__container">
@@ -386,14 +440,17 @@ export default function WidgetClient() {
       </div>
 
       <div className="WidgetAdder__grid">
-        <GridLayout
+        <ResponsiveGridLayout
           className="layout"
-          layout={layout.filter((item) => widgets[item.i]?.visible)}
-          cols={12}
-          width={1200}
+          layouts={responsiveLayouts}
+          breakpoints={BREAKPOINTS}
+          cols={COLS_BY_BREAKPOINT}
           autoSize={true}
           rowHeight={100}
           draggableHandle={editMode ? ".widgetWrapper" : "none"}
+          onBreakpointChange={(newBreakpoint) =>
+            setCurrentBreakpoint(newBreakpoint as BreakpointKey)
+          }
           onLayoutChange={onLayoutChange}
           onDragStop={onLayoutChange}
           onResizeStop={onLayoutChange}
@@ -406,14 +463,14 @@ export default function WidgetClient() {
             if (!widgets[id]?.visible) return null;
 
             return (
-              <div key={id} data-grid={item}>
+              <div key={id}>
                 <div className="widgetWrapper rounded-xl overflow-hidden shadow-lg h-full">
                   {renderWidget(widgetData[id].type, id)}
                 </div>
               </div>
             );
           })}
-        </GridLayout>
+        </ResponsiveGridLayout>
       </div>
     </div>
   );
