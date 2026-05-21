@@ -8,6 +8,7 @@ import Input from "@/app/components/ui/BaseInput";
 import BaseButton from "@/app/components/ui/BaseButton";
 import {
   processDictionaryWords,
+  DictionaryEngine,
   DictionaryWordResult,
   MeaningLanguage,
 } from "@/app/apis/dictionary";
@@ -39,6 +40,7 @@ export default function DictionaryPage() {
   const [error, setError] = useState("");
   const [results, setResults] = useState<DictionaryWordResult[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("cards");
+  const [engine, setEngine] = useState<DictionaryEngine>("legacy");
 
   const canProcess = tags.length > 0 && !loading;
 
@@ -91,6 +93,7 @@ export default function DictionaryPage() {
         "CACHE",
         sourceLanguage,
         targetLanguage,
+        engine,
       );
       setResults(response.results ?? []);
     } catch (err) {
@@ -122,12 +125,23 @@ export default function DictionaryPage() {
 
   const resolveWordTypes = (item: DictionaryWordResult) => item.wordTypes ?? [];
 
+  const resolveTopic = (item: DictionaryWordResult) =>
+    item.topic ?? item.topics?.[0] ?? item.entries.find((entry) => entry.topic)?.topic ?? null;
+
+  const resolveCategory = (item: DictionaryWordResult) =>
+    item.category ??
+    item.categories?.[0] ??
+    item.entries.find((entry) => entry.category)?.category ??
+    null;
+
   const exportRows = useMemo(
     () =>
       results.flatMap((item) => {
         const meanings = resolveMeaning(item);
         const equivalentWord = resolveEquivalentWord(item);
         const wordTypes = resolveWordTypes(item);
+        const topic = resolveTopic(item);
+        const category = resolveCategory(item);
         const wordTypeLabel = wordTypes.join(", ");
 
         if (meanings.length === 0) {
@@ -136,6 +150,8 @@ export default function DictionaryPage() {
               Word: item.word,
               Equivalent: equivalentWord,
               Type: wordTypeLabel,
+              Category: category ?? "",
+              Topic: topic ?? "",
               Meaning: "",
               Source: item.source,
               Entries: item.totalEntries,
@@ -147,6 +163,8 @@ export default function DictionaryPage() {
           Word: index === 0 ? item.word : "",
           Equivalent: index === 0 ? equivalentWord : "",
           Type: index === 0 ? wordTypeLabel : "",
+          Category: index === 0 ? (category ?? "") : "",
+          Topic: index === 0 ? (topic ?? "") : "",
           Meaning: meaning,
           Source: index === 0 ? item.source : "",
           Entries: index === 0 ? item.totalEntries : "",
@@ -165,6 +183,8 @@ export default function DictionaryPage() {
       { header: "Word", key: "Word", width: 24 },
       { header: "Equivalent", key: "Equivalent", width: 24 },
       { header: "Type", key: "Type", width: 18 },
+      { header: "Category", key: "Category", width: 20 },
+      { header: "Topic", key: "Topic", width: 24 },
       { header: "Meaning", key: "Meaning", width: 48 },
       { header: "Source", key: "Source", width: 18 },
       { header: "Entries", key: "Entries", width: 12 },
@@ -205,11 +225,13 @@ export default function DictionaryPage() {
 
     autoTable(doc, {
       startY: 52,
-      head: [["Word", "Equivalent", "Type", "Meaning", "Source", "Entries"]],
+      head: [["Word", "Equivalent", "Type", "Category", "Topic", "Meaning", "Source", "Entries"]],
       body: exportRows.map((row) => [
         String(row.Word ?? ""),
         String(row.Equivalent ?? ""),
         String(row.Type ?? ""),
+        String(row.Category ?? ""),
+        String(row.Topic ?? ""),
         String(row.Meaning ?? ""),
         String(row.Source ?? ""),
         String(row.Entries ?? ""),
@@ -231,6 +253,7 @@ export default function DictionaryPage() {
                 <th>Word</th>
                 <th>Equivalent</th>
                 <th>Type</th>
+                <th>Category / Topic</th>
                 <th>Meanings</th>
                 <th>Source</th>
                 <th>Entries</th>
@@ -242,6 +265,9 @@ export default function DictionaryPage() {
                 const equivalentWord = resolveEquivalentWord(item);
                 const wordTypes = resolveWordTypes(item);
                 const typeLabel = wordTypes.join(", ");
+                const topic = resolveTopic(item);
+                const category = resolveCategory(item);
+                const taxonomyLabel = [category, topic].filter(Boolean).join(" / ");
 
                 if (meanings.length === 0) {
                   return (
@@ -249,6 +275,7 @@ export default function DictionaryPage() {
                       <td>{item.word}</td>
                       <td>{equivalentWord}</td>
                       <td>{typeLabel || "-"}</td>
+                      <td>{taxonomyLabel || "-"}</td>
                       <td>
                         <span className="dictionary-meaningChip dictionary-meaningChip--empty">
                           No meaning found
@@ -284,6 +311,7 @@ export default function DictionaryPage() {
                         ""
                       )}
                     </td>
+                    <td>{meaningIndex === 0 ? taxonomyLabel || "-" : ""}</td>
                     <td>
                       <span className="dictionary-meaningChip">{meaning}</span>
                     </td>
@@ -305,6 +333,8 @@ export default function DictionaryPage() {
             const meanings = resolveMeaning(item);
             const equivalentWord = resolveEquivalentWord(item);
             const wordTypes = resolveWordTypes(item);
+            const topic = resolveTopic(item);
+            const category = resolveCategory(item);
 
             return (
               <div key={item.word} className="dictionary-tree__node">
@@ -327,6 +357,11 @@ export default function DictionaryPage() {
                   ) : null}
                 </div>
                 <p>Source: {item.source}</p>
+                {category || topic ? (
+                  <p>
+                    Category/Topic: {[category, topic].filter(Boolean).join(" / ")}
+                  </p>
+                ) : null}
                 <ul>
                   {meanings.length > 0 ? (
                     meanings.map((meaning) => (
@@ -355,6 +390,8 @@ export default function DictionaryPage() {
       const meanings = resolveMeaning(item);
       const equivalentWord = resolveEquivalentWord(item);
       const wordTypes = resolveWordTypes(item);
+      const topic = resolveTopic(item);
+      const category = resolveCategory(item);
 
       return (
         <article key={item.word} className="dictionary-card">
@@ -377,6 +414,11 @@ export default function DictionaryPage() {
             ) : null}
           </div>
           <p className="dictionary-card__source">Source: {item.source}</p>
+          {category || topic ? (
+            <p className="dictionary-card__source">
+              Category/Topic: {[category, topic].filter(Boolean).join(" / ")}
+            </p>
+          ) : null}
           <div className="dictionary-card__meanings">
             {meanings.length > 0 ? (
               meanings.map((meaning, index) => (
@@ -407,6 +449,25 @@ export default function DictionaryPage() {
             Add words as tags, choose start and target language, then press
             Process.
           </p>
+          <div className="dictionary-engineToggle" role="group" aria-label="Dictionary engine">
+            <button
+              type="button"
+              className={`dictionary-engineToggle__button ${engine === "legacy" ? "is-active" : ""}`}
+              onClick={() => setEngine("legacy")}
+            >
+              Current
+            </button>
+            <button
+              type="button"
+              className={`dictionary-engineToggle__button ${engine === "beta" ? "is-active" : ""}`}
+              onClick={() => setEngine("beta")}
+            >
+              Beta
+            </button>
+            <span className="dictionary-engineToggle__hint">
+              Mode: {engine === "beta" ? "Beta normalized dictionary" : "Current dictionary"}
+            </span>
+          </div>
         </header>
 
         <div className="dictionary-panel__controls">

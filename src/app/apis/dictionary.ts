@@ -1,4 +1,5 @@
 export type MeaningLanguage = "en" | "vi" | "ja" | "zh" | "fr" | "nl";
+export type DictionaryEngine = "legacy" | "beta";
 
 export interface DictionaryEntry {
   id: string;
@@ -37,6 +38,10 @@ export interface DictionaryWordResult {
   meanings: string[];
   displayMeanings?: string[];
   wordTypes?: string[];
+  topic?: string | null;
+  category?: string | null;
+  topics?: string[];
+  categories?: string[];
   text: string;
   entries: DictionaryEntry[];
 }
@@ -53,9 +58,12 @@ export const processDictionaryWords = async (
   words: string[],
   set = "CACHE",
   sourceLanguage: MeaningLanguage = "en",
-  targetLanguage: MeaningLanguage = "en"
+  targetLanguage: MeaningLanguage = "en",
+  engine: DictionaryEngine = "legacy"
 ): Promise<DictionaryCacheResponse> => {
-  const response = await fetch(`/api/vocab/cache`, {
+  const endpoint = engine === "beta" ? "/api/vocab/beta/cache" : "/api/vocab/cache";
+
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
