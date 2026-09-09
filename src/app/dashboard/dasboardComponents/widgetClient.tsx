@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { icons } from "hugeicons-react";
+import * as Icons from "@hugeicons/core-free-icons";
 import PomodoroWidget from "@/app/components/widgets/podoromoWidget";
 import StickyNotesWidgets from "@/app/components/widgets/stickyNotes";
 import WatchWidget from "@/app/components/widgets/watch";
@@ -371,7 +371,7 @@ export default function WidgetClient() {
                   }}
                   className="widgetDropdown__item"
                 >
-                  <BasicIcon icon={widget.icon as keyof typeof icons} />
+                  <BasicIcon icon={widget.icon as keyof typeof Icons} />
                   {widget.name}
                 </button>
               ))}
