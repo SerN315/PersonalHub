@@ -1,15 +1,9 @@
 import dynamic from "next/dynamic";
 import "../styles/pages/dashboard.scss";
-// Lazy load the client-only component
-const WidgetClient = dynamic(() => import("./dasboardComponents/widgetClient"), {
 
-});
+// The board is browser-only (it measures its own width and talks to the API with your cookies).
+const WidgetClient = dynamic(() => import("./dasboardComponents/widgetClient"));
 
-export default async function DashboardPage() {
-
-  return (
-    <div className="p-6">
-      <WidgetClient />
-    </div>
-  );
+export default function DashboardPage() {
+  return <WidgetClient />;
 }

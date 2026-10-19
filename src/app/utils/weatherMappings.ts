@@ -1,79 +1,12 @@
 /**
  * Weather condition mappings for WeatherAPI
- * Maps condition codes to appropriate icons and background GIFs
+ * Maps WeatherAPI conditions to a line icon and a background GIF
  */
-
-// Interface for icon mapping
-interface IconMapping {
-  day: string;
-  night: string;
-}
 
 // Interface for background GIF options
 interface BackgroundMapping {
   options: string[];
 }
-
-/**
- * Maps WeatherAPI condition codes to local PNG icons
- * Reference: https://www.weatherapi.com/docs/weather_conditions.json
- */
-export const WEATHER_ICON_MAP: Record<number, IconMapping> = {
-  1000: { day: "/png/008-sun.png", night: "/png/027-night.png" }, // Sunny / Clear
-  1003: { day: "/png/009-breezy.png", night: "/png/017-cloudy-night.png" }, // Partly cloudy
-  1006: { day: "/png/014-haze.png", night: "/png/014-haze.png" }, // Cloudy
-  1009: { day: "/png/014-haze.png", night: "/png/014-haze.png" }, // Overcast
-  1030: { day: "/png/015-mist.png", night: "/png/021-misty.png" }, // Mist
-  1063: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Patchy rain possible
-  1066: { day: "/png/006-snowflake.png", night: "/png/006-snowflake.png" }, // Patchy snow possible
-  1069: { day: "/png/022-sleet.png", night: "/png/022-sleet.png" }, // Patchy sleet possible
-  1072: { day: "/png/047-drizzle.png", night: "/png/047-drizzle.png" }, // Patchy freezing drizzle possible
-  1087: { day: "/png/040-thunder.png", night: "/png/040-thunder.png" }, // Thundery outbreaks possible
-  1114: { day: "/png/035-wind.png", night: "/png/048-wind-1.png" }, // Blowing snow
-  1117: { day: "/png/044-snow-storm.png", night: "/png/044-snow-storm.png" }, // Blizzard
-  1135: { day: "/png/014-haze.png", night: "/png/021-misty.png" }, // Fog
-  1147: { day: "/png/014-haze.png", night: "/png/021-misty.png" }, // Freezing fog
-  1150: { day: "/png/047-drizzle.png", night: "/png/047-drizzle.png" }, // Patchy light drizzle
-  1153: { day: "/png/047-drizzle.png", night: "/png/047-drizzle.png" }, // Light drizzle
-  1168: { day: "/png/047-drizzle.png", night: "/png/047-drizzle.png" }, // Freezing drizzle
-  1171: { day: "/png/047-drizzle.png", night: "/png/047-drizzle.png" }, // Heavy freezing drizzle
-  1180: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Patchy light rain
-  1183: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Light rain
-  1186: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Moderate rain at times
-  1189: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Moderate rain
-  1192: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Heavy rain at times
-  1195: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Heavy rain
-  1198: { day: "/png/047-drizzle.png", night: "/png/047-drizzle.png" }, // Light freezing rain
-  1201: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Moderate or heavy freezing rain
-  1204: { day: "/png/022-sleet.png", night: "/png/022-sleet.png" }, // Light sleet
-  1207: { day: "/png/022-sleet.png", night: "/png/022-sleet.png" }, // Moderate or heavy sleet
-  1210: { day: "/png/006-snowflake.png", night: "/png/006-snowflake.png" }, // Patchy light snow
-  1213: { day: "/png/006-snowflake.png", night: "/png/006-snowflake.png" }, // Light snow
-  1216: { day: "/png/006-snowflake.png", night: "/png/006-snowflake.png" }, // Patchy moderate snow
-  1219: { day: "/png/006-snowflake.png", night: "/png/006-snowflake.png" }, // Moderate snow
-  1222: { day: "/png/028-winter.png", night: "/png/028-winter.png" }, // Patchy heavy snow
-  1225: { day: "/png/028-winter.png", night: "/png/028-winter.png" }, // Heavy snow
-  1237: { day: "/png/037-stalactite.png", night: "/png/037-stalactite.png" }, // Ice pellets
-  1240: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Light rain shower
-  1243: { day: "/png/011-rain.png", night: "/png/011-rain.png" }, // Moderate or heavy rain shower
-  1246: { day: "/png/010-flood.png", night: "/png/010-flood.png" }, // Torrential rain shower
-  1249: { day: "/png/022-sleet.png", night: "/png/022-sleet.png" }, // Light sleet showers
-  1252: { day: "/png/022-sleet.png", night: "/png/022-sleet.png" }, // Moderate or heavy sleet showers
-  1255: { day: "/png/006-snowflake.png", night: "/png/006-snowflake.png" }, // Light snow showers
-  1258: { day: "/png/028-winter.png", night: "/png/028-winter.png" }, // Moderate or heavy snow showers
-  1261: { day: "/png/037-stalactite.png", night: "/png/037-stalactite.png" }, // Light showers of ice pellets
-  1264: { day: "/png/037-stalactite.png", night: "/png/037-stalactite.png" }, // Moderate or heavy showers of ice pellets
-  1273: { day: "/png/040-thunder.png", night: "/png/040-thunder.png" }, // Patchy light rain with thunder
-  1276: { day: "/png/040-thunder.png", night: "/png/040-thunder.png" }, // Moderate or heavy rain with thunder
-  1279: {
-    day: "/png/007-lightning-bolt.png",
-    night: "/png/007-lightning-bolt.png",
-  }, // Patchy light snow with thunder
-  1282: {
-    day: "/png/007-lightning-bolt.png",
-    night: "/png/007-lightning-bolt.png",
-  }, // Moderate or heavy snow with thunder
-};
 
 /**
  * Maps weather condition keywords to background GIF options
@@ -89,22 +22,7 @@ export const WEATHER_BACKGROUND_MAP: Record<string, BackgroundMapping> = {
     options: ["/ImageforPH/thunderstorm.gif", "/ImageforPH/thunderstom2.webp"],
   },
   partlyCloudy: { options: ["/ImageforPH/partlycloudy.gif"] },
-  cloudy: { options: ["/ImageforPH/foggy.gif", "/ImageforPH/foggy 2.gif"] },
-};
-
-/**
- * Get the appropriate icon for a weather condition
- * @param code - WeatherAPI condition code
- * @param isDay - 1 for day, 0 for night
- * @returns Path to the icon PNG file
- */
-export const getWeatherIcon = (code: number, isDay: number): string => {
-  const icons = WEATHER_ICON_MAP[code];
-  if (icons) {
-    return isDay ? icons.day : icons.night;
-  }
-  // Fallback to weather forecast icon if code not found
-  return "/png/003-weather-forecast.png";
+  cloudy: { options: ["/ImageforPH/foggy.gif", "/ImageforPH/foggy2.gif"] },
 };
 
 /**
@@ -185,5 +103,37 @@ export const getWeatherBackground = (
   }
 
   // Default fallback
-  return "/ImageforPH/foggy 2.gif";
+  return "/ImageforPH/foggy2.gif";
+};
+
+type Pair = readonly [day: string, night: string];
+
+const group = (icon: Pair, codes: number[]): [number, Pair][] => codes.map((code) => [code, icon]);
+
+// WeatherAPI condition code -> [day icon, night icon] (names from @hugeicons/core-free-icons).
+const ICONS = new Map<number, Pair>([
+  ...group(["Sun03Icon", "Moon02Icon"], [1000]),
+  ...group(["SunCloud01Icon", "MoonCloudIcon"], [1003]),
+  ...group(["CloudIcon", "CloudIcon"], [1006, 1009]),
+  ...group(["CloudSlowWindIcon", "CloudSlowWindIcon"], [1030, 1135, 1147]),
+  ...group(["SunCloudLittleRainIcon", "MoonCloudLittleRainIcon"], [1063, 1150, 1153, 1180, 1183, 1240]),
+  ...group(["CloudMidRainIcon", "CloudMidRainIcon"], [1186, 1189, 1243]),
+  ...group(["CloudBigRainIcon", "CloudBigRainIcon"], [1192, 1195, 1246]),
+  ...group(["CloudLittleSnowIcon", "CloudLittleSnowIcon"], [1066, 1210, 1213, 1255]),
+  ...group(["CloudMidSnowIcon", "CloudMidSnowIcon"], [1216, 1219, 1258]),
+  ...group(["CloudSnowIcon", "CloudSnowIcon"], [1114, 1117, 1222, 1225]),
+  ...group(["CloudHailstoneIcon", "CloudHailstoneIcon"], [1069, 1072, 1168, 1171, 1198, 1201, 1204, 1207, 1237, 1249, 1252, 1261, 1264]),
+  ...group(["CloudAngledRainZapIcon", "CloudAngledRainZapIcon"], [1087, 1273, 1276]),
+  ...group(["CloudAngledZapIcon", "CloudAngledZapIcon"], [1279, 1282]),
+]);
+
+/**
+ * The line icon (a @hugeicons name) for a WeatherAPI condition.
+ * @param code - WeatherAPI condition code
+ * @param isDay - 1 for day, 0 for night
+ */
+export const getWeatherIconName = (code: number | undefined, isDay: number | undefined) => {
+  const pair = code === undefined ? undefined : ICONS.get(code);
+  if (!pair) return "CloudIcon";
+  return isDay === 0 ? pair[1] : pair[0];
 };

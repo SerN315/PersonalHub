@@ -1,55 +1,84 @@
-.widgetWrapper {
-    height: 100%;
-    border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    ;
+// The shared widget card. Tints blend a palette colour into the surface, so they stay soft in light mode
+// and become deep, warm shades in dark mode without any per-mode overrides.
 
-    &__drag-handle {
-        width: 100%;
-        height: 0;
-        opacity: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        transition: 0.3s ease-in-out;
+.widgetCard {
+  --tint-base: transparent;
+  --card-bg: color-mix(in srgb, var(--tint-base) 30%, var(--surface));
+  position: relative;
+  height: 100%;
+  border: 1px solid color-mix(in srgb, var(--tint-base) 40%, var(--line));
+  border-radius: var(--r-card);
+  background: var(--card-bg);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s var(--ease);
 
-        &.show {
-            opacity: 1;
-        }
-    }
+  &[data-tint="butter"] { --tint-base: var(--c-butter); }
+  &[data-tint="peach"] { --tint-base: var(--c-peach); }
+  &[data-tint="rose"] { --tint-base: var(--c-rose); }
+  &[data-tint="sage"] { --tint-base: var(--c-sage); }
+  &[data-tint="sky"] { --tint-base: var(--c-sky); }
+  &[data-tint="lilac"] { --tint-base: var(--c-lilac); }
+  &[data-tint="paper"] { --card-bg: var(--surface); }
 
-    &__controls {
-        position: absolute;
-        width: 100%;
-        top: -25px;
-        right: -25px;
-        opacity: 0;
-        height: 0;
-        display: flex;
-        pointer-events: none;
-        flex-direction: row-reverse;
-        gap: 8px;
-        padding: 8px;
-        transition: 0.3s ease-in-out;
+  &__inner { width: 100%; height: 100%; }
 
-        &.show {
-            opacity: 1;
-            pointer-events: all;
-        }
+  // Arrange mode: a dashed accent edge and a toolbar in the corner
+  &.is-editing {
+    border: 2px dashed var(--accent);
+    cursor: grab;
+    &:active { cursor: grabbing; }
+    .widgetCard__inner { pointer-events: none; user-select: none; }
+  }
 
-        button {
-            width: 24px;
-            height: 24px;
-        }
-
-        .minimize-button {
-            color: grey;
-        }
-    }
-
-    &__inner {
-        width: 100%;
-        height: 100%;
-    }
-
+  &__toolbar {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 14px rgb(var(--shadow-color) / 0.25);
+    cursor: default;
+  }
+  &__tints { display: flex; gap: 5px; }
+  &__tint {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--dot) 80%, var(--surface));
+    box-shadow: 0 0 0 1px var(--line);
+    cursor: pointer;
+    transition: transform 0.12s var(--ease);
+    &:hover { transform: scale(1.18); }
+    &[aria-checked="true"] { box-shadow: 0 0 0 2px var(--ink); }
+    &[data-tint="paper"] { --dot: var(--surface-2); }
+    &[data-tint="butter"] { --dot: var(--c-butter); }
+    &[data-tint="peach"] { --dot: var(--c-peach); }
+    &[data-tint="rose"] { --dot: var(--c-rose); }
+    &[data-tint="sage"] { --dot: var(--c-sage); }
+    &[data-tint="sky"] { --dot: var(--c-sky); }
+    &[data-tint="lilac"] { --dot: var(--c-lilac); }
+  }
+  &__remove {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+    color: var(--danger);
+    cursor: pointer;
+    &:hover { background: color-mix(in srgb, var(--danger) 28%, transparent); }
+  }
 }

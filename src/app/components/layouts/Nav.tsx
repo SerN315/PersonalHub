@@ -1,217 +1,96 @@
 "use client";
 import React from "react";
-import NavLinkItem from "../ui/navLinkItems";
-import "@/app/styles/layouts/Nav.scss";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import BasicIcon from "../ultis/icons";
 import { SettingsModal } from "../settings/settings";
-import { useThemeStore } from "@/app/utils/store/ThemeStore";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { logoutUser } from "@/app/apis/settings";
+import type * as Icons from "@hugeicons/core-free-icons";
+import type { SettingsTab } from "@/app/types/settings";
+
+const LINKS: { href: string; label: string; icon: keyof typeof Icons }[] = [
+  { href: "/", label: "Welcome", icon: "Home03Icon" },
+  { href: "/dashboard", label: "My day", icon: "DashboardSquare01Icon" },
+  { href: "/dictionary", label: "Dictionary", icon: "BookOpen01Icon" },
+];
 
 export const Nav: React.FC = () => {
-  const theme = useThemeStore((state) => state.theme);
-  const { user, logout } = useUserStore();
-  const router = useRouter();
-  const [showSettingsModal, setShowSettingsModal] = React.useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
+  const [settingsTab, setSettingsTab] = React.useState<SettingsTab | null>(null);
   const pathname = usePathname();
-  const hideNav =
-    pathname.includes("/auth/login") || pathname.includes("/auth/register");
 
-  React.useEffect(() => {
-    if (!isMobileMenuOpen) {
-      document.body.style.overflow = "";
-      return;
-    }
+  if (pathname.startsWith("/auth/")) return null;
 
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isMobileMenuOpen]);
-
-  React.useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
-  const handleLogout = async () => {
+  const signOut = async () => {
     try {
       await logoutUser();
-    } catch (error) {
-      console.error("Logout API failed:", error);
     } finally {
-      logout();
-      closeMobileMenu();
-      router.replace("/auth/login");
-      router.refresh();
+      setUser(null);
+      window.location.href = "/auth/login";
     }
   };
 
-  return hideNav ? null : (
+  const displayName = user?.name || user?.username || "Guest";
+
+  return (
     <>
-      <button
-        type="button"
-        className={`hamburger ${isMobileMenuOpen ? "active" : ""}`}
-        aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-        aria-expanded={isMobileMenuOpen}
-        onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <nav className={`nav ${isMobileMenuOpen ? "mobile-open" : ""}`}>
-        <div className="topHalf">
-          <div className="nav-user">
-            <div className="user__container">
-              <Link className="user__link" href="/">
-                <div className="userInfo">
-                  <div
-                    className="user__image"
-                    style={{
-                      backgroundImage: user
-                        ? `url(${user.avatar_url})`
-                        : "url('/motivation.jpg')",
-                    }}
-                  ></div>
-                  <div className="user__texts">
-                    <h2 className="userName">{user?.username || "UserName"}</h2>
-                    <h3 className="email">{user?.email || "Email@gmail.com"}</h3>
-                  </div>
-                </div>
-              </Link>
-              <div className="interactiveButtons"></div>
-            </div>
-          </div>
-          <div className="nav-controller">
-            <div className="nav-controller__search"></div>
-          </div>
-          <div className="nav-lists">
-            <ul className="nav-list_menu">
-              <h1 className="menu-title">PAGES</h1>
+      <nav className="nav" aria-label="Main">
+        <div className="nav__top">
+          <Link href="/dashboard" className="nav__brand">
+            <span className="nav__brandMark" aria-hidden>
+              <BasicIcon icon="Coffee01Icon" size={20} />
+            </span>
+            <span className="nav__brandName">PersonalHub</span>
+          </Link>
 
-              <NavLinkItem
-                label="Home"
-                href="/"
-                isActive={false}
-                iconName="Home03Icon"
-                onclick={closeMobileMenu}
-              />
-
-              <NavLinkItem
-                label="DashBoard"
-                href="/dashboard"
-                isActive={false}
-                iconName="DashboardCircleAddIcon"
-                onclick={closeMobileMenu}
-              />
-
-              {!user && (
-                <NavLinkItem
-                  label="Login"
-                  href="/auth/login"
-                  isActive={false}
-                  onclick={closeMobileMenu}
-                />
-              )}
-            </ul>
-            <ul className="nav-list_widgetMenu">
-              <h1 className="menu-title">FEATURES</h1>
-
-              <NavLinkItem
-                label="Weather"
-                href="/"
-                isActive={false}
-                iconName="CloudIcon"
-                onclick={closeMobileMenu}
-              />
-
-              <NavLinkItem
-                label="To-do"
-                href="/dashboard"
-                isActive={false}
-                iconName="TaskDone01Icon"
-                onclick={closeMobileMenu}
-              />
-
-              <NavLinkItem
-                label="Pomodoro"
-                href="/auth/login"
-                isActive={false}
-                iconName="AlarmClockIcon"
-                onclick={closeMobileMenu}
-              />
-
-              <NavLinkItem
-                label="Clock"
-                href="/"
-                isActive={false}
-                iconName="ClockIcon"
-                onclick={closeMobileMenu}
-              />
-
-              <NavLinkItem
-                label="Sticky Notes"
-                href="/"
-                isActive={false}
-                iconName="StickyNoteIcon"
-                onclick={closeMobileMenu}
-              />
-
-              <NavLinkItem
-                label="Dictionary"
-                href="/dictionary"
-                isActive={false}
-                iconName="BookOpen01Icon"
-                onclick={closeMobileMenu}
-              />
-            </ul>
-            <ul className="nav-list_menu">
-              <h1 className="menu-title">DOCUMENTS</h1>
-            </ul>
-          </div>
-        </div>
-        <div className="quickOptions">
-          {user && (
-            <>
-              <NavLinkItem
-                label="Settings"
-                href="#"
-                isActive={false}
-                id="settingButton"
-                iconName="SettingsIcon"
-                onclick={() => {
-                  setShowSettingsModal(true);
-                  closeMobileMenu();
-                }}
-              />
-              <NavLinkItem
-                label="Logout"
-                href="#"
-                isActive={false}
-                id="logoutButton"
-                iconName="LogoutIcon"
-                onclick={handleLogout}
-              />
-            </>
-          )}
-          {showSettingsModal && (
-            <SettingsModal
-              theme={theme}
-              isOpen={showSettingsModal}
-              onClose={() => setShowSettingsModal(false)}
-              onSave={() => {
-                setShowSettingsModal(false);
-              }}
+          <button type="button" className="nav__user" onClick={() => setSettingsTab("Profile")} aria-label="Open your profile settings">
+            <span
+              className="nav__avatar"
+              style={{ backgroundImage: `url(${user?.avatar_url || "/Blank-Avatar.webp"})` }}
+              aria-hidden
             />
+            <span className="nav__userText">
+              <span className="nav__userName">{displayName}</span>
+              <span className="nav__userMail">{user?.email || "Not signed in"}</span>
+            </span>
+          </button>
+
+          <ul className="nav__links">
+            {LINKS.map((link) => {
+              const active = pathname === link.href;
+              return (
+                <li key={link.href}>
+                  <Link href={link.href} className={`nav__link ${active ? "is-active" : ""}`} aria-current={active ? "page" : undefined}>
+                    <BasicIcon icon={link.icon} size={20} />
+                    <span>{link.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div className="nav__bottom">
+          <button type="button" className="nav__link" id="settingButton" onClick={() => setSettingsTab("Appearance")}>
+            <BasicIcon icon="PaintBoardIcon" size={20} />
+            <span>Make it yours</span>
+          </button>
+          <button type="button" className="nav__link" id="settingsAccountButton" onClick={() => setSettingsTab("Profile")}>
+            <BasicIcon icon="Settings02Icon" size={20} />
+            <span>Settings</span>
+          </button>
+          {user && (
+            <button type="button" className="nav__link" id="logoutButton" onClick={signOut}>
+              <BasicIcon icon="Logout01Icon" size={20} />
+              <span>Sign out</span>
+            </button>
           )}
         </div>
       </nav>
+
+      <SettingsModal open={settingsTab !== null} initialTab={settingsTab ?? "Profile"} onClose={() => setSettingsTab(null)} />
     </>
   );
 };

@@ -1,21 +1,14 @@
 import React from "react";
-import WidgetWrapper from "@/app/components/ultis/widgetWrappet";
-interface BaseWidgetProps {
-  title: string;
-  children: React.ReactNode;
-  onClose?: () => void;
-}
+import WidgetWrapper from "@/app/components/ultis/WidgetWrapper";
+import WidgetProps from "@/app/types/widget";
 
-const BaseWidget: React.FC<BaseWidgetProps> = ({
-  title,
-  children,
-  onClose,
-}) => {
-  return (
-    <WidgetWrapper title={title} onClose={onClose}>
-      {children}
-    </WidgetWrapper>
-  );
+type BaseWidgetProps = Pick<WidgetProps, "id" | "minimized" | "tint" | "onClose" | "onTint"> & {
+  title: string;
+  // Widgets that paint their own scene (the weather window) opt out of the tint colours.
+  tintable?: boolean;
+  children: React.ReactNode;
 };
+
+const BaseWidget: React.FC<BaseWidgetProps> = ({ children, ...rest }) => <WidgetWrapper {...rest}>{children}</WidgetWrapper>;
 
 export default BaseWidget;

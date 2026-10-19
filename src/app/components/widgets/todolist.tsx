@@ -1,250 +1,177 @@
-import React, { useEffect, useState } from "react";
+"use client";
+import React, { memo, useEffect, useState } from "react";
 import BaseWidget from "./BaseWidget";
 import TodoModal from "./TodoModal";
+import BasicIcon from "../ultis/icons";
 import "../../styles/widgets/todolist.scss";
 import WidgetProps from "@/app/types/widget";
-import {
-  getTodos,
-  createTodo,
-  updateTodo,
-  deleteTodo,
-  updateTodosOrder,
-  Todo,
-} from "@/app/apis/todos";
+import { getTodos, createTodo, updateTodo, deleteTodo, updateTodosOrder, Todo } from "@/app/apis/todos";
 
-export default function TodoListWidget(props: WidgetProps) {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [showCompleted, setShowCompleted] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-  const [draggedTodo, setDraggedTodo] = useState<number | null>(null);
+type TodoInput = { text: string; type: string; color: string };
+
+function TodoListWidget(props: WidgetProps) {
   const { id: widgetId } = props;
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [modal, setModal] = useState<{ open: boolean; editing: Todo | null }>({ open: false, editing: null });
+  const [draggedTodo, setDraggedTodo] = useState<number | null>(null);
+  const [notice, setNotice] = useState("");
 
-  // Fetch todos on mount
   useEffect(() => {
-    if (!widgetId) return;
-    loadTodos();
+    let cancelled = false;
+    getTodos(widgetId)
+      .then((data) => {
+        if (cancelled) return;
+        setTodos(data);
+        setLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setFailed(true);
+        setLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [widgetId]);
 
-  const loadTodos = async () => {
+  // Every change waits for the server's answer; a failure shows a short notice instead of silently doing nothing.
+  const attempt = async (action: () => Promise<void>, message: string) => {
     try {
-      const data = await getTodos(widgetId);
-      setTodos(data);
-    } catch (error) {
-      console.error("Failed to fetch todos", error);
+      setNotice("");
+      await action();
+    } catch {
+      setNotice(message);
     }
   };
 
-  // Add todo
-  const handleAddTodo = async (todoData: {
-    text: string;
-    type: string;
-    color: string;
-  }) => {
-    try {
-      const newTodo = await createTodo({
-        widget_id: widgetId,
-        text: todoData.text,
-        type: todoData.type,
-        color: todoData.color,
-        order_index: todos.length,
-      });
-      setTodos([...todos, newTodo]);
-    } catch (error) {
-      console.error("Failed to add todo", error);
-    }
-  };
+  const handleAdd = (input: TodoInput) =>
+    attempt(async () => {
+      const created = await createTodo({ widget_id: widgetId, ...input, order_index: todos.length });
+      setTodos((prev) => [...prev, created]);
+    }, "Couldn't add that task.");
 
-  // Edit todo
-  const handleEditTodo = async (todoData: {
-    text: string;
-    type: string;
-    color: string;
-  }) => {
-    if (!editingTodo) return;
-    try {
-      const updatedTodo = await updateTodo(editingTodo.id, todoData);
-      setTodos(todos.map((t) => (t.id === updatedTodo.id ? updatedTodo : t)));
-      setEditingTodo(null);
-    } catch (error) {
-      console.error("Failed to edit todo", error);
-    }
-  };
+  const handleEdit = (input: TodoInput) =>
+    attempt(async () => {
+      if (!modal.editing) return;
+      const updated = await updateTodo(modal.editing.id, input);
+      setTodos((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    }, "Couldn't save your changes.");
 
-  // Delete todo
-  const handleRemoveTodo = async (id: number) => {
-    try {
-      await deleteTodo(id);
-      setTodos(todos.filter((todo) => todo.id !== id));
-    } catch (error) {
-      console.error("Failed to delete todo", error);
-    }
-  };
+  const handleRemove = (todoId: number) =>
+    attempt(async () => {
+      await deleteTodo(todoId);
+      setTodos((prev) => prev.filter((t) => t.id !== todoId));
+    }, "Couldn't remove that task.");
 
-  // Toggle completed
-  const handleToggleCompleted = async (todo: Todo) => {
-    try {
-      const updatedTodo = await updateTodo(todo.id, {
-        completed: !todo.completed,
-      });
-      setTodos(todos.map((t) => (t.id === updatedTodo.id ? updatedTodo : t)));
-    } catch (error) {
-      console.error("Failed to toggle completed", error);
-    }
-  };
+  const handleToggle = (todo: Todo) =>
+    attempt(async () => {
+      const updated = await updateTodo(todo.id, { completed: !todo.completed });
+      setTodos((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    }, "Couldn't update that task.");
 
-  // Drag and drop handlers
-  const handleDragStart = (e: React.DragEvent, todoId: number) => {
-    setDraggedTodo(todoId);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDrop = async (e: React.DragEvent, targetId: number) => {
-    e.preventDefault();
+  const handleDrop = (event: React.DragEvent, targetId: number) => {
+    event.preventDefault();
     if (draggedTodo === null || draggedTodo === targetId) return;
-
-    const draggedIndex = todos.findIndex((t) => t.id === draggedTodo);
-    const targetIndex = todos.findIndex((t) => t.id === targetId);
-
-    const newTodos = [...todos];
-    const [removed] = newTodos.splice(draggedIndex, 1);
-    newTodos.splice(targetIndex, 0, removed);
-
-    // Update order_index for all todos
-    const updatedTodos = newTodos.map((todo, index) => ({
-      ...todo,
-      order_index: index,
-    }));
-
-    setTodos(updatedTodos);
+    const from = todos.findIndex((t) => t.id === draggedTodo);
+    const to = todos.findIndex((t) => t.id === targetId);
+    const reordered = [...todos];
+    const [moved] = reordered.splice(from, 1);
+    reordered.splice(to, 0, moved);
+    const next = reordered.map((todo, index) => ({ ...todo, order_index: index }));
+    setTodos(next);
     setDraggedTodo(null);
-
-    // Update in database
-    try {
-      await updateTodosOrder(
-        updatedTodos.map((t) => ({ id: t.id, order_index: t.order_index }))
-      );
-    } catch (error) {
-      console.error("Failed to update order", error);
-    }
+    attempt(() => updateTodosOrder(next.map((t) => ({ id: t.id, order_index: t.order_index }))), "Couldn't save the new order.");
   };
 
-  const handleDragEnd = () => {
-    setDraggedTodo(null);
-  };
-
-  const openAddModal = () => {
-    setEditingTodo(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (todo: Todo) => {
-    setEditingTodo(todo);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingTodo(null);
-  };
-
-  const filteredTodos = showCompleted
-    ? todos
-    : todos.filter((todo) => !todo.completed);
-
-  const completedCount = todos.filter((t) => t.completed).length;
+  const completed = todos.filter((t) => t.completed).length;
+  const visible = showCompleted ? todos : todos.filter((t) => !t.completed);
+  const progress = todos.length === 0 ? 0 : completed / todos.length;
 
   return (
-    <BaseWidget title="Todo List" {...props}>
-      <div className="todoList__container">
-        <div className="todoList__header">
-          <h3>Your Tasks</h3>
-          <div className="todoList__timeLeft">
-            {completedCount}/{todos.length} · Completed
-          </div>
+    <BaseWidget title="To-do" {...props}>
+      <div className="todo">
+        <header className="todo__header">
+          <h3>To-do</h3>
+          <span className="todo__count" aria-label={`${completed} of ${todos.length} done`}>
+            {completed}/{todos.length}
+          </span>
+        </header>
+        <div className="todo__bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} aria-label="Tasks done">
+          <span style={{ width: `${progress * 100}%` }} />
         </div>
-        <div className="todoList__content">
-          <div className="todoList__infoActions">
-            <div className="todoList__Count">
-              {filteredTodos.length} Item{filteredTodos.length !== 1 ? "s" : ""}
-            </div>
-            <div className="todoList__CompletedToggle">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={showCompleted}
-                  onChange={(e) => setShowCompleted(e.target.checked)}
-                />
-                Show Completed
-              </label>
-            </div>
-          </div>
-          <div className="todoList__TaskList">
-            <ul className="todoList__items">
-              {filteredTodos.map((todo) => (
-                <li
-                  key={todo.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, todo.id)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, todo.id)}
-                  onDragEnd={handleDragEnd}
-                  className={`${draggedTodo === todo.id ? "dragging" : ""} ${
-                    todo.completed ? "completed" : ""
-                  }`}
-                  style={{ backgroundColor: todo.color }}
-                  onDoubleClick={() => openEditModal(todo)}
-                >
-                  <div className="todoList__items__Status">
-                    <input
-                      type="checkbox"
-                      checked={todo.completed}
-                      onChange={() => handleToggleCompleted(todo)}
-                    />
-                  </div>
-                  <span className="todoList__items__Text">{todo.text}</span>
 
-                  <span
-                    className={`todoList__items__Type type-${todo.type.toLowerCase()}`}
-                  >
-                    {todo.type}
-                  </span>
-                  <button
-                    className="todoList__items__deleteBtn"
-                    onClick={() => handleRemoveTodo(todo.id)}
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div className="todoList__addButton">
-          <button onClick={openAddModal}>+ Add Item</button>
-        </div>
+        <ul className="todo__list">
+          {visible.map((todo) => (
+            <li
+              key={todo.id}
+              draggable
+              onDragStart={(e) => {
+                setDraggedTodo(todo.id);
+                e.dataTransfer.effectAllowed = "move";
+              }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => handleDrop(e, todo.id)}
+              onDragEnd={() => setDraggedTodo(null)}
+              className={`todo__item ${todo.completed ? "is-done" : ""} ${draggedTodo === todo.id ? "is-dragging" : ""}`}
+              style={{ ["--dot" as string]: todo.color }}
+            >
+              <label className="todo__check">
+                <input type="checkbox" checked={todo.completed} onChange={() => handleToggle(todo)} />
+                <span className="todo__box" aria-hidden>
+                  <BasicIcon icon="Tick02Icon" size={14} strokeWidth={2.4} />
+                </span>
+                <span className="sr-only">Done: {todo.text}</span>
+              </label>
+              <span className="todo__text" onDoubleClick={() => setModal({ open: true, editing: todo })}>
+                {todo.text}
+              </span>
+              <span className="todo__type">{todo.type}</span>
+              <span className="todo__actions">
+                <button type="button" onClick={() => setModal({ open: true, editing: todo })} aria-label={`Edit ${todo.text}`}>
+                  <BasicIcon icon="Edit02Icon" size={15} />
+                </button>
+                <button type="button" onClick={() => handleRemove(todo.id)} aria-label={`Delete ${todo.text}`}>
+                  <BasicIcon icon="Delete02Icon" size={15} />
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {loaded && !failed && visible.length === 0 && (
+          <p className="todo__empty">{todos.length === 0 ? "Nothing planned. A quiet day?" : "All done. Enjoy the calm."}</p>
+        )}
+        {failed && <p className="todo__empty">Couldn&apos;t load your tasks.</p>}
+        {notice && (
+          <p className="todo__notice" role="alert">
+            {notice}
+          </p>
+        )}
+
+        <footer className="todo__footer">
+          <button type="button" className="todo__add" onClick={() => setModal({ open: true, editing: null })}>
+            <BasicIcon icon="PlusSignIcon" size={16} /> Add a task
+          </button>
+          <label className="todo__toggle">
+            <input type="checkbox" checked={showCompleted} onChange={(e) => setShowCompleted(e.target.checked)} />
+            Show done
+          </label>
+        </footer>
       </div>
 
       <TodoModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSave={editingTodo ? handleEditTodo : handleAddTodo}
-        initialData={
-          editingTodo
-            ? {
-                text: editingTodo.text,
-                type: editingTodo.type,
-                color: editingTodo.color,
-              }
-            : undefined
-        }
-        mode={editingTodo ? "edit" : "add"}
+        key={modal.editing?.id ?? "new"}
+        isOpen={modal.open}
+        mode={modal.editing ? "edit" : "add"}
+        initialData={modal.editing ? { text: modal.editing.text, type: modal.editing.type, color: modal.editing.color } : undefined}
+        onClose={() => setModal({ open: false, editing: null })}
+        onSave={modal.editing ? handleEdit : handleAdd}
       />
     </BaseWidget>
   );
 }
+
+export default memo(TodoListWidget);

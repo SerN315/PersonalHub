@@ -1,147 +1,111 @@
+"use client";
 import React, { useState } from "react";
+import Modal from "@/app/components/ui/Modal";
+import BaseButton from "@/app/components/ui/BaseButton";
+import BaseInput from "@/app/components/ui/BaseInput";
+import BasicIcon from "@/app/components/ultis/icons";
 import "../../styles/widgets/todoModal.scss";
 
 interface TodoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (todoData: {
-    text: string;
-    type: string;
-    color: string;
-  }) => void;
-  initialData?: {
-    text: string;
-    type: string;
-    color: string;
-  };
+  onSave: (todoData: { text: string; type: string; color: string }) => void;
+  initialData?: { text: string; type: string; color: string };
   mode: "add" | "edit";
 }
 
-const TODO_TYPES = ["Diary", "Sweets", "Gluten", "Work", "Personal", "Shopping", "Other"];
+const TODO_TYPES = ["Personal", "Work", "Home", "Health", "Shopping", "Ideas"];
 
+// The same palette as the rest of the app (stored as plain hex so any device renders it the same way).
 const TODO_COLORS = [
-  { name: "Gray", value: "#9CA3AF" },
-  { name: "Red", value: "#EF4444" },
-  { name: "Orange", value: "#F97316" },
-  { name: "Yellow", value: "#EAB308" },
-  { name: "Green", value: "#10B981" },
-  { name: "Blue", value: "#3B82F6" },
-  { name: "Purple", value: "#8B5CF6" },
-  { name: "Pink", value: "#EC4899" },
+  { name: "Clay", value: "#c46f4a" },
+  { name: "Butter", value: "#e0ad2f" },
+  { name: "Peach", value: "#ec8b62" },
+  { name: "Rose", value: "#d4687d" },
+  { name: "Sage", value: "#7c9d77" },
+  { name: "Sky", value: "#5e96b8" },
+  { name: "Lilac", value: "#9c84bd" },
+  { name: "Stone", value: "#9a8f84" },
 ];
 
-export default function TodoModal({
-  isOpen,
-  onClose,
-  onSave,
-  initialData,
-  mode,
-}: TodoModalProps) {
-  const [text, setText] = useState(initialData?.text || "");
-  const [type, setType] = useState(initialData?.type || "Personal");
-  const [customType, setCustomType] = useState("");
-  const [color, setColor] = useState(initialData?.color || "#9CA3AF");
+// Mounted fresh for every task (the parent keys it), so the form always starts from the right values.
+export default function TodoModal({ isOpen, onClose, onSave, initialData, mode }: TodoModalProps) {
+  const [text, setText] = useState(initialData?.text ?? "");
+  const [type, setType] = useState(initialData?.type ?? "Personal");
+  const [color, setColor] = useState(initialData?.color ?? TODO_COLORS[0].value);
 
-  if (!isOpen) return null;
+  const finalType = type.trim() || "Personal";
+  const canSave = text.trim().length > 0;
 
-  const handleSave = () => {
-    const finalType = customType.trim() || type;
-    if (text.trim() && finalType.trim()) {
-      onSave({ text, type: finalType, color });
-      handleClose();
-    }
-  };
-
-  const handleClose = () => {
-    setText("");
-    setType("Personal");
-    setCustomType("");
-    setColor("#9CA3AF");
+  const save = (event?: React.FormEvent) => {
+    event?.preventDefault();
+    if (!canSave) return;
+    onSave({ text: text.trim(), type: finalType, color });
     onClose();
   };
 
   return (
-    <div className="todoModal__overlay" onClick={handleClose}>
-      <div className="todoModal__content" onClick={(e) => e.stopPropagation()}>
-        <div className="todoModal__header">
-          <h3>{mode === "add" ? "Add New Task" : "Edit Task"}</h3>
-          <button className="todoModal__closeBtn" onClick={handleClose}>
-            ✕
-          </button>
-        </div>
-
-        <div className="todoModal__body">
-          <div className="todoModal__field">
-            <label>Task Description</label>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Enter your task..."
-              rows={3}
-              autoFocus
-            />
-          </div>
-
-          <div className="todoModal__field">
-            <label>Type</label>
-            <div className="todoModal__typeGrid">
-              {TODO_TYPES.map((t) => (
-                <button
-                  key={t}
-                  className={`todoModal__typeBtn ${type === t && !customType ? "active" : ""}`}
-                  onClick={() => {
-                    setType(t);
-                    setCustomType("");
-                  }}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-            <input
-              type="text"
-              className="todoModal__customTypeInput"
-              value={customType}
-              onChange={(e) => setCustomType(e.target.value)}
-              placeholder="Or enter custom type..."
-            />
-          </div>
-
-          <div className="todoModal__field">
-            <label>Item Color</label>
-            <div className="todoModal__colorGrid">
-              {TODO_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  className={`todoModal__colorBtn ${
-                    color === c.value ? "active" : ""
-                  }`}
-                  style={{ backgroundColor: c.value }}
-                  onClick={() => setColor(c.value)}
-                  title={c.name}
-                >
-                  {color === c.value && (
-                    <span className="todoModal__checkmark">✓</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="todoModal__footer">
-          <button className="todoModal__cancelBtn" onClick={handleClose}>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title={mode === "add" ? "Add a task" : "Edit task"}
+      width={480}
+      footer={
+        <>
+          <BaseButton variant="ghost" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            className="todoModal__saveBtn"
-            onClick={handleSave}
-            disabled={!text.trim()}
-          >
-            {mode === "add" ? "Add Task" : "Save Changes"}
-          </button>
+          </BaseButton>
+          <BaseButton onClick={() => save()} disabled={!canSave}>
+            {mode === "add" ? "Add task" : "Save changes"}
+          </BaseButton>
+        </>
+      }
+    >
+      <form className="taskForm" onSubmit={save}>
+        <div className="field">
+          <label className="field__label" htmlFor="task-text">
+            What needs doing?
+          </label>
+          <textarea id="task-text" className="input" rows={3} maxLength={1000} value={text} onChange={(e) => setText(e.target.value)} placeholder="Water the plants…" autoFocus />
         </div>
-      </div>
-    </div>
+
+        <div className="field">
+          <span className="field__label" id="task-type-label">
+            Type
+          </span>
+          <div className="taskForm__chips" role="radiogroup" aria-labelledby="task-type-label">
+            {TODO_TYPES.map((t) => (
+              <button key={t} type="button" role="radio" aria-checked={type === t} className="taskForm__chip" onClick={() => setType(t)}>
+                {t}
+              </button>
+            ))}
+          </div>
+          <BaseInput aria-label="Custom type" placeholder="…or type your own" maxLength={40} value={TODO_TYPES.includes(type) ? "" : type} onChange={(e) => setType(e.target.value)} />
+        </div>
+
+        <div className="field">
+          <span className="field__label" id="task-color-label">
+            Colour
+          </span>
+          <div className="swatches" role="radiogroup" aria-labelledby="task-color-label">
+            {TODO_COLORS.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                role="radio"
+                aria-checked={color === c.value}
+                aria-label={c.name}
+                title={c.name}
+                className="swatches__item"
+                style={{ ["--swatch" as string]: c.value }}
+                onClick={() => setColor(c.value)}
+              >
+                {color === c.value && <BasicIcon icon="Tick02Icon" size={14} strokeWidth={2.6} color="#fff" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      </form>
+    </Modal>
   );
 }

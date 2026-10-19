@@ -1,59 +1,40 @@
-import axios from "axios";
+import { api } from "./http";
+import type { Preferences } from "@/app/utils/preferences";
 
-// Fetch user data (using HTTP-only cookie automatically)
-export const fetchUser = async () => {
-  const res = await axios.get("/api/auth/user", {
-    withCredentials: true,
-  });
-  return res.data.user;
-};
+export interface Profile {
+  id: string;
+  email: string;
+  phone: string | null;
+  username: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  preferences: Partial<Preferences>;
+}
 
-// Update user info
-export const updateUser = async (updates: Record<string, unknown>) => {
-  const res = await axios.patch("/api/update-profile", updates, {
-    withCredentials: true,
-  });
-  return res.data.user;
-};
+// The signed-in profile; rejects with a 401 ApiError when there is no valid session.
+export const fetchUser = () => api<Profile>("/api/auth/user");
 
-// Logout
-export const logoutUser = async () => {
-  const res = await axios.post("/api/logout", null, {
-    withCredentials: true,
-  });
-  return res.data;
-};
+export const updateUser = (updates: {
+  username?: string;
+  full_name?: string;
+  email?: string;
+  avatar_url?: string;
+  preferences?: Preferences;
+}) => api<{ user: Profile; emailChangePending: boolean }>("/api/update-profile", { method: "PATCH", body: updates });
+
+export const logoutUser = () => api("/api/logout", { method: "POST" });
 
 export const uploadProfileImage = async (file: File) => {
-  const formData = new FormData();
-  formData.append("avatar", file); // must match the backend: upload.single("avatar")
-
-  const res = await fetch("/api/upload-avatar", {
-    method: "PATCH", // use PATCH to match your backend route
-    credentials: "include", // send cookies
-    body: formData,
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error);
-  return data.avatarUrl; // must match the backend response key
+  const form = new FormData();
+  form.append("avatar", file);
+  const data = await api<{ avatarUrl: string }>("/api/upload-avatar", { method: "PATCH", form });
+  return data.avatarUrl;
 };
 
-// Change password
-export const changePassword = async (
-  currentPassword: string,
-  newPassword: string
-) => {
-  const res = await fetch("/api/change-password", {
+export const changePassword = async (currentPassword: string, newPassword: string) => {
+  const data = await api<{ message: string }>("/api/change-password", {
     method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ currentPassword, newPassword }),
+    body: { currentPassword, newPassword },
   });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to change password");
   return data.message;
 };

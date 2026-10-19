@@ -1,54 +1,76 @@
+"use client";
+
 import React, { useState } from "react";
-import "@/app/styles/layouts/settings.scss";
-import BaseIcon from "@/app/components/ultis/icons";
-import SettingsSidebar from "./SettingSidebar";
-import SettingsProfile from "./SettingAccount";
-import SettingsAccount from "./GeneralSettings";
-import {
-  SettingsModalProps,
-  SettingsTab,
-  SettingsFormData,
-} from "@/app/types/settings";
+import "@/app/styles/settings/settings.scss";
+import BasicIcon from "@/app/components/ultis/icons";
+import Modal from "@/app/components/ui/Modal";
+import ProfileSettings from "./ProfileSettings";
+import AppearanceSettings from "./AppearanceSettings";
+import SecuritySettings from "./SecuritySettings";
+import type { SettingsModalProps, SettingsTab } from "@/app/types/settings";
+import type * as Icons from "@hugeicons/core-free-icons";
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({
-  isOpen,
-  onClose,
-  initialData,
-  theme,
-}) => {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("Profile");
+const TABS: { key: SettingsTab; label: string; blurb: string; icon: keyof typeof Icons }[] = [
+  { key: "Profile", label: "Profile", blurb: "Who you are", icon: "UserIcon" },
+  { key: "Appearance", label: "Appearance", blurb: "Make it feel like yours", icon: "PaintBoardIcon" },
+  { key: "Security", label: "Security", blurb: "Password and sign-in", icon: "LockPasswordIcon" },
+];
 
-  const [form, setForm] = useState<SettingsFormData>(
-    initialData || { username: "", email: "", language: "en", image: null }
-  );
-  const handleChange = (key: keyof SettingsFormData, value: unknown) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab = "Profile", onClose }) => {
+  // Opening from a different entry point (profile vs. appearance) lands on that tab; afterwards it is the person's to move.
+  const [chosen, setChosen] = useState<{ tab: SettingsTab; opened: SettingsTab } | null>(null);
+  const activeTab = chosen && chosen.opened === initialTab ? chosen.tab : initialTab;
+  const select = (tab: SettingsTab) => setChosen({ tab, opened: initialTab });
+
+  const onTabKeyDown = (event: React.KeyboardEvent) => {
+    if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(event.key)) return;
+    event.preventDefault();
+    const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
+    const index = TABS.findIndex((t) => t.key === activeTab);
+    const next = TABS[(index + step + TABS.length) % TABS.length].key;
+    select(next);
+    document.getElementById(`settings-tab-${next}`)?.focus();
   };
 
-  if (!isOpen) return null;
   return (
-    <div className="modal-backdrop">
-      <div className={`modal ${theme}`}>
-        <div className="modal__header">
-          <h2>Settings</h2>
-          <div className="close-icon" onClick={onClose}>
-            <BaseIcon icon="Cancel01Icon" />
+    <Modal open={open} onClose={onClose} title="Settings" width={880} bare>
+      <div className="settings">
+        <aside className="settings__side">
+          <div className="settings__title">
+            <h2 aria-hidden>Settings</h2>
+            <button type="button" className="iconBtn settings__close" onClick={onClose} aria-label="Close settings">
+              <BasicIcon icon="Cancel01Icon" size={20} />
+            </button>
           </div>
-        </div>
-        <hr />
-        <div className="modal__content">
-          <SettingsSidebar activeTab={activeTab} onSelect={setActiveTab} />
-          <div className="vr"></div>
-          <div className="modal__page__content">
-            {activeTab === "Profile" && (
-              <SettingsProfile data={form} onChange={handleChange} />
-            )}
-            {activeTab === "Account" && (
-              <SettingsAccount data={form} onChange={handleChange} />
-            )}
+          <div className="settings__tabs" role="tablist" aria-orientation="vertical" onKeyDown={onTabKeyDown}>
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                id={`settings-tab-${tab.key}`}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                aria-controls="settings-panel"
+                tabIndex={activeTab === tab.key ? 0 : -1}
+                className="settings__tab"
+                onClick={() => select(tab.key)}
+              >
+                <BasicIcon icon={tab.icon} size={20} />
+                <span className="settings__tabText">
+                  <span className="settings__tabLabel">{tab.label}</span>
+                  <span className="settings__tabBlurb">{tab.blurb}</span>
+                </span>
+              </button>
+            ))}
           </div>
-        </div>
+        </aside>
+
+        <section id="settings-panel" role="tabpanel" aria-labelledby={`settings-tab-${activeTab}`} className="settings__panel">
+          {activeTab === "Profile" && <ProfileSettings />}
+          {activeTab === "Appearance" && <AppearanceSettings />}
+          {activeTab === "Security" && <SecuritySettings onSignedOut={onClose} />}
+        </section>
       </div>
-    </div>
+    </Modal>
   );
 };

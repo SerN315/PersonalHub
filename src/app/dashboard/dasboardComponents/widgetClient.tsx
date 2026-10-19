@@ -1,476 +1,382 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import GridLayout, { Layout, Responsive, WidthProvider } from "react-grid-layout";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { icons } from "hugeicons-react";
 import PomodoroWidget from "@/app/components/widgets/podoromoWidget";
 import StickyNotesWidgets from "@/app/components/widgets/stickyNotes";
 import WatchWidget from "@/app/components/widgets/watch";
 import WeatherWidget from "@/app/components/widgets/weather";
 import TodoListWidget from "@/app/components/widgets/todolist";
-
-import { useEditMode } from "@/app/contexts/editWidgetContext";
 import BasicIcon from "@/app/components/ultis/icons";
-import {
-  getUserWidgets,
-  createWidget,
-  deleteWidget,
-  saveUserWidgetLayout,
-} from "@/app/apis/widgets";
+import BaseButton from "@/app/components/ui/BaseButton";
+import DayHeader from "./DayHeader";
+import { useEditMode } from "@/app/contexts/editWidgetContext";
+import { getUserWidgets, createWidget, deleteWidget, saveUserWidgetLayout, updateWidget } from "@/app/apis/widgets";
 import { Widget, WidgetLayout, WidgetState } from "@/app/types/widgets";
 import { useUserStore } from "@/app/utils/store/userStore";
+import { useContainerWidth } from "@/app/utils/useContainerWidth";
+import { TINTS, Tint } from "@/app/utils/preferences";
+import type * as Icons from "@hugeicons/core-free-icons";
 
-// Default layout map by type
-const defaultLayoutMap: Record<
-  string,
-  {
-    w: number;
-    h: number;
-    maxW?: number;
-    maxH?: number;
-    minW?: number;
-    minH?: number;
-  }
-> = {
-  sticky: { w: 4, h: 1 },
-  todo: { w: 4, h: 1 },
-  weather: { w: 4, h: 1, maxW: 7, maxH: 3, minH: 2, minW: 2 },
-  pomodoro: { w: 2, h: 2, minW: 2, maxW: 5, maxH: 4 },
-  clock: { w: 4, h: 3, minW: 3, minH: 3 },
+type LayoutDefaults = { w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number };
+
+// Starting sizes (in grid cells) and the room each widget needs to stay usable.
+const defaultLayoutMap: Record<string, LayoutDefaults> = {
+  clock: { w: 3, h: 3, minW: 2, minH: 3 },
+  todo: { w: 4, h: 4, minW: 3, minH: 3 },
+  sticky: { w: 3, h: 3, minW: 2, minH: 2 },
+  pomodoro: { w: 3, h: 3, minW: 2, minH: 3, maxW: 5, maxH: 5 },
+  weather: { w: 5, h: 3, minW: 3, minH: 2, maxW: 8, maxH: 4 },
 };
 
-const widgetOptions = [
-  { id: "clock", name: "Clock", icon: "ClockIcon" },
-  { id: "todo", name: "To-Do List", icon: "TaskDone01Icon" },
-  { id: "sticky", name: "Sticky Notes", icon: "StickyNoteIcon" },
-  { id: "pomodoro", name: "Pomodoro Timer", icon: "AlarmClockIcon" },
-  { id: "weather", name: "Weather", icon: "CloudIcon" },
+const defaultTint: Record<string, Tint> = { clock: "paper", todo: "paper", sticky: "butter", pomodoro: "peach", weather: "paper" };
+
+const widgetOptions: { id: string; name: string; blurb: string; icon: keyof typeof Icons }[] = [
+  { id: "clock", name: "Clock", blurb: "Time at a glance", icon: "ClockIcon" },
+  { id: "todo", name: "To-do list", blurb: "Little things to do", icon: "TaskDone01Icon" },
+  { id: "sticky", name: "Sticky note", blurb: "Jot something down", icon: "StickyNoteIcon" },
+  { id: "pomodoro", name: "Pomodoro", blurb: "Focus in short bursts", icon: "AlarmClockIcon" },
+  { id: "weather", name: "Weather", blurb: "The sky outside", icon: "SunCloud01Icon" },
 ];
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
-const BREAKPOINTS = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
-const COLS_BY_BREAKPOINT = { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 };
+const COLS = 12;
+const ROW_HEIGHT = 100;
+const STACK_BELOW = 720; // narrower than this the widgets stack in one column instead of a grid
 
-type BreakpointKey = keyof typeof COLS_BY_BREAKPOINT;
+const isTint = (value: unknown): value is Tint => typeof value === "string" && (TINTS as readonly string[]).includes(value);
 
-function scaleLayoutForCols(
-  sourceLayout: Layout[],
-  fromCols: number,
-  toCols: number
-): Layout[] {
-  return sourceLayout.map((item) => {
-    const ratio = toCols / fromCols;
-    const minW = item.minW ?? 1;
-    const maxAllowedW = Math.max(minW, Math.min(item.maxW ?? toCols, toCols));
-    const scaledW = Math.round(item.w * ratio);
-    const w = Math.max(minW, Math.min(maxAllowedW, scaledW || minW));
-    const maxX = Math.max(0, toCols - w);
-    const scaledX = Math.round(item.x * ratio);
-
-    return {
-      ...item,
-      x: Math.max(0, Math.min(maxX, scaledX)),
-      w,
-    };
+function getNextPosition(currentLayout: WidgetLayout[], widgetW: number) {
+  const occupied: number[] = Array(COLS).fill(0);
+  currentLayout.forEach(({ x, y, w, h }) => {
+    for (let i = x; i < x + w; i++) occupied[i] = Math.max(occupied[i], y + h);
   });
+  for (let y = 0; y < 100; y++) {
+    for (let x = 0; x <= COLS - widgetW; x++) {
+      let canPlace = true;
+      for (let i = x; i < x + widgetW; i++) {
+        if (occupied[i] > y) {
+          canPlace = false;
+          break;
+        }
+      }
+      if (canPlace) return { x, y };
+    }
+  }
+  return { x: 0, y: 0 };
 }
 
+const constraintsFor = (type: string) => {
+  const d = defaultLayoutMap[type];
+  return { ...(d?.minW && { minW: d.minW }), ...(d?.minH && { minH: d.minH }), ...(d?.maxW && { maxW: d.maxW }), ...(d?.maxH && { maxH: d.maxH }) };
+};
+
 export default function WidgetClient() {
-  const [layout, setLayout] = useState<Layout[]>([]);
-  const [currentBreakpoint, setCurrentBreakpoint] =
-    useState<BreakpointKey>("lg");
+  const [layout, setLayout] = useState<WidgetLayout[]>([]);
   const [widgets, setWidgets] = useState<Record<string, WidgetState>>({});
   const [widgetData, setWidgetData] = useState<Record<string, Widget>>({});
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const user = useUserStore((state) => state.user);
+  const [loadError, setLoadError] = useState(false);
+  const userId = useUserStore((state) => state.user?.id);
   const { editMode, setEditMode } = useEditMode();
+  const [boardRef, boardWidth] = useContainerWidth<HTMLDivElement>();
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Memoized save function to prevent recreation on every render
-  const saveLayoutToServer = useCallback(async () => {
-    if (!user?.id) return;
-    try {
-      // Ensure position data is properly formatted as objects, not strings
-      const formattedLayout = layout.map((item) => ({
-        i: item.i,
-        x: Number(item.x),
-        y: Number(item.y),
-        w: Number(item.w),
-        h: Number(item.h),
-        // Remove any string conversion and ensure it's a proper object
-        ...(item.minW && { minW: Number(item.minW) }),
-        ...(item.minH && { minH: Number(item.minH) }),
-      }));
-
-      await saveUserWidgetLayout(user.id, formattedLayout, widgets);
-    } catch (error) {
-      console.error("Failed to save layout:", error);
-    }
-  }, [user?.id, layout, widgets]);
-
-  // Debounced save effect - only save layout changes, not widget state changes
+  // The layout is saved only after a real change by the person (drag, resize, remove), never just because it loaded.
+  const layoutDirty = useRef(false);
+  const widgetDataRef = useRef(widgetData);
   useEffect(() => {
-    if (!isLoading && user?.id && layout.length > 0) {
-      const timeoutId = setTimeout(() => {
-        saveLayoutToServer();
-      }, 1000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [layout, isLoading, user?.id, saveLayoutToServer]);
+    widgetDataRef.current = widgetData;
+  }, [widgetData]);
 
-  const loadWidgets = useCallback(async () => {
-    if (!user?.id) return;
-
-    try {
-      setIsLoading(true);
-      const userWidgets = await getUserWidgets(user.id);
-
-      const loadedLayout: WidgetLayout[] = [];
-      const loadedWidgets: Record<string, WidgetState> = {};
-      const loadedData: Record<string, Widget> = {};
-
-      userWidgets.forEach((widget: Widget) => {
-        // Handle position data that might be stored as string or object
-        let position;
-        if (typeof widget.position === "string") {
-          try {
-            position = JSON.parse(widget.position);
-          } catch {
-            console.error("Failed to parse position string:", widget.position);
-            position = { x: 0, y: 0, w: 4, h: 1 }; // fallback
-          }
-        } else {
-          position = widget.position;
+  // ---- load -----------------------------------------------------------------
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const userWidgets = await getUserWidgets();
+        if (cancelled) return;
+        const loadedLayout: WidgetLayout[] = [];
+        const loadedWidgets: Record<string, WidgetState> = {};
+        const loadedData: Record<string, Widget> = {};
+        for (const widget of userWidgets) {
+          const position = typeof widget.position === "string" ? JSON.parse(widget.position) : widget.position;
+          loadedLayout.push({ i: widget.id, x: Number(position.x), y: Number(position.y), w: Number(position.w), h: Number(position.h), ...constraintsFor(widget.type) });
+          loadedWidgets[widget.id] = { visible: true, minimized: false };
+          loadedData[widget.id] = widget;
         }
+        setLayout(loadedLayout);
+        setWidgets(loadedWidgets);
+        setWidgetData(loadedData);
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
-        loadedLayout.push({
-          i: widget.id,
-          x: Number(position.x),
-          y: Number(position.y),
-          w: Number(position.w),
-          h: Number(position.h),
-          ...(defaultLayoutMap[widget.type]?.minW && {
-            minW: defaultLayoutMap[widget.type].minW,
-          }),
-          ...(defaultLayoutMap[widget.type]?.minH && {
-            minH: defaultLayoutMap[widget.type].minH,
-          }),
-          ...(defaultLayoutMap[widget.type]?.maxW && {
-            maxW: defaultLayoutMap[widget.type].maxW,
-          }),
-          ...(defaultLayoutMap[widget.type]?.maxH && {
-            maxH: defaultLayoutMap[widget.type].maxH,
-          }),
-        });
-
-        loadedWidgets[widget.id] = { visible: true, minimized: false };
-        loadedData[widget.id] = widget;
-      });
-
-      setLayout(loadedLayout);
-      setWidgets(loadedWidgets);
-      setWidgetData(loadedData);
-    } catch (error) {
-      console.error("Failed to load widgets:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id]);
-
+  // ---- save layout (debounced) ----------------------------------------------
   useEffect(() => {
-    if (user?.id) {
-      loadWidgets();
-    }
-  }, [user?.id, loadWidgets]);
+    if (isLoading || !layoutDirty.current) return;
+    const timeoutId = setTimeout(async () => {
+      layoutDirty.current = false;
+      try {
+        await saveUserWidgetLayout(
+          layout.map(({ i, x, y, w, h }) => ({ i, x: Number(x), y: Number(y), w: Number(w), h: Number(h) })),
+          widgets
+        );
+      } catch {
+        layoutDirty.current = true; // try again with the next change
+      }
+    }, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [layout, widgets, isLoading]);
 
-  // Combined mouse event handlers for better performance
+  // ---- arrange mode ------------------------------------------------------------
+  // Long-press a widget to start arranging (as before); clicking empty space ends it. The Arrange button does the same without a long press.
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      // Check if clicked inside any widget
-      const widgets = document.querySelectorAll(".widgetWrapper");
-      let clickedInside = false;
-      widgets.forEach((el) => {
-        if (el.contains(e.target as Node)) clickedInside = true;
-      });
-
-      if (clickedInside) {
-        // Start long press timer for edit mode
+    let timer: ReturnType<typeof setTimeout>;
+    const onDown = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (target.closest(".widgetCard")) {
         timer = setTimeout(() => setEditMode(true), 600);
-      } else {
-        // Exit edit mode if clicked outside
+      } else if (!target.closest("[data-keep-editing]")) {
         setEditMode(false);
       }
     };
-
-    const handleMouseUp = () => {
-      clearTimeout(timer);
-    };
-
-    document.addEventListener("mousedown", handleMouseDown);
-    document.addEventListener("mouseup", handleMouseUp);
-
+    const onUp = () => clearTimeout(timer);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("mouseup", onUp);
     return () => {
-      document.removeEventListener("mousedown", handleMouseDown);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("mouseup", onUp);
       clearTimeout(timer);
     };
   }, [setEditMode]);
 
+  // ---- add menu: closes on outside click or Escape -----------------------------
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setMenuOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  // ---- actions (stable, so memoised widgets are not re-rendered by unrelated changes) ----
   const addWidget = useCallback(
     async (type: string) => {
-      if (!user?.id) return;
-
       const base = defaultLayoutMap[type];
-      if (!base) return;
-
-      const { w, h, minW, minH, maxW, maxH } = base;
-      const { x, y } = getNextPosition(layout, w);
-
+      if (!base || !userId) return;
+      const { x, y } = getNextPosition(layout, base.w);
       try {
-        const newWidget = await createWidget({
-          user_id: user.id,
-          type,
-          position: {
-            x: Number(x),
-            y: Number(y),
-            w: Number(w),
-            h: Number(h),
-          },
-          data: {},
-        });
-
-        const id = newWidget.id;
-
-        setLayout((prev) => [
-          ...prev,
-          {
-            i: id,
-            x: Number(x),
-            y: Number(y),
-            w: Number(w),
-            h: Number(h),
-            ...(minW && { minW: Number(minW) }),
-            ...(minH && { minH: Number(minH) }),
-            ...(maxW && { maxW: Number(maxW) }),
-            ...(maxH && { maxH: Number(maxH) }),
-          },
-        ]);
-
-        setWidgets((prev) => ({
-          ...prev,
-          [id]: { visible: true, minimized: false },
-        }));
-
-        setWidgetData((prev) => ({
-          ...prev,
-          [id]: newWidget,
-        }));
-      } catch (error) {
-        console.error("Failed to add widget:", error);
+        const created = await createWidget({ type, position: { x, y, w: base.w, h: base.h }, data: {} });
+        setLayout((prev) => [...prev, { i: created.id, x, y, w: base.w, h: base.h, ...constraintsFor(type) }]);
+        setWidgets((prev) => ({ ...prev, [created.id]: { visible: true, minimized: false } }));
+        setWidgetData((prev) => ({ ...prev, [created.id]: created }));
+      } catch {
+        /* one widget per type: a duplicate (another tab) or a lost connection simply does nothing */
       }
     },
-    [user?.id, layout]
+    [userId, layout]
   );
 
-  const handleClose = useCallback(
-    async (widgetId: string) => {
-      if (!user?.id) return;
-
-      try {
-        await deleteWidget(widgetId);
-
-        setWidgets((prev) => {
-          const updated = { ...prev };
-          delete updated[widgetId];
-          return updated;
-        });
-
-        setLayout((prev) => prev.filter((item) => item.i !== widgetId));
-
-        setWidgetData((prev) => {
-          const updated = { ...prev };
-          delete updated[widgetId];
-          return updated;
-        });
-      } catch (error) {
-        console.error("Failed to delete widget:", error);
-      }
-    },
-    [user?.id]
-  );
-
-  const handleMinimize = useCallback((id: string) => {
-    setWidgets((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], minimized: !prev[id].minimized },
-    }));
+  const handleClose = useCallback(async (widgetId: string) => {
+    try {
+      await deleteWidget(widgetId);
+      layoutDirty.current = true;
+      setWidgets((prev) => {
+        const next = { ...prev };
+        delete next[widgetId];
+        return next;
+      });
+      setLayout((prev) => prev.filter((item) => item.i !== widgetId));
+      setWidgetData((prev) => {
+        const next = { ...prev };
+        delete next[widgetId];
+        return next;
+      });
+    } catch {
+      /* it stays on screen; try again */
+    }
   }, []);
 
-  const onLayoutChange = useCallback(
-    (newLayout: Layout[]) => {
-      const fromCols = COLS_BY_BREAKPOINT[currentBreakpoint] ?? 12;
-      const normalizedLayout = scaleLayoutForCols(newLayout, fromCols, 12);
-      setLayout(normalizedLayout);
-    },
-    [currentBreakpoint]
-  );
-
-  const COLS = 12;
-  function getNextPosition(currentLayout: Layout[], widgetW: number) {
-    const occupied: number[] = Array(COLS).fill(0);
-
-    currentLayout.forEach(({ x, y, w, h }) => {
-      for (let i = x; i < x + w; i++) {
-        occupied[i] = Math.max(occupied[i], y + h);
-      }
+  // Merges into the widget's saved data (a PUT replaces `data`, so the latest copy is merged here first).
+  const handleData = useCallback((widgetId: string, patch: Record<string, unknown>) => {
+    const current = widgetDataRef.current[widgetId];
+    if (!current) return;
+    const data = { ...(current.data ?? {}), ...patch };
+    setWidgetData((prev) => (prev[widgetId] ? { ...prev, [widgetId]: { ...prev[widgetId], data } } : prev));
+    updateWidget(widgetId, { data }).catch(() => {
+      /* offline: the screen keeps the change; it is sent again with the next edit */
     });
+  }, []);
 
-    for (let y = 0; y < 100; y++) {
-      for (let x = 0; x <= COLS - widgetW; x++) {
-        let canPlace = true;
-        for (let i = x; i < x + widgetW; i++) {
-          if (occupied[i] > y) {
-            canPlace = false;
-            break;
-          }
-        }
-        if (canPlace) return { x, y };
-      }
+  const handleTint = useCallback((widgetId: string, tint: Tint) => handleData(widgetId, { tint }), [handleData]);
+
+  const onLayoutChange = useCallback((next: WidgetLayout[]) => setLayout(next), []);
+  const onUserLayoutChange = useCallback((next: WidgetLayout[]) => {
+    layoutDirty.current = true;
+    setLayout(next);
+  }, []);
+
+  // ---- render --------------------------------------------------------------------
+  const renderWidget = (type: string, id: string) => {
+    const widget = widgetData[id];
+    const tintValue = widget?.data?.tint;
+    const common = {
+      id,
+      minimized: widgets[id]?.minimized,
+      tint: isTint(tintValue) ? tintValue : defaultTint[type],
+      data: widget?.data,
+      onClose: handleClose,
+      onTint: handleTint,
+      onData: handleData,
+    };
+    switch (type) {
+      case "clock":
+        return <WatchWidget {...common} />;
+      case "sticky":
+        return <StickyNotesWidgets {...common} />;
+      case "todo":
+        return <TodoListWidget {...common} />;
+      case "weather":
+        return <WeatherWidget {...common} />;
+      case "pomodoro":
+        return <PomodoroWidget {...common} />;
+      default:
+        return null;
     }
+  };
 
-    return { x: 0, y: 0 };
-  }
+  const available = useMemo(() => widgetOptions.filter((opt) => !Object.values(widgetData).some((w) => w.type === opt.id)), [widgetData]);
+  const visibleLayout = layout.filter((item) => widgets[item.i]?.visible);
+  const stacked = boardWidth > 0 && boardWidth < STACK_BELOW;
+  const stackOrder = [...visibleLayout].sort((a, b) => a.y - b.y || a.x - b.x);
 
-  const renderWidget = useCallback(
-    (type: string, id: string) => {
-      const minimized = widgets[id]?.minimized;
-
-      const commonProps = {
-        id,
-        minimized,
-        onClose: () => handleClose(id),
-        onMinimize: () => handleMinimize(id),
-      };
-
-      switch (type) {
-        case "clock":
-          return <WatchWidget {...commonProps} paused={editMode} />;
-        case "sticky":
-          return <StickyNotesWidgets {...commonProps} />;
-        case "todo":
-          return <TodoListWidget {...commonProps} />;
-        case "weather":
-          return <WeatherWidget {...commonProps} />;
-        case "pomodoro":
-          return <PomodoroWidget {...commonProps} />;
-        default:
-          return null;
-      }
-    },
-    [widgets, editMode, handleClose, handleMinimize]
-  );
-
-  // Memoized available widgets calculation
-  const availableWidgets = useMemo(
-    () =>
-      widgetOptions.filter(
-        (opt) => !Object.values(widgetData).some((w) => w.type === opt.id)
-      ),
-    [widgetData]
-  );
-
-  const responsiveLayouts = useMemo(
-    () => ({
-      lg: layout,
-      md: scaleLayoutForCols(layout, 12, COLS_BY_BREAKPOINT.md),
-      sm: scaleLayoutForCols(layout, 12, COLS_BY_BREAKPOINT.sm),
-      xs: scaleLayoutForCols(layout, 12, COLS_BY_BREAKPOINT.xs),
-      xxs: scaleLayoutForCols(layout, 12, COLS_BY_BREAKPOINT.xxs),
-    }),
-    [layout]
-  );
-
-  if (!user?.id) {
+  // A leftover cookie that the server no longer accepts: ask for a fresh sign-in instead of showing an empty board.
+  if (!userId) {
     return (
-      <div className="dashboard-lock" role="status" aria-live="polite">
-        ( login to use widgets )
+      <div className="dashboard">
+        <div className="board__empty" role="status">
+          <BasicIcon icon="LockPasswordIcon" size={40} strokeWidth={1.2} />
+          <h2>Sign in to see your day</h2>
+          <p>Your widgets are waiting for you.</p>
+          <BaseButton onClick={() => (window.location.href = "/auth/login")}>Sign in</BaseButton>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="WidgetAdder">
-      <div className="WidgetAdder__container">
-        <div className="WidgetAdder__buttonContainer">
-          <button
-            type="button"
-            className="WidgetAdder__button"
-            onClick={() => setDropdownOpen((prev) => !prev)}
-          >
-            <BasicIcon icon="PlusSignIcon" />
-          </button>
-          <div className="decoration" style={{ cursor: "default" }}>
-            {dropdownOpen && <BasicIcon icon="ArrowDown01Icon" />}
-            {!dropdownOpen && <BasicIcon icon="ArrowUp01Icon" />}
-          </div>
-        </div>
+    <div className="dashboard">
+      <DayHeader>
+        <BaseButton
+          variant={editMode ? "primary" : "ghost"}
+          size="sm"
+          data-keep-editing
+          aria-pressed={editMode}
+          onClick={() => setEditMode(!editMode)}
+          disabled={visibleLayout.length === 0}
+        >
+          <BasicIcon icon={editMode ? "Tick02Icon" : "Edit02Icon"} size={16} />
+          {editMode ? "Done" : "Arrange"}
+        </BaseButton>
 
-        {dropdownOpen && (
-          <div className="WidgetAdder__dropdown">
-            <div className="widgetDropdown">
-              {availableWidgets.map((widget) => (
+        <div className="addMenu" ref={menuRef} data-keep-editing>
+          <BaseButton size="sm" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} disabled={available.length === 0}>
+            <BasicIcon icon="PlusSignIcon" size={16} />
+            Add widget
+          </BaseButton>
+          {menuOpen && (
+            <div className="addMenu__panel" role="menu">
+              {available.map((option) => (
                 <button
-                  key={widget.id}
+                  key={option.id}
+                  type="button"
+                  role="menuitem"
+                  className="addMenu__item"
                   onClick={() => {
-                    addWidget(widget.id);
-                    setDropdownOpen(false);
+                    setMenuOpen(false);
+                    addWidget(option.id);
                   }}
-                  className="widgetDropdown__item"
                 >
-                  {widget.name}
+                  <span className="addMenu__icon">
+                    <BasicIcon icon={option.icon} size={20} />
+                  </span>
+                  <span className="addMenu__text">
+                    <strong>{option.name}</strong>
+                    <span>{option.blurb}</span>
+                  </span>
                 </button>
               ))}
             </div>
+          )}
+        </div>
+      </DayHeader>
+
+      <div className="board" ref={boardRef}>
+        {loadError && <p className="board__note">We couldn&apos;t load your widgets. Refresh to try again.</p>}
+
+        {!isLoading && !loadError && visibleLayout.length === 0 && (
+          <div className="board__empty">
+            <BasicIcon icon="Plant01Icon" size={44} strokeWidth={1.2} />
+            <h2>A blank page, just for you</h2>
+            <p>Add a clock, a to-do list, a sticky note… whatever makes today feel good.</p>
+            {available.length > 0 && <BaseButton onClick={() => setMenuOpen(true)}>Add your first widget</BaseButton>}
           </div>
         )}
-      </div>
 
-      <div className="WidgetAdder__grid">
-        <ResponsiveGridLayout
-          className="layout"
-          layouts={responsiveLayouts}
-          breakpoints={BREAKPOINTS}
-          cols={COLS_BY_BREAKPOINT}
-          autoSize={true}
-          rowHeight={100}
-          draggableHandle={editMode ? ".widgetWrapper" : "none"}
-          onBreakpointChange={(newBreakpoint) =>
-            setCurrentBreakpoint(newBreakpoint as BreakpointKey)
-          }
-          onLayoutChange={onLayoutChange}
-          onDragStop={onLayoutChange}
-          onResizeStop={onLayoutChange}
-          resizeHandles={["se"]}
-          preventCollision={false}
-          compactType="vertical"
-        >
-          {layout.map((item) => {
-            const id = item.i;
-            if (!widgets[id]?.visible) return null;
-
-            return (
-              <div key={id}>
-                <div className="widgetWrapper rounded-xl overflow-hidden shadow-lg h-full">
-                  {renderWidget(widgetData[id].type, id)}
+        {boardWidth > 0 &&
+          (stacked ? (
+            <div className="stack">
+              {stackOrder.map((item) => (
+                <div key={item.i} className="stack__item" style={{ height: Math.max(item.h * ROW_HEIGHT, 180) }}>
+                  {renderWidget(widgetData[item.i].type, item.i)}
                 </div>
-              </div>
-            );
-          })}
-        </ResponsiveGridLayout>
+              ))}
+            </div>
+          ) : (
+            <GridLayout
+              className="layout"
+              layout={visibleLayout}
+              cols={COLS}
+              width={boardWidth}
+              autoSize
+              rowHeight={ROW_HEIGHT}
+              margin={[16, 16]}
+              isDraggable={editMode}
+              isResizable={editMode}
+              onLayoutChange={onLayoutChange}
+              onDragStop={onUserLayoutChange}
+              onResizeStop={onUserLayoutChange}
+              resizeHandles={["se"]}
+              preventCollision={false}
+              compactType="vertical"
+            >
+              {layout.map((item) => {
+                if (!widgets[item.i]?.visible) return null;
+                return (
+                  <div key={item.i} data-grid={item}>
+                    {renderWidget(widgetData[item.i].type, item.i)}
+                  </div>
+                );
+              })}
+            </GridLayout>
+          ))}
       </div>
     </div>
   );

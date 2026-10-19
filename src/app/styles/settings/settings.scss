@@ -1,0 +1,174 @@
+// Settings dialog: tab list on the left, one panel on the right. On phones the tabs sit on top as a scrolling row.
+
+.settings {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  min-height: 0;
+  min-width: 0;
+  height: min(640px, calc(100vh - 32px));
+
+  &__side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px 14px;
+    border-right: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+  &__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    h2 { margin: 0; font-size: 24px; }
+  }
+  &__close { display: none; }
+
+  &__tabs { display: flex; flex-direction: column; gap: 4px; }
+  &__tab {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: var(--r-ctl);
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); }
+    &[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgb(var(--shadow-color) / 0.18), inset 3px 0 0 var(--accent); }
+  }
+  &__tabText { display: flex; flex-direction: column; line-height: 1.25; }
+  &__tabLabel { font-weight: 800; }
+  &__tabBlurb { font-size: 12px; opacity: 0.8; }
+
+  &__panel { position: relative; min-width: 0; overflow: auto; padding: 24px 28px 28px; }
+}
+
+.settingsForm { display: flex; flex-direction: column; gap: 22px; }
+.settingsHead {
+  h3 { margin: 0; font-size: 26px; }
+  p { margin: 2px 0 0; color: var(--ink-soft); }
+}
+.muted { color: var(--ink-soft); font-size: 13px; margin: 0; }
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  &__wide { grid-column: 1 / -1; }
+}
+.settingsActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+.settingsStatus {
+  margin: 0;
+  min-height: 1.4em;
+  font-size: 13px;
+  font-weight: 700;
+  &.ok { color: var(--ok); }
+  &.error { color: var(--danger); }
+}
+.settingsEmpty { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; h3 { margin: 0; font-size: 22px; } p { margin: 0 0 8px; color: var(--ink-soft); } }
+
+.settingsCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  h4 { margin: 0; font-size: 17px; }
+  &--row { flex-direction: row; align-items: center; justify-content: space-between; }
+}
+
+// Avatar
+.avatarRow { display: flex; align-items: center; gap: 16px; }
+.avatarPicker {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  &__img { display: block; width: 100%; height: 100%; border-radius: 50%; background-size: cover; background-position: center; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--accent-line); transition: filter 0.2s; }
+  &__badge { position: absolute; right: -2px; bottom: -2px; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); box-shadow: 0 2px 6px rgb(var(--shadow-color) / 0.35); }
+  &:hover &__img { filter: brightness(0.9); }
+  &:disabled { opacity: 0.6; cursor: progress; }
+}
+
+// One setting row: text on the left, control on the right
+.setting {
+  display: grid;
+  grid-template-columns: minmax(150px, 210px) 1fr;
+  gap: 8px 24px;
+  align-items: start;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed var(--line);
+
+  &__text { display: flex; flex-direction: column; gap: 2px; }
+  &__control { min-width: 0; }
+}
+.greetingControl { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; .field { width: 100%; max-width: 320px; } }
+
+// Background previews: each tile shows the real pattern in miniature
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border: 2px solid var(--line);
+  border-radius: calc(var(--r-ctl) + 2px);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s var(--ease);
+  &:hover { transform: translateY(-2px); }
+  &[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); }
+
+  &__preview {
+    display: block;
+    height: 46px;
+    border-radius: calc(var(--r-ctl) - 3px);
+    background-color: var(--bg);
+    border: 1px solid var(--line);
+    &[data-backdrop-preview="paper"] { background-image: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--surface) 80%, transparent), transparent 70%); }
+    &[data-backdrop-preview="dots"] { background-image: radial-gradient(color-mix(in srgb, var(--ink) 28%, transparent) 1.2px, transparent 1.4px); background-size: 9px 9px; }
+    &[data-backdrop-preview="lines"] { background-image: repeating-linear-gradient(to bottom, transparent 0 8px, color-mix(in srgb, var(--ink) 20%, transparent) 8px 9px); }
+    &[data-backdrop-preview="glow"] { background-image: radial-gradient(70% 70% at 20% 20%, color-mix(in srgb, var(--accent) 40%, transparent), transparent 70%), radial-gradient(60% 60% at 90% 90%, color-mix(in srgb, var(--c-lilac) 35%, transparent), transparent 70%); }
+    &[data-backdrop-preview="plain"] { background-image: none; }
+  }
+}
+
+@media (max-width: 720px) {
+  .settings {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    height: calc(100vh - 32px);
+
+    &__side { flex-direction: column; padding: 14px 12px 8px; border-right: 0; border-bottom: 1px solid var(--line); gap: 8px; }
+    &__close { display: inline-grid; }
+    &__tabs { flex-direction: row; overflow-x: auto; }
+    &__tab { flex: none; padding: 8px 12px; }
+    &__tabBlurb { display: none; }
+    &__panel { padding: 18px 16px 24px; }
+  }
+  .settingsGrid { grid-template-columns: minmax(0, 1fr); }
+  .setting { grid-template-columns: minmax(0, 1fr); }
+  .settingsCard--row { flex-direction: column; align-items: flex-start; }
+}
