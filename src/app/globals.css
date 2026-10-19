@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   PersonalHub design tokens.
+   Everything visual reads these variables. A person's choices (mode, accent, backdrop, font, radius) are
+   data-* attributes on <html> (see utils/preferences.ts), so switching a look re-paints through CSS only.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light "paper" (default) */
+  --bg: #f5ede0;
+  --bg-deep: #ede2d0;
+  --surface: #fffaf2;
+  --surface-2: #f8efe0;
+  --ink: #3a2e27;
+  --ink-soft: #7b6b5e;
+  --line: #e4d6c1;
+  --shadow-color: 90 60 30;
+  --danger: #b84a3f;
+  --ok: #5f8a5a;
+
+  /* Palette used for accents and widget tints */
+  --c-clay: #c46f4a;
+  --c-butter: #e0ad2f;
+  --c-peach: #ec8b62;
+  --c-rose: #d4687d;
+  --c-sage: #7c9d77;
+  --c-sky: #5e96b8;
+  --c-lilac: #9c84bd;
+  --c-paper: #fffaf2;
+
+  --accent: var(--c-clay);
+  --accent-ink: #fffaf2;
+  --accent-soft: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  --accent-line: color-mix(in srgb, var(--accent) 45%, var(--line));
+
+  /* Shape */
+  --r-card: 18px;
+  --r-ctl: 12px;
+  --r-pill: 999px;
+
+  --shadow-card: 0 1px 2px rgb(var(--shadow-color) / 0.08), 0 8px 24px -8px rgb(var(--shadow-color) / 0.18);
+  --shadow-pop: 0 2px 6px rgb(var(--shadow-color) / 0.12), 0 24px 60px -12px rgb(var(--shadow-color) / 0.35);
+
+  /* Type */
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-nunito), system-ui, sans-serif;
+
+  --sidebar-w: 248px;
+  --ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark "lamplight": warm browns, never pure black */
+:root[data-mode="dark"] {
+  --bg: #1d1713;
+  --bg-deep: #17120f;
+  --surface: #2a221c;
+  --surface-2: #332a22;
+  --ink: #f2e6d4;
+  --ink-soft: #b9a792;
+  --line: #43372c;
+  --shadow-color: 0 0 0;
+  --danger: #e0786b;
+  --ok: #8fb98a;
+  --c-paper: #2a221c;
+  --accent-ink: #1d1713;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Accent colours (brightened a touch in dark mode so they keep their glow) */
+:root[data-accent="clay"] { --accent: var(--c-clay); }
+:root[data-accent="butter"] { --accent: var(--c-butter); --accent-ink: #3a2e27; }
+:root[data-accent="peach"] { --accent: var(--c-peach); }
+:root[data-accent="rose"] { --accent: var(--c-rose); }
+:root[data-accent="sage"] { --accent: var(--c-sage); }
+:root[data-accent="sky"] { --accent: var(--c-sky); }
+:root[data-accent="lilac"] { --accent: var(--c-lilac); }
+:root[data-mode="dark"][data-accent="clay"] { --accent: #dd8660; }
+:root[data-mode="dark"][data-accent="butter"] { --accent: #efc04a; --accent-ink: #1d1713; }
+:root[data-mode="dark"][data-accent="peach"] { --accent: #f29f7c; }
+:root[data-mode="dark"][data-accent="rose"] { --accent: #e5879a; }
+:root[data-mode="dark"][data-accent="sage"] { --accent: #98ba92; }
+:root[data-mode="dark"][data-accent="sky"] { --accent: #7fb2d2; }
+:root[data-mode="dark"][data-accent="lilac"] { --accent: #b7a2d6; }
+
+/* Corners */
+:root[data-radius="sharp"] { --r-card: 6px; --r-ctl: 5px; }
+:root[data-radius="round"] { --r-card: 28px; --r-ctl: 18px; }
+
+/* Fonts */
+:root[data-font="soft"] { --font-display: var(--font-nunito), system-ui, sans-serif; }
+:root[data-font="type"] {
+  --font-display: var(--font-courier), "Courier New", monospace;
+  --font-body: var(--font-courier), "Courier New", monospace;
 }
 
+/* Backdrops sit behind everything, fixed, so scrolling never repaints them */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+:root[data-backdrop="paper"] body {
+  background-image: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--surface) 70%, transparent), transparent 70%);
+  background-attachment: fixed;
+}
+:root[data-backdrop="dots"] body {
+  background-image: radial-gradient(color-mix(in srgb, var(--ink) 16%, transparent) 1.2px, transparent 1.4px);
+  background-size: 22px 22px;
+  background-attachment: fixed;
+}
+:root[data-backdrop="lines"] body {
+  background-image: repeating-linear-gradient(to bottom, transparent 0 31px, color-mix(in srgb, var(--ink) 11%, transparent) 31px 32px);
+  background-attachment: fixed;
+}
+:root[data-backdrop="glow"] body {
+  background-image:
+    radial-gradient(60% 50% at 15% 10%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 70%),
+    radial-gradient(50% 45% at 90% 85%, color-mix(in srgb, var(--c-lilac) 22%, transparent), transparent 70%),
+    radial-gradient(45% 40% at 80% 5%, color-mix(in srgb, var(--c-butter) 18%, transparent), transparent 70%);
+  background-attachment: fixed;
+}
+:root[data-backdrop="plain"] body { background-image: none; }
+
+/* Shared bits */
+h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.01em; }
+a { color: inherit; }
+::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Soft, slim scrollbars */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--ink) 25%, transparent) transparent; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

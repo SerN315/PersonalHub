@@ -1,60 +1,90 @@
-.WidgetAdder {
-    &__container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 80px;
-        height: 50px;
-        border-radius: 10px;
-        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-    }
-&__buttonContainer {
-        gap: 10px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-            ;
-        
-            .WidgetAdder__button {
-            cursor: pointer;
-        }
-    }
-&__grid {
-        position: relative;
-        top: 50px;
-    }
+.dashboard {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px clamp(16px, 3vw, 40px) 48px;
 }
-.WidgetAdder__dropdown {
+
+.dayHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+
+  &__date { margin: 0 0 2px; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+  &__hello { margin: 0; font-size: clamp(1.9rem, 4vw, 2.7rem); line-height: 1.1; font-weight: 600; }
+  &__actions { display: flex; align-items: center; gap: 10px; }
+}
+
+// Add-widget menu
+.addMenu {
+  position: relative;
+
+  &__panel {
     position: absolute;
-    top: 60px;
-    right: 0px;
-    width: 200px;
-    border-radius: 10px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-    }
-.widgetDropdown {
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 30;
     display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
-&__item {
-        display: flex;
-        justify-content: end;
-        flex-direction: row-reverse;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-        padding: 10px;
-        cursor: pointer;
-&:hover {
-        background-color: #f0f0f0;
-    }
+    gap: 2px;
+    width: 280px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    box-shadow: var(--shadow-pop);
+    animation: menuIn 0.16s var(--ease);
+  }
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: var(--r-ctl);
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s;
+    &:hover, &:focus-visible { background: var(--accent-soft); }
+  }
+  &__icon { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 12px; background: var(--surface-2); color: var(--accent); }
+  &__text { display: flex; flex-direction: column; line-height: 1.25; span { font-size: 12px; color: var(--ink-soft); } }
 }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+
+.board {
+  position: relative;
+  min-height: 240px;
+
+  &__note { margin: 40px 0; text-align: center; color: var(--danger); font-weight: 700; }
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    max-width: 420px;
+    margin: 60px auto;
+    padding: 36px 28px;
+    border: 2px dashed var(--accent-line);
+    border-radius: calc(var(--r-card) + 6px);
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    text-align: center;
+    color: var(--ink-soft);
+    svg { color: var(--accent); }
+    h2 { margin: 6px 0 0; font-size: 24px; color: var(--ink); }
+    p { margin: 0 0 12px; }
+  }
 }
+
+.stack { display: flex; flex-direction: column; gap: 16px; &__item { width: 100%; } }
+
+// react-grid-layout: soften its placeholder and resize handle to match the cards
+.react-grid-item.react-grid-placeholder { background: var(--accent); opacity: 0.18; border-radius: var(--r-card); }
+.react-grid-item.react-draggable-dragging { z-index: 20; .widgetCard { box-shadow: var(--shadow-pop); transform: rotate(0.6deg); } }
+.react-grid-item > .react-resizable-handle { opacity: 0; transition: opacity 0.15s; &::after { border-color: var(--accent); width: 8px; height: 8px; right: 6px; bottom: 6px; } }
+.dashboard.is-arranging .react-grid-item > .react-resizable-handle, .react-grid-item:hover > .react-resizable-handle { opacity: 1; }

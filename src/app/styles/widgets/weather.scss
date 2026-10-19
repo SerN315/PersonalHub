@@ -1,159 +1,86 @@
-@use "../globals" as *;
+// The weather widget is a window onto the weather: the animated GIF behind it reflects the current condition.
+// Everything on top is light-on-dark text and line icons so it reads on any scene.
 
-.weather__container {
-  width: 100%;
-  height: 100%;
-  background-position: center;
-  background-repeat: no-repeat;
+.sky {
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 5%;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  padding: clamp(12px, 4%, 22px);
   box-sizing: border-box;
+  overflow: hidden;
+  color: #fff;
+  background-color: #5d7a96;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.55);
 
-  .darken {
+  // Gentle top and bottom shading keeps text legible while the middle of the scene stays clear.
+  &__shade {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3);
+    inset: 0;
+    background: linear-gradient(to bottom, rgb(20 14 10 / 0.5), rgb(20 14 10 / 0.06) 45%, rgb(20 14 10 / 0.5));
+    pointer-events: none;
   }
 
-  .weather__location {
-    font-size: clamp(0.8rem, 4vw, 1.5rem);
-    font-weight: $font-weight-bold;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    z-index: 2;
-    position: relative;
-  }
+  > * { position: relative; }
 
-  .weather__temp {
-    font-size: clamp(1.5rem, 8vw, 2.5rem);
-    font-weight: $font-weight-bold;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    z-index: 2;
-    position: relative;
-  }
+  &__note { margin: auto; max-width: 28ch; text-align: center; font-weight: 700; }
 
-  .weather__condition {
-    font-size: clamp(0.7rem, 3vw, 1rem);
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    z-index: 2;
-    position: relative;
-    opacity: 0.9;
-  }
+  &__now { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  &__place { font-weight: 800; font-size: clamp(0.85rem, 2.6vw, 1.05rem); letter-spacing: 0.01em; }
+  &__temp { font-family: var(--font-display); font-weight: 600; font-size: clamp(2.4rem, 9vw, 3.6rem); line-height: 1; margin: 2px 0 4px; }
+  &__cond { font-weight: 700; font-size: clamp(0.8rem, 2.4vw, 0.95rem); opacity: 0.95; }
+  &__range { opacity: 0.85; font-weight: 600; }
+  &__nowIcon { flex: none; filter: drop-shadow(0 2px 8px rgb(0 0 0 / 0.45)); }
 
-  .weather__forecastContainer {
-    margin-top: auto;
-    padding-top: 10px;
-    z-index: 2;
-    position: relative;
-    height: 120px;
-  }
-
-  .weather__navButton {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    color: rgba(0, 0, 0, 0.8);
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 10;
+  &__hours { display: flex; align-items: center; gap: 6px; }
+  &__strip {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-
-    &:hover:not(&--disabled) {
-      background: rgba(255, 255, 255, 1);
-      transform: translateY(-50%) scale(1.1);
-    }
-
-    &--prev {
-      left: 10px;
-    }
-
-    &--next {
-      right: 10px;
-    }
-
-    &--disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
+    flex: 1;
+    gap: 8px;
+    min-width: 0;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
-
-  .weather__forecastList {
-    height: 100%;
-    overflow: hidden;
-    padding: 0 45px; // Space for navigation buttons
-  }
-
-  .weather__forecastTrack {
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .weather__forecastPage {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  &__hour {
+    flex: 0 0 clamp(52px, 17%, 72px);
     display: flex;
-    gap: 5px;
-    box-sizing: border-box;
-    transition: transform 0.3s ease;
-    margin-right: 10px;
-  }
-
-  .weather__forecastItem {
-    display: flex;
-    justify-content: center;
     flex-direction: column;
-    height: 100%;
-    border-radius: 10px;
-    text-align: center;
-    color: white;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
-    font-size: clamp(0.6rem, 2.5vw, 1rem);
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px) saturate(180%);
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.15);
-    box-sizing: border-box;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 4px;
+    border-radius: 14px;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    background: rgb(255 255 255 / 0.14);
+    backdrop-filter: blur(8px);
+    scroll-snap-align: start;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  &__hourTime { opacity: 0.9; }
+  &__hourTemp { font-size: 14px; }
 
-    .weather__forecastTime {
-      margin-bottom: 5px;
-    }
-
-    .weather__forecastIcon {
-      width: 40px;
-      height: 40px;
-      margin: 0 auto 5px;
-
-      &__img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-    }
-
-    .weather__forecastTemp {
-      font-weight: $font-weight-bold;
-    }
+  &__arrow {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgb(255 255 255 / 0.3);
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.18);
+    color: #fff;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: background 0.15s, opacity 0.15s;
+    &:hover:not(:disabled) { background: rgb(255 255 255 / 0.32); }
+    &:disabled { opacity: 0.3; cursor: default; }
   }
 }

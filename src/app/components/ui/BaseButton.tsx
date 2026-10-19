@@ -1,32 +1,27 @@
 import React from "react";
-import "../../styles/ui/BaseButton.scss";
-type BaseButtonProps = {
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+import "@/app/styles/ui/controls.scss";
+
+type BaseButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "className"> & {
+  variant?: "primary" | "soft" | "ghost" | "danger";
+  size?: "md" | "sm";
+  full?: boolean;
   className?: string;
-  children: React.ReactNode;
-  type?: "button" | "submit" | "reset";
-  disabled?: boolean; // Add this line
-  form?: string;
 };
 
 const BaseButton: React.FC<BaseButtonProps> = ({
-  onClick,
-  className,
-  children,
+  variant = "primary",
+  size = "md",
+  full = false,
+  className = "",
   type = "button",
-  disabled = false, // Default to false
-  form = undefined,
+  children,
+  ...rest
 }) => {
-  const buttonClass = className ? className : "BaseButton";
-
+  const classes = ["btn", variant !== "primary" && `btn--${variant}`, size === "sm" && "btn--sm", full && "btn--full", className]
+    .filter(Boolean)
+    .join(" ");
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={buttonClass}
-      form={form}
-      disabled={disabled}
-    >
+    <button type={type} className={classes} {...rest}>
       {children}
     </button>
   );

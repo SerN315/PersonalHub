@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useUserStore } from "../utils/store/userStore";
 import { fetchUser } from "@/app/apis/settings";
 import { onSignedOut } from "@/app/apis/http";
+import { usePreferencesStore } from "../utils/store/preferencesStore";
 import { LoadingSpinner } from "../components/ultis/loadingSpinner";
 
 const PUBLIC_PATHS = ["/auth/"];
@@ -20,6 +21,7 @@ export default function UserRegistry({
       setLoading(true);
       try {
         const profile = await fetchUser();
+        usePreferencesStore.getState().hydrateFromServer(profile.preferences);
         setUser({
           id: profile.id,
           name: profile.full_name || "",

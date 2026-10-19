@@ -1,130 +1,64 @@
-import React, { useState, useRef, useEffect } from "react";
+"use client";
+import React, { memo, useEffect, useRef, useState } from "react";
 import BaseWidget from "./BaseWidget";
 import "../../styles/widgets/stickyNotes.scss";
 import WidgetProps from "@/app/types/widget";
 
-export default function StickyNotesWidgets(props: WidgetProps) {
-  const [note, setNote] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+const SAVE_DELAY_MS = 700;
+const MAX_LENGTH = 4000;
 
-  const TAGS = [
-    {
-      label: "Urgent",
-      color: "rgb(255 169 169)",
-      bg: "#FF4C38",
-      dc: "rgb(123 0 0)",
-      textColor: "#fff",
-    }, // light red
-    {
-      label: "Chill",
-      color: "rgb(129 227 255)",
-      bg: "#50B2FC",
-      dc: "rgb(0 84 112)",
-      textColor: "#fff",
-    }, // light blue
-    {
-      label: "ASAP",
-      color: " #faad14",
-      bg: "#FED800",
-      dc: "#705f00",
-      textColor: "black",
-    },
-  ];
-
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prev) => (prev[0] === tag ? [] : [tag]));
-    setDropdownOpen(false);
-  };
-
-  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNote(e.target.value);
-  };
-
+// A note that remembers: what you type is saved to your account a moment after you stop typing.
+function StickyNotesWidget({ data, onData, ...props }: WidgetProps) {
+  const saved = typeof data?.note === "string" ? data.note : "";
+  const [note, setNote] = useState(saved);
+  const pending = useRef<{ timer: ReturnType<typeof setTimeout>; text: string } | null>(null);
+  const onDataRef = useRef(onData);
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
+    onDataRef.current = onData;
+  });
+
+  const flush = () => {
+    if (!pending.current) return;
+    clearTimeout(pending.current.timer);
+    onDataRef.current?.(props.id, { note: pending.current.text });
+    pending.current = null;
+  };
+
+  // Leaving the page (or removing the widget) must not lose the last few keystrokes.
+  useEffect(() => {
+    const onHide = () => flush();
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      flush();
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🟡 Get background color from selected tag
-  const selectedTag = TAGS.find((tag) => tag.label === selectedTags[0]);
-  const backgroundColor = selectedTag?.bg || "#FED800";
+  const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = event.target.value;
+    setNote(text);
+    if (pending.current) clearTimeout(pending.current.timer);
+    pending.current = { text, timer: setTimeout(flush, SAVE_DELAY_MS) };
+  };
 
   return (
-    <BaseWidget title="Sticky Note" {...props}>
-      <div className="stickyNote__container" style={{ backgroundColor }}>
-        <div className="stickyNote__container__tags__container">
-          <div
-            className="stickyNote__container__tags__container__selected"
-            onClick={() => setDropdownOpen((prev) => !prev)}
-            ref={dropdownRef}
-          >
-            {selectedTags.length === 0 ? (
-              <span className="tag-placeholder">+ Add tag</span>
-            ) : (
-              selectedTags.map((tagLabel) => {
-                const tag = TAGS.find((t) => t.label === tagLabel);
-                return (
-                  <span
-                    key={tagLabel}
-                    className="stickyNote__container__tags__container__tag selected"
-                    style={{ backgroundColor: tag?.color }}
-                  >
-                    {tagLabel}
-                  </span>
-                );
-              })
-            )}
-
-            {dropdownOpen && (
-              <div className="stickyNote__container__tags__container__dropdown">
-                {TAGS.map((tag) => (
-                  <span
-                    key={tag.label}
-                    className={`stickyNote__container__tags__container__tag ${
-                      selectedTags.includes(tag.label) ? "selected" : ""
-                    }`}
-                    style={{ backgroundColor: tag.color }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTagClick(tag.label);
-                    }}
-                  >
-                    {tag.label}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
+    <BaseWidget title="Sticky note" {...props}>
+      <div className="sticky">
         <textarea
+          className="sticky__text"
           value={note}
-          onChange={handleNoteChange}
-          placeholder="Write your note here..."
-          style={{
-            color: selectedTag?.textColor || "black",
-          }}
+          maxLength={MAX_LENGTH}
+          onChange={onChange}
+          onBlur={flush}
+          placeholder="Jot something down…"
+          aria-label="Sticky note"
+          spellCheck
         />
-
-        <div className="stickyNote__container__decor">
-          <div
-            className="DecorShape"
-            style={{
-              borderLeft: `50px solid ${selectedTag?.dc || "#705f00"}`,
-            }}
-          ></div>
-        </div>
+        <div className="sticky__fold" aria-hidden />
       </div>
     </BaseWidget>
   );
 }
+
+export default memo(StickyNotesWidget);

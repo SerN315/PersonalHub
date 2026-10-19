@@ -1,84 +1,72 @@
-@use "../globals" as *;
-.login-page {
-  width: 100vw;
-  height: 100vh;
-}
-.login-page-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-image: url("/159Z_2107.w026.n002.628B.p1.628.jpg");
-  background-size: cover;
-  padding: 30px;
-  @include respond-to(lg) {
-    padding: 10px;
+// Sign in / create account: the form on a warm paper panel, a small illustrated scene beside it.
+
+.auth {
+  display: grid;
+  grid-template-columns: minmax(380px, 1fr) minmax(0, 1fr);
+  min-height: 100vh;
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+    padding: 32px 24px;
   }
-  @include respond-to(sm) {
-    padding: 0;
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
   }
-}
-.login-page-content {
-  width: 90%;
-  height: 90%;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.21);
-  border-radius: 15px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(6.8px);
-  -webkit-backdrop-filter: blur(6.8px);
-  @include respond-to(sm) {
-    width: 100%;
-    height: 100%;
-    padding: 0;
+  &__brandMark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    transform: rotate(-6deg);
+    box-shadow: 0 6px 14px -6px var(--accent);
   }
-}
-.login-internal {
-  background-color: white;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  border-radius: 15px;
-  @include respond-to(sm) {
-    border-radius: 0;
+  &__form { width: 100%; max-width: 420px; animation: authIn 0.35s var(--ease); }
+
+  &__art {
+    position: relative;
+    overflow: hidden;
+    border-left: 1px solid var(--line);
+    background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+    .cozyScene { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   }
 }
-.decorImage {
-  width: 50%;
-  height: 100%;
-  position: absolute;
-  right: 0;
-  @include respond-to(sm) {
-    display: none;
-  }
-  img {
-    padding: 10px;
-    border-radius: 0 20px 20px 0;
-  }
+@keyframes authIn { from { opacity: 0; transform: translateY(10px); } }
+
+.authCard {
+  padding: 32px 30px 26px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--r-card) + 6px);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+
+  &__title { margin: 0; font-size: 30px; line-height: 1.15; }
+  &__subtitle { margin: 6px 0 22px; color: var(--ink-soft); }
+  &__form { display: flex; flex-direction: column; gap: 14px; }
+  &__error { margin: 0; padding: 10px 12px; border-radius: var(--r-ctl); background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); font-size: 14px; font-weight: 700; }
+  &__notice { margin: 0; padding: 10px 12px; border-radius: var(--r-ctl); background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ink); font-size: 14px; font-weight: 700; }
+  &__switch { margin: 20px 0 0; text-align: center; color: var(--ink-soft); }
+  &__link { padding: 0; border: 0; background: none; color: var(--accent); font: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; &:hover { filter: brightness(1.1); } }
 }
-// .register-form {
-//   gap: 30px;
-//   position: absolute;
-//   left: 0;
-//   opacity: 0;
-//   transform: translateX(100%);
-//   transition: all 0.5s ease-in-out;
-//   &.show {
-//     opacity: 1;
-//     transform: translateX(0);
-//   }
-// }
-// .login-form {
-//   position: absolute;
-//   left: 0;
-//   opacity: 1;
-//   transform: translateX(0);
-//   transition: all 0.5s ease-in-out;
-//   &.hidden {
-//     opacity: 0;
-//     transform: translateX(-100%);
-//   }
-// }
+
+.cozyScene {
+  &__steam { animation: steam 3.2s ease-in-out infinite; transform-box: fill-box; &--late { animation-delay: 1.4s; } }
+  &__cloud { animation: drift 24s ease-in-out infinite alternate; }
+}
+@keyframes steam { 0% { opacity: 0; transform: translateY(6px); } 40% { opacity: 0.7; } 100% { opacity: 0; transform: translateY(-10px); } }
+@keyframes drift { to { transform: translateX(36px); } }
+
+@media (max-width: 860px) {
+  .auth { grid-template-columns: 1fr; &__art { display: none; } &__panel { min-height: 100vh; } }
+}

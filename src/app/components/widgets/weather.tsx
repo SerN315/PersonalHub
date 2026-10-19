@@ -1,305 +1,167 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useRef, useCallback } from "react";
+"use client";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import BaseWidget from "./BaseWidget";
+import BasicIcon from "@/app/components/ultis/icons";
 import "../../styles/widgets/weather.scss";
 import WidgetProps from "@/app/types/widget";
-import Image from "next/image";
-import {
-  getWeatherIcon,
-  getWeatherBackground,
-} from "@/app/utils/weatherMappings";
+import { getWeatherBackground, getWeatherIconName } from "@/app/utils/weatherMappings";
+import type * as Icons from "@hugeicons/core-free-icons";
 
-export default function WeatherWidget(props: WidgetProps) {
-  const [weather, setWeather] = useState({
-    location: "Your City",
-    temperature: "--",
-    condition: "Unknown",
-  });
+interface Hour {
+  time: string;
+  temp_c: number;
+  is_day?: number;
+  condition?: { text?: string; code?: number };
+}
 
-  // Add state for hourly forecast
-  const [hourly, setHourly] = useState<any[]>([]);
-  const forecastListRef = useRef<HTMLDivElement>(null);
+interface Sky {
+  location: string;
+  temperature: number;
+  condition: string;
+  code?: number;
+  isDay?: number;
+  high?: number;
+  low?: number;
+  hours: Hour[];
+}
 
-  // Track if parent is at max height
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [showForecast, setShowForecast] = useState(true);
+type State = { kind: "loading" } | { kind: "denied" } | { kind: "error" } | { kind: "ready"; sky: Sky };
 
-  // Carousel state
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [itemsPerView, setItemsPerView] = useState(3); // Default items per view
+const HOURS_SHOWN = 12;
+const icon = (code?: number, isDay?: number) => getWeatherIconName(code, isDay) as keyof typeof Icons;
 
-  // Store the previous condition and current background
-  const previousCondition = useRef<string>("Unknown");
-  const currentBackground = useRef<string>("");
+// "2026-10-19 14:00" -> the next HOURS_SHOWN hours from now, carrying on into tomorrow.
+function upcomingHours(days: { hour?: Hour[] }[] | undefined): Hour[] {
+  const all = (days ?? []).flatMap((d) => d.hour ?? []);
+  const now = Date.now() - 30 * 60 * 1000;
+  const future = all.filter((h) => new Date(h.time.replace(" ", "T")).getTime() >= now);
+  return (future.length ? future : all).slice(0, HOURS_SHOWN);
+}
+
+// The sky outside your window: the animated scene reflects the current condition, the details sit on top of it.
+function WeatherWidget(props: WidgetProps) {
+  const [state, setState] = useState<State>(() =>
+    typeof navigator !== "undefined" && !navigator.geolocation ? { kind: "error" } : { kind: "loading" }
+  );
+  const [background, setBackground] = useState("");
+  const previous = useRef({ condition: "", background: "" });
 
   useEffect(() => {
+    let cancelled = false;
+    if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        const days = 1;
+      async ({ coords }) => {
         // The weather key lives on the server; the browser only asks our own API.
-        const query = `lat=${latitude}&lon=${longitude}`;
-        const url = `/api/weather/current?${query}`;
-        const forcastUrl = `/api/weather/forecast?${query}&days=${days}`;
+        const query = `lat=${coords.latitude}&lon=${coords.longitude}`;
         try {
-          const [response, forecastResponse] = await Promise.all([fetch(url), fetch(forcastUrl)]);
-          if (!response.ok || !forecastResponse.ok) throw new Error("Weather unavailable");
-          const [data, forecastData] = await Promise.all([response.json(), forecastResponse.json()]);
+          const [now, forecast] = await Promise.all([fetch(`/api/weather/current?${query}`), fetch(`/api/weather/forecast?${query}&days=2`)]);
+          if (!now.ok || !forecast.ok) throw new Error("Weather unavailable");
+          const [current, ahead] = await Promise.all([now.json(), forecast.json()]);
+          if (cancelled) return;
 
-          const newCondition = data.current.condition.text;
+          const condition: string = current.current.condition.text;
+          const nextBackground = getWeatherBackground(condition, previous.current.condition, previous.current.background);
+          previous.current = { condition, background: nextBackground };
+          setBackground(nextBackground);
 
-          // Get the background, considering if condition changed
-          const background = getWeatherBackground(
-            newCondition,
-            previousCondition.current,
-            currentBackground.current
-          );
-
-          // Update refs
-          previousCondition.current = newCondition;
-          currentBackground.current = background;
-
-          setWeather({
-            location: data.location.name,
-            temperature: Math.round(data.current.temp_c).toString(),
-            condition: newCondition,
+          const today = ahead.forecast?.forecastday?.[0]?.day;
+          setState({
+            kind: "ready",
+            sky: {
+              location: current.location.name,
+              temperature: Math.round(current.current.temp_c),
+              condition,
+              code: current.current.condition.code,
+              isDay: current.current.is_day,
+              high: today ? Math.round(today.maxtemp_c) : undefined,
+              low: today ? Math.round(today.mintemp_c) : undefined,
+              hours: upcomingHours(ahead.forecast?.forecastday),
+            },
           });
-          // Set hourly forecast (first day)
-          if (
-            forecastData &&
-            forecastData.forecast &&
-            forecastData.forecast.forecastday &&
-            forecastData.forecast.forecastday[0] &&
-            forecastData.forecast.forecastday[0].hour
-          ) {
-            setHourly(forecastData.forecast.forecastday[0].hour);
-          }
-        } catch (error) {
-          console.error("Failed to fetch weather:", error);
+        } catch {
+          if (!cancelled) setState({ kind: "error" });
         }
       },
-      (err) => {
-        console.error("Geolocation error:", err);
-      }
+      () => !cancelled && setState({ kind: "denied" })
     );
-    // Check for compact mode based on props or window size
-  }, []);
-
-  // Group hourly data into pages and calculate navigation
-  const [hourlyPages, setHourlyPages] = useState<any[][]>([]);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-
-  // Initialize pages when hourly data is available
-  useEffect(() => {
-    if (hourly.length === 0) return;
-
-    // Calculate items per view based on container width
-    const calculateItemsPerView = () => {
-      if (!containerRef.current) return 3;
-      const containerWidth = containerRef.current.clientWidth;
-      if (containerWidth < 300) return 2;
-      if (containerWidth < 500) return 3;
-      if (containerWidth < 700) return 4;
-      return 5;
-    };
-
-    const itemsPerPage = calculateItemsPerView();
-    setItemsPerView(itemsPerPage);
-
-    // Group hourly data into pages
-    const pages: any[][] = [];
-    for (let i = 0; i < hourly.length; i += itemsPerPage) {
-      pages.push(hourly.slice(i, i + itemsPerPage));
-    }
-    setHourlyPages(pages);
-
-    // Find which page contains the current hour
-    const now = new Date();
-    const currentHour = now.getHours();
-    let currentHourIdx = hourly.findIndex(
-      (h) => new Date(h.time).getHours() >= currentHour
-    );
-    if (currentHourIdx === -1) currentHourIdx = 0;
-
-    // Calculate which page the current hour is in
-    const currentPage = Math.floor(currentHourIdx / itemsPerPage);
-    setCurrentPageIndex(currentPage);
-    setCurrentSlide(0);
-  }, [hourly]);
-
-  // Memoized carousel navigation functions for pages
-  const nextPage = useCallback(() => {
-    setCurrentPageIndex((prev) => Math.min(prev + 1, hourlyPages.length - 1));
-  }, [hourlyPages.length]);
-
-  const prevPage = useCallback(() => {
-    setCurrentPageIndex((prev) => Math.max(prev - 1, 0));
-  }, []);
-
-  // Check if navigation buttons should be shown
-  const canGoPrev = currentPageIndex > 0;
-  const canGoNext = currentPageIndex < hourlyPages.length - 1;
-
-  useEffect(() => {
-    if (
-      !forecastListRef.current ||
-      !containerRef.current ||
-      hourly.length === 0
-    )
-      return;
-
-    const el = forecastListRef.current;
-    const container = containerRef.current;
-
-    // Calculate items per view based on container width
-    const calculateItemsPerView = () => {
-      const containerWidth = container.clientWidth;
-      if (containerWidth < 300) return 1;
-      if (containerWidth < 500) return 2;
-      if (containerWidth < 700) return 3;
-      return 4;
-    };
-
-    // Recalculate pages based on new container size
-    const recalculatePages = () => {
-      const newItemsPerPage = calculateItemsPerView();
-      setItemsPerView(newItemsPerPage);
-
-      // Group hourly data into new pages
-      const newPages: any[][] = [];
-      for (let i = 0; i < hourly.length; i += newItemsPerPage) {
-        newPages.push(hourly.slice(i, i + newItemsPerPage));
-      }
-      setHourlyPages(newPages);
-
-      // Adjust current page if needed to stay within bounds
-      setCurrentPageIndex((prev) =>
-        Math.min(prev, Math.max(0, newPages.length - 1))
-      );
-    };
-
-    const checkHeightAndResize = () => {
-      // Check if forecast should show (height check)
-      const isNotOverflowing = el.scrollHeight <= el.clientHeight + 2;
-      setShowForecast(isNotOverflowing);
-
-      // Recalculate pages on resize
-      recalculatePages();
-    };
-
-    // Initial check
-    checkHeightAndResize();
-
-    // Observe size changes on both forecast container and main container
-    const resizeObserver = new window.ResizeObserver(checkHeightAndResize);
-    resizeObserver.observe(el);
-    resizeObserver.observe(container);
-
-    // Also observe parent in case its size changes
-    if (el.parentElement) {
-      resizeObserver.observe(el.parentElement);
-    }
-
     return () => {
-      resizeObserver.disconnect();
+      cancelled = true;
     };
-  }, [hourly, currentPageIndex]);
+  }, []);
+
+  // Hourly strip: native scroll-snap, with arrows that page it.
+  const stripRef = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: true, end: true });
+  const measureEdges = useCallback(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    const next = { start: el.scrollLeft <= 2, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 2 };
+    setEdges((prev) => (prev.start === next.start && prev.end === next.end ? prev : next));
+  }, []);
+  useEffect(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    measureEdges();
+    const observer = new ResizeObserver(measureEdges);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [state, measureEdges]);
+  const page = (direction: 1 | -1) => stripRef.current?.scrollBy({ left: direction * stripRef.current.clientWidth * 0.8, behavior: "smooth" });
+
+  const sky = state.kind === "ready" ? state.sky : null;
 
   return (
-    <BaseWidget title="Weather" {...props}>
-      <div
-        className="weather__container"
-        ref={containerRef}
-        style={{
-          backgroundImage: `url("${currentBackground.current}")`,
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center center",
-          backgroundSize: "cover",
-        }}
-      >
-        <div className="darken"></div>
-        <div className="weather__location">{weather.location}</div>
-        <div className="weather__temp">{weather.temperature}°C</div>
-        <div className="weather__condition">{weather.condition}</div>
-        <div
-          className="weather__forecastContainer"
-          style={{ opacity: showForecast ? 1 : 0 }}
-        >
-          {/* Navigation Buttons */}
-          {showForecast && hourlyPages.length > 1 && (
-            <>
-              <button
-                className={`weather__navButton weather__navButton--prev ${
-                  !canGoPrev ? "weather__navButton--disabled" : ""
-                }`}
-                onClick={prevPage}
-                disabled={!canGoPrev}
-              >
-                ‹
-              </button>
-              <button
-                className={`weather__navButton weather__navButton--next ${
-                  !canGoNext ? "weather__navButton--disabled" : ""
-                }`}
-                onClick={nextPage}
-                disabled={!canGoNext}
-              >
-                ›
-              </button>
-            </>
-          )}
+    <BaseWidget title="Weather" {...props} tintable={false}>
+      <div className="sky" style={background ? { backgroundImage: `url("${background}")` } : undefined}>
+        <div className="sky__shade" />
 
-          {/* Carousel Content */}
-          <div className="weather__forecastList" ref={forecastListRef}>
-            <div className="weather__forecastTrack">
-              {hourlyPages.map((page, pageIdx) => (
-                <div
-                  key={pageIdx}
-                  className="weather__forecastPage"
-                  style={{
-                    transform: `translateX(${
-                      (pageIdx - currentPageIndex) * 100
-                    }%)`,
-                    display: "flex",
-                  }}
-                >
-                  {page.map((hour, hourIdx) => (
-                    <div
-                      className="weather__forecastItem"
-                      key={`${pageIdx}-${hourIdx}`}
-                      style={{
-                        width: `${100 / page.length}%`,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <div className="weather__forecastTime">
-                        {new Date(hour.time).getHours()}:00
-                      </div>
-                      <div className="weather__forecastIcon">
-                        <Image
-                          className="weather__forecastIcon__img"
-                          // Use the WeatherAPI condition code and is_day flag to pick the right PNG
-                          src={getWeatherIcon(
-                            hour.condition?.code,
-                            hour.is_day
-                          )}
-                          alt={hour.condition.text}
-                          width={32}
-                          height={32}
-                          unoptimized
-                        />
-                      </div>
-                      <div className="weather__forecastTemp">
-                        {Math.round(hour.temp_c)}°C
-                      </div>
+        {state.kind === "loading" && <p className="sky__note">Looking outside…</p>}
+        {state.kind === "denied" && <p className="sky__note">Allow location access to see the sky outside your window.</p>}
+        {state.kind === "error" && <p className="sky__note">Can&apos;t see the sky right now. Try again in a bit.</p>}
+
+        {sky && (
+          <>
+            <div className="sky__now">
+              <div>
+                <div className="sky__place">{sky.location}</div>
+                <div className="sky__temp">{sky.temperature}°</div>
+                <div className="sky__cond">
+                  {sky.condition}
+                  {sky.high !== undefined && sky.low !== undefined && (
+                    <span className="sky__range">
+                      {" "}
+                      · H {sky.high}° L {sky.low}°
+                    </span>
+                  )}
+                </div>
+              </div>
+              <BasicIcon icon={icon(sky.code, sky.isDay)} size={52} strokeWidth={1.4} className="sky__nowIcon" />
+            </div>
+
+            {sky.hours.length > 0 && (
+              <div className="sky__hours">
+                <button type="button" className="sky__arrow" onClick={() => page(-1)} disabled={edges.start} aria-label="Earlier hours">
+                  <BasicIcon icon="ArrowLeft01Icon" size={16} />
+                </button>
+                <div className="sky__strip" ref={stripRef} onScroll={measureEdges}>
+                  {sky.hours.map((hour) => (
+                    <div className="sky__hour" key={hour.time}>
+                      <span className="sky__hourTime">{new Date(hour.time.replace(" ", "T")).getHours()}:00</span>
+                      <BasicIcon icon={icon(hour.condition?.code, hour.is_day)} size={26} strokeWidth={1.5} />
+                      <span className="sky__hourTemp">{Math.round(hour.temp_c)}°</span>
                     </div>
                   ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
+                <button type="button" className="sky__arrow" onClick={() => page(1)} disabled={edges.end} aria-label="Later hours">
+                  <BasicIcon icon="ArrowRight01Icon" size={16} />
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </BaseWidget>
   );
 }
+
+export default memo(WeatherWidget);

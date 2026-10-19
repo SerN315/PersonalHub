@@ -1,26 +1,7 @@
-export type SettingsTab = "Profile" | "Account";
-
-export interface SettingsFormData {
-  username: string;
-  email: string;
-  language: string;
-  image?: File | null;
-}
+export type SettingsTab = "Profile" | "Appearance" | "Security";
 
 export interface SettingsModalProps {
-  isOpen: boolean;
+  open: boolean;
+  initialTab?: SettingsTab;
   onClose: () => void;
-  onSave: (data: SettingsFormData) => void;
-  initialData?: SettingsFormData;
-  theme?: string;
-}
-
-export interface SettingAccountProps {
-  data: SettingsFormData;
-  onChange: (key: keyof SettingsFormData, value: SettingsFormData[keyof SettingsFormData]) => void;
-}
-
-export interface SettingsSidebarProps {
-  activeTab: SettingsTab;
-  onSelect: (tab: SettingsTab) => void;
 }

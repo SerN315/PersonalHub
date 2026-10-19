@@ -1,129 +1,75 @@
 "use client";
 import React, { useState } from "react";
-import LoginInput from "@/app/components/ui/loginInput";
+import BaseInput from "@/app/components/ui/BaseInput";
 import BaseButton from "@/app/components/ui/BaseButton";
 
 interface LoginFormProps {
   toggleForm: () => void;
 }
 
+type Errors = { email?: string; password?: string; general?: string };
+
 const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-    general?: string;
-  }>({
-    email: undefined,
-    password: undefined,
-    general: undefined,
-  });
+  const [errors, setErrors] = useState<Errors>({});
+  const [busy, setBusy] = useState(false);
 
-  const validateFields = () => {
-    const newErrors: {
-      email?: string;
-      password?: string;
-    } = {};
-
-    if (!email.includes("@")) {
-      newErrors.email = "Email must contain '@'";
-    }
-
-    if (password.length < 1) {
-      newErrors.password = "Enter your password";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validate = () => {
+    const next: Errors = {};
+    if (!email.includes("@")) next.email = "Enter your email address";
+    if (password.length < 1) next.password = "Enter your password";
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    if (validateFields()) {
-      try {
-        const res = await fetch("/api/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          setErrors((prev) => ({
-            ...prev,
-            general: data.error || "Login failed. Please try again.",
-          }));
-          return;
-        }
-
-        window.location.href = "/dashboard";
-
-        // Redirect or trigger login success flow
-      } catch {
-        setErrors((prev) => ({
-          ...prev,
-          general: "An unexpected error occurred.",
-        }));
+    if (!validate()) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setErrors({ general: data.error || "We couldn't sign you in. Please try again." });
+        return;
       }
+      window.location.href = "/dashboard";
+    } catch {
+      setErrors({ general: "We can't reach the server. Check your connection and try again." });
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
-    <div className="login-form-container">
-      {/* <h1 className="formName">Login</h1> */}
-      <div className="titleDescription">
-        <h1 className="title">Welcome Back</h1>
-        <h2 className="subTitle">Let&apos;s login to begin productive</h2>
-      </div>
-      <form onSubmit={handleSubmit} id="login-form">
-        <p>Email</p>
-        <LoginInput
-          type="email"
-          value={email}
-          label="Email"
-          onChange={(e) => setEmail(e.target.value)}
-          error={errors.email}
-        />
-        <p>Password</p>
-        <LoginInput
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={errors.password}
-        />
+    <div className="authCard">
+      <h1 className="authCard__title">Welcome back</h1>
+      <p className="authCard__subtitle">Let&apos;s make today a good one.</p>
+
+      <form id="login-form" className="authCard__form" onSubmit={handleSubmit} noValidate>
+        <BaseInput label="Email" type="email" autoComplete="email" placeholder="you@example.com" value={email} error={errors.email} onChange={(e) => setEmail(e.target.value)} />
+        <BaseInput label="Password" type="password" autoComplete="current-password" placeholder="Your password" value={password} error={errors.password} onChange={(e) => setPassword(e.target.value)} />
         {errors.general && (
-          <p className="error text-red-500">{errors.general}</p>
+          <p className="authCard__error" role="alert">
+            {errors.general}
+          </p>
         )}
-        <div className="subInteraction">
-          <div className="rememberMe">
-            <input type="checkbox" />
-            <label>Remember me</label>
-          </div>
-          <a href="#" className="forgotPassword">
-            Forgot Password?
-          </a>
-        </div>
+        <BaseButton type="submit" form="login-form" full disabled={busy}>
+          {busy ? "Signing in…" : "Sign in"}
+        </BaseButton>
       </form>
-      <div className="submitButtons">
-        <BaseButton type="submit" form="login-form">
-          Login
-        </BaseButton>
-        <BaseButton type="button" className="google-login" disabled>
-          Login with Google (disabled)
-        </BaseButton>
-      </div>
-      <div className="register">
-        <p>Don&apos;t have an account?</p>
-        <a href="#" className="registerLink" onClick={toggleForm}>
-          Register
-        </a>
-      </div>
+
+      <p className="authCard__switch">
+        New here?{" "}
+        <button type="button" className="authCard__link registerLink" onClick={toggleForm}>
+          Create an account
+        </button>
+      </p>
     </div>
   );
 };

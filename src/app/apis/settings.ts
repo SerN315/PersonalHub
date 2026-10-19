@@ -1,4 +1,5 @@
 import { api } from "./http";
+import type { Preferences } from "@/app/utils/preferences";
 
 export interface Profile {
   id: string;
@@ -7,6 +8,7 @@ export interface Profile {
   username: string | null;
   full_name: string | null;
   avatar_url: string | null;
+  preferences: Partial<Preferences>;
 }
 
 // The signed-in profile; rejects with a 401 ApiError when there is no valid session.
@@ -17,6 +19,7 @@ export const updateUser = (updates: {
   full_name?: string;
   email?: string;
   avatar_url?: string;
+  preferences?: Preferences;
 }) => api<{ user: Profile; emailChangePending: boolean }>("/api/update-profile", { method: "PATCH", body: updates });
 
 export const logoutUser = () => api("/api/logout", { method: "POST" });

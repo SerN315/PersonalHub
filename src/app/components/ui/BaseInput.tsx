@@ -1,22 +1,40 @@
-import React, { FC, InputHTMLAttributes } from "react";
-import "@/app/styles/ui/BaseInput.scss";
-import { useThemeStore } from "@/app/utils/store/ThemeStore";
+import React, { InputHTMLAttributes, useId } from "react";
+import "@/app/styles/ui/controls.scss";
+
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
+  hint?: string;
   error?: string;
 }
 
-const Input: FC<InputProps> = ({ label, error, ...props }) => {
-  const theme = useThemeStore((state) => state.theme); // Get current theme
+// A labelled text field. The label is a real <label>, and hint/error are announced with the input.
+const Input: React.FC<InputProps> = ({ label, hint, error, id, className = "", ...props }) => {
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  const describedBy = error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined;
   return (
-    <div className={`input-wrapper`}>
+    <div className="field">
+      {label && (
+        <label className="field__label" htmlFor={inputId}>
+          {label}
+        </label>
+      )}
       <input
-        className={`input-field ${error ? "input-error" : ""} ${
-          theme === "dark" ? "input-dark" : "input-light"
-        }`}
+        id={inputId}
+        className={`input ${className}`.trim()}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
         {...props}
       />
-      {error && <span className="input-error-message">{error}</span>}
+      {error ? (
+        <span id={`${inputId}-error`} className="field__error" role="alert">
+          {error}
+        </span>
+      ) : hint ? (
+        <span id={`${inputId}-hint`} className="field__hint">
+          {hint}
+        </span>
+      ) : null}
     </div>
   );
 };

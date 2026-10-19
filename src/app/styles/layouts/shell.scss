@@ -1,0 +1,130 @@
+// App shell: sidebar + content. On narrow screens the sidebar becomes a bottom tab bar.
+
+.appShell {
+  display: flex;
+  min-height: 100vh;
+
+  &__main {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  flex: none;
+  width: var(--sidebar-w);
+  height: 100vh;
+  padding: 20px 14px;
+  border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(10px);
+
+  &__top, &__bottom { display: flex; flex-direction: column; gap: 6px; }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 10px 14px;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+  }
+  &__brandMark {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    transform: rotate(-6deg);
+    box-shadow: 0 6px 14px -6px var(--accent);
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s var(--ease);
+    &:hover { border-color: var(--accent-line); transform: translateY(-1px); }
+  }
+  &__avatar {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent-line);
+  }
+  &__userText { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+  &__userName { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__userMail { font-size: 12px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  &__links { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--r-ctl);
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover { background: var(--surface-2); color: var(--ink); }
+    &.is-active { background: var(--accent-soft); color: var(--ink); box-shadow: inset 3px 0 0 var(--accent); }
+  }
+}
+
+@media (max-width: 860px) {
+  .appShell { flex-direction: column; padding-bottom: 72px; }
+
+  .nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 50;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-top: 1px solid var(--line);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+
+    &__top, &__bottom { flex-direction: row; align-items: center; gap: 2px; }
+    &__brand, &__userText { display: none; }
+    &__user { width: auto; margin: 0; padding: 4px; border-radius: 50%; border-color: transparent; background: transparent; }
+    &__link { flex-direction: column; gap: 2px; min-height: 54px; width: auto; padding: 4px 10px; font-size: 11px; }
+    &__link.is-active { box-shadow: none; }
+  }
+}
