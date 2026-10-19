@@ -44,8 +44,11 @@ export default function UserRegistry({
   useEffect(
     () =>
       onSignedOut(() => {
+        // Only a person who WAS signed in is sent to the login page. A 401 for a visitor who never signed in
+        // (the first profile check on the welcome page or the dictionary) is normal and must not redirect.
+        const wasSignedIn = useUserStore.getState().user !== null;
         setUser(null);
-        if (!PUBLIC_PATHS.some((p) => window.location.pathname.startsWith(p))) {
+        if (wasSignedIn && !PUBLIC_PATHS.some((p) => window.location.pathname.startsWith(p))) {
           window.location.href = "/auth/login";
         }
       }),

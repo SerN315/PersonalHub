@@ -70,3 +70,14 @@
 @media (max-width: 860px) {
   .auth { grid-template-columns: 1fr; &__art { display: none; } &__panel { min-height: 100vh; } }
 }
+
+.authCard__remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  input { width: 16px; height: 16px; accent-color: var(--accent); }
+}

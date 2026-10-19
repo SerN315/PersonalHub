@@ -12,6 +12,7 @@ type Errors = { email?: string; password?: string; general?: string };
 const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
 
@@ -31,7 +32,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -54,6 +55,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
       <form id="login-form" className="authCard__form" onSubmit={handleSubmit} noValidate>
         <BaseInput label="Email" type="email" autoComplete="email" placeholder="you@example.com" value={email} error={errors.email} onChange={(e) => setEmail(e.target.value)} />
         <BaseInput label="Password" type="password" autoComplete="current-password" placeholder="Your password" value={password} error={errors.password} onChange={(e) => setPassword(e.target.value)} />
+        <label className="authCard__remember">
+          <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+          Keep me signed in on this device
+        </label>
         {errors.general && (
           <p className="authCard__error" role="alert">
             {errors.general}

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tailwind's dark: variant follows the chosen mode (Settings > Appearance), not just the operating system. */
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
 /* ==========================================================================
    PersonalHub design tokens.
    Everything visual reads these variables. A person's choices (mode, accent, backdrop, font, radius) are
@@ -45,6 +48,10 @@
   /* Type */
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-body: var(--font-nunito), system-ui, sans-serif;
+
+  /* Names used by the dictionary and landing pages */
+  --background: var(--bg);
+  --foreground: var(--ink);
 
   --sidebar-w: 248px;
   --ease: cubic-bezier(0.22, 0.8, 0.3, 1);

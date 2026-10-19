@@ -267,6 +267,20 @@ export default function WidgetClient() {
   const stacked = boardWidth > 0 && boardWidth < STACK_BELOW;
   const stackOrder = [...visibleLayout].sort((a, b) => a.y - b.y || a.x - b.x);
 
+  // A leftover cookie that the server no longer accepts: ask for a fresh sign-in instead of showing an empty board.
+  if (!userId) {
+    return (
+      <div className="dashboard">
+        <div className="board__empty" role="status">
+          <BasicIcon icon="LockPasswordIcon" size={40} strokeWidth={1.2} />
+          <h2>Sign in to see your day</h2>
+          <p>Your widgets are waiting for you.</p>
+          <BaseButton onClick={() => (window.location.href = "/auth/login")}>Sign in</BaseButton>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard">
       <DayHeader>

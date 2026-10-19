@@ -10,7 +10,9 @@ import type * as Icons from "@hugeicons/core-free-icons";
 import type { SettingsTab } from "@/app/types/settings";
 
 const LINKS: { href: string; label: string; icon: keyof typeof Icons }[] = [
-  { href: "/dashboard", label: "My day", icon: "Home03Icon" },
+  { href: "/", label: "Welcome", icon: "Home03Icon" },
+  { href: "/dashboard", label: "My day", icon: "DashboardSquare01Icon" },
+  { href: "/dictionary", label: "Dictionary", icon: "BookOpen01Icon" },
 ];
 
 export const Nav: React.FC = () => {

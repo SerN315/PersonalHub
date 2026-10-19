@@ -1,7 +1,11 @@
 // The weather widget is a window onto the weather: the animated GIF behind it reflects the current condition.
 // Everything on top is light-on-dark text and line icons so it reads on any scene.
 
+@use "../fonts";
+
 .sky {
+  font-family: "Bold Pixels", "Courier New", monospace;
+  letter-spacing: 0.03em;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -33,7 +37,7 @@
 
   &__now { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   &__place { font-weight: 800; font-size: clamp(0.85rem, 2.6vw, 1.05rem); letter-spacing: 0.01em; }
-  &__temp { font-family: var(--font-display); font-weight: 600; font-size: clamp(2.4rem, 9vw, 3.6rem); line-height: 1; margin: 2px 0 4px; }
+  &__temp { font-weight: 400; font-size: clamp(2.8rem, 10vw, 4.2rem); line-height: 1; margin: 2px 0 4px; }
   &__cond { font-weight: 700; font-size: clamp(0.8rem, 2.4vw, 0.95rem); opacity: 0.95; }
   &__range { opacity: 0.85; font-weight: 600; }
   &__nowIcon { flex: none; filter: drop-shadow(0 2px 8px rgb(0 0 0 / 0.45)); }
