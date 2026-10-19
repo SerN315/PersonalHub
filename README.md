@@ -1,47 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PersonalHub
 
-## Getting Started
-
-First, run the development server:
+A personal dashboard: clock, todos, sticky notes, pomodoro and weather widgets on a draggable grid.
+Next.js 16 front-end for [PersonalHub-Back](../PersonalHub-Back).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # set API_ORIGIN (http://localhost:5000 for local)
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`API_ORIGIN` is required for a production build (`npm run build`): the `/api` rewrite is fixed at build time.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it talks to the backend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The browser only ever calls this site. `/api/*` is forwarded to `API_ORIGIN` by a Next rewrite, so the session cookies
+are first-party and the backend address, keys and CORS never reach the page. All calls go through
+[`src/app/apis/http.ts`](src/app/apis/http.ts) (JSON, readable errors, one place that reacts to an expired session).
+Nothing about the signed-in user is stored in the browser: it is asked from the server on every load.
 
-## Learn More
+## Security
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-
-
-
-const defaultLayoutMap: Record<string, any> = {
-  sticky: { i: "StickyNoteIcon", x: 0, y: 0, w: 4, h: 1 },
-  todo: { i: "TaskDone01Icon", x: 4, y: 0, w: 4, h: 1 },
-  weather: { i: "CloudIcon", x: 8, y: 0, w: 4, h: 1 },
-  pomodoro: { i: "AlarmClockIcon", x: 0, y: 3, w: 2, h: 2, minW: 2 },
-  clock: { i: "ClockIcon", x: 4, y: 3, w: 4, h: 3, minW: 3, minH: 3 },
-};
+* [`src/proxy.ts`](src/proxy.ts) sets a per-request nonce **Content-Security-Policy** (no inline scripts, `connect-src 'self'`,
+  no framing) and redirects `/dashboard` to the login page when there is no session cookie.
+* [`next.config.ts`](next.config.ts) adds `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` and HSTS,
+  and hides `X-Powered-By`.
+* No secrets are shipped to the browser: Supabase keys and the weather key live only in the backend, and weather is
+  fetched through `/api/weather/*`.
+* Avatars load from Supabase Storage; set `IMAGE_ORIGINS` to your project's origin to tighten the default `*.supabase.co`.

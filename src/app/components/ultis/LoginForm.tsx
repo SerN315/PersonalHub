@@ -30,8 +30,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
       newErrors.email = "Email must contain '@'";
     }
 
-    if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    if (password.length < 1) {
+      newErrors.password = "Enter your password";
     }
 
     setErrors(newErrors);
@@ -64,8 +64,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
         window.location.href = "/dashboard";
 
         // Redirect or trigger login success flow
-      } catch (err) {
-        console.error("Login error:", err);
+      } catch {
         setErrors((prev) => ({
           ...prev,
           general: "An unexpected error occurred.",
@@ -79,7 +78,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
       {/* <h1 className="formName">Login</h1> */}
       <div className="titleDescription">
         <h1 className="title">Welcome Back</h1>
-        <h2 className="subTitle">Let's login to begin productive</h2>
+        <h2 className="subTitle">Let&apos;s login to begin productive</h2>
       </div>
       <form onSubmit={handleSubmit} id="login-form">
         <p>Email</p>
@@ -120,7 +119,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
         </BaseButton>
       </div>
       <div className="register">
-        <p>Don't have an account?</p>
+        <p>Don&apos;t have an account?</p>
         <a href="#" className="registerLink" onClick={toggleForm}>
           Register
         </a>

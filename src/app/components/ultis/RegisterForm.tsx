@@ -12,6 +12,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
   const [password, setPassword] = useState("");
   const [confirmpassword, setConfirmPassword] = useState("");
   const [userName, setUserName] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -34,8 +35,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
       notempty?: string;
     } = {};
 
-    if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     if (confirmpassword !== password) {
@@ -61,13 +62,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, username: userName.trim() }),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          console.error("Signup failed:", data.error);
           setErrors((prevErrors) => ({
             ...prevErrors,
             general: data.error || "Failed to register. Please try again.",
@@ -75,12 +75,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
           return;
         }
 
-        console.log("User registered:", data.user);
-        window.location.href = "/auth/login";
-
-        // TODO: Redirect or show success
-      } catch (error) {
-        console.error("Registration error:", error);
+        if (data.needsConfirmation) {
+          setNotice("Almost there! Check your email and click the confirmation link, then log in.");
+          return;
+        }
+        window.location.href = "/dashboard";
+      } catch {
         setErrors((prevErrors) => ({
           ...prevErrors,
           general: "An unexpected error occurred during registration.",
@@ -125,6 +125,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
           error={errors.confirmpassword}
         />
         {errors.general && <p className="error">{errors.general}</p>}
+        {notice && <p role="status">{notice}</p>}
       </form>
       <BaseButton className="submitButton" type="submit" form="register-form">
         Register

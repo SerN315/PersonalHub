@@ -17,7 +17,7 @@ export interface SettingsModalProps {
 
 export interface SettingAccountProps {
   data: SettingsFormData;
-  onChange: (key: keyof SettingsFormData, value: any) => void;
+  onChange: (key: keyof SettingsFormData, value: SettingsFormData[keyof SettingsFormData]) => void;
 }
 
 export interface SettingsSidebarProps {

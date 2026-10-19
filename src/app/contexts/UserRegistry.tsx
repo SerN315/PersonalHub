@@ -3,7 +3,10 @@
 import { useEffect } from "react";
 import { useUserStore } from "../utils/store/userStore";
 import { fetchUser } from "@/app/apis/settings";
+import { onSignedOut } from "@/app/apis/http";
 import { LoadingSpinner } from "../components/ultis/loadingSpinner";
+
+const PUBLIC_PATHS = ["/auth/"];
 
 export default function UserRegistry({
   children,
@@ -16,23 +19,16 @@ export default function UserRegistry({
     const initUser = async () => {
       setLoading(true);
       try {
-        const user = await fetchUser();
-        console.log("Fetched user:", user);
-
-        if (user?.email) {
-          setUser({
-            id: user.id || "",
-            name: user.display_name || "",
-            username: user.user_metadata?.username || "",
-            email: user.email || "",
-            avatar_url: user.user_metadata?.avatar_url || "",
-          });
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-        setUser(null);
+        const profile = await fetchUser();
+        setUser({
+          id: profile.id,
+          name: profile.full_name || "",
+          username: profile.username || "",
+          email: profile.email,
+          avatar_url: profile.avatar_url || "",
+        });
+      } catch {
+        setUser(null); // not signed in (or the server is unreachable): the page decides what to show
       } finally {
         setFetched(true);
         setLoading(false);
@@ -42,9 +38,19 @@ export default function UserRegistry({
     if (!fetched) initUser();
   }, [fetched, setUser, setFetched, setLoading]);
 
-  const shouldShowLoading = loading || !fetched;
+  // The session expired somewhere mid-use: forget the user and go to the login page.
+  useEffect(
+    () =>
+      onSignedOut(() => {
+        setUser(null);
+        if (!PUBLIC_PATHS.some((p) => window.location.pathname.startsWith(p))) {
+          window.location.href = "/auth/login";
+        }
+      }),
+    [setUser]
+  );
 
-  if (shouldShowLoading) {
+  if (loading || !fetched) {
     return <LoadingSpinner />;
   }
 

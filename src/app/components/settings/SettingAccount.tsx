@@ -15,6 +15,8 @@ import BasicIcon from "../ultis/icons";
 import { LoadingSpinner } from "../ultis/loadingSpinner";
 import { useUserStore } from "@/app/utils/store/userStore";
 
+const messageOf = (err: unknown) => (err instanceof Error ? err.message : "Something went wrong");
+
 const SettingAccount: React.FC<SettingAccountProps> = () => {
   // Use the store directly for user, loading, and fetched
   const { user, setUser, loading, fetched } = useUserStore();
@@ -59,9 +61,8 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       try {
         const uploadedUrl = await uploadProfileImage(file);
         setFormData({ ...formData, avatar_url: uploadedUrl });
-      } catch (err: any) {
-        console.error("Image upload failed:", err.message);
-        alert("Failed to upload image. Please try again.");
+      } catch (err) {
+        alert(messageOf(err) || "Failed to upload image. Please try again.");
       }
     }
   };
@@ -69,10 +70,10 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const payload: any = {};
+      const payload: Parameters<typeof updateUser>[0] = {};
 
       if (formData.name && formData.name !== user?.name) {
-        payload.display_name = formData.name;
+        payload.full_name = formData.name;
       }
       if (formData.username && formData.username !== user?.username) {
         payload.username = formData.username;
@@ -85,30 +86,35 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       }
 
       if (Object.keys(payload).length > 0) {
-        await updateUser(payload);
+        const { user: saved, emailChangePending } = await updateUser(payload);
         setUser({
-          id: user?.id || "",
-          name: formData.name,
-          username: formData.username,
-          email: formData.email,
-          avatar_url: formData.avatar_url,
+          id: saved.id,
+          name: saved.full_name || "",
+          username: saved.username || "",
+          email: saved.email,
+          avatar_url: saved.avatar_url || "",
         });
+        if (emailChangePending) {
+          alert("We sent a confirmation link to your new email address. Your email changes once you click it.");
+        }
       }
 
       setIsEditing(false);
       setProfileImage(null);
       setPreviewUrl(null);
-    } catch (err: any) {
-      console.error("Failed to save profile:", err);
-      alert("Failed to save profile: " + err.message);
+    } catch (err) {
+      alert("Failed to save profile: " + messageOf(err));
     } finally {
       setSaving(false);
     }
   };
 
   const handleLogout = async () => {
-    await logoutUser();
-    setUser(null);
+    try {
+      await logoutUser();
+    } finally {
+      setUser(null);
+    }
     window.location.href = "/auth/login";
   };
 
@@ -130,18 +136,17 @@ const SettingAccount: React.FC<SettingAccountProps> = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (err: any) {
+    } catch (err) {
       if (
-        err.message.includes("incorrect") ||
-        err.message.includes("Invalid")
+        messageOf(err).includes("incorrect") ||
+        messageOf(err).includes("Invalid")
       ) {
         alert("The current password is incorrect.");
       } else {
-        alert("Failed to change password: " + err.message);
+        alert("Failed to change password: " + messageOf(err));
       }
     }
   };
-  console.log("User from store:", user);
   // Only show loading spinner while fetching user info
   if (loading || !fetched) {
     return <LoadingSpinner />;

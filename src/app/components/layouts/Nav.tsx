@@ -2,22 +2,15 @@
 import React from "react";
 import NavLinkItem from "../ui/navLinkItems";
 import "@/app/styles/layouts/Nav.scss";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SettingsModal } from "../settings/settings";
 import { useThemeStore } from "@/app/utils/store/ThemeStore";
 import { useUserStore } from "@/app/utils/store/userStore";
-import { fetchUser } from "@/app/apis/settings";
 
 export const Nav: React.FC = () => {
   const theme = useThemeStore((state) => state.theme);
-  const { user, loading, fetched } = useUserStore();
-  React.useEffect(() => {
-    if (!fetched) {
-      fetchUser();
-    }
-  }, [fetched, fetchUser]);
+  const user = useUserStore((state) => state.user);
   const [showSettingsModal, setShowSettingsModal] = React.useState(false);
   const pathname = usePathname();
   const hideNav =
@@ -32,9 +25,9 @@ export const Nav: React.FC = () => {
                 <div
                   className="user__image"
                   style={{
-                    backgroundImage: user
-                      ? `url(${user.avatar_url})`
-                      : "url('/motivation.jpg')",
+                    backgroundImage: `url(${
+                      user?.avatar_url || "/motivation.jpg"
+                    })`,
                   }}
                 ></div>
                 <div className="user__texts">

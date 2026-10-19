@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import { X, Minus } from "lucide-react";
+import React, { useRef } from "react";
 import "@/app/styles/ultis/widgetWrapper.scss";
 import { useEditMode } from "@/app/contexts/editWidgetContext";
 import BasicIcon from "./icons";
-import * as Icons from "@hugeicons/core-free-icons";
 
 type WidgetWrapperProps = {
   title: string;
@@ -32,7 +30,7 @@ export default function WidgetWrapper({
         <div className={`widgetWrapper__controls ${editMode ? "show" : ""}`}>
           {onClose && editMode && (
             <button
-              onClick={(e) => {
+              onClick={() => {
                 onClose();
               }}
               className="close-button"

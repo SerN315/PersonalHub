@@ -9,8 +9,6 @@ import {
   getWeatherBackground,
 } from "@/app/utils/weatherMappings";
 
-const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
-
 export default function WeatherWidget(props: WidgetProps) {
   const [weather, setWeather] = useState({
     location: "Your City",
@@ -39,15 +37,14 @@ export default function WeatherWidget(props: WidgetProps) {
       async (position) => {
         const { latitude, longitude } = position.coords;
         const days = 1;
-        const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${latitude},${longitude}`;
-        const forcastUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=${days}`;
+        // The weather key lives on the server; the browser only asks our own API.
+        const query = `lat=${latitude}&lon=${longitude}`;
+        const url = `/api/weather/current?${query}`;
+        const forcastUrl = `/api/weather/forecast?${query}&days=${days}`;
         try {
-          const response = await fetch(url);
-          const forecastResponse = await fetch(forcastUrl);
-          const forecastData = await forecastResponse.json();
-          const data = await response.json();
-          console.log("Weather data:", data);
-          console.log("Forecast:", forecastData);
+          const [response, forecastResponse] = await Promise.all([fetch(url), fetch(forcastUrl)]);
+          if (!response.ok || !forecastResponse.ok) throw new Error("Weather unavailable");
+          const [data, forecastData] = await Promise.all([response.json(), forecastResponse.json()]);
 
           const newCondition = data.current.condition.text;
 
