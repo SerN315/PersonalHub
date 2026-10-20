@@ -22,13 +22,29 @@ import type * as Icons from "@hugeicons/core-free-icons";
 
 type LayoutDefaults = { w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number };
 
-// Starting sizes (in grid cells) and the room each widget needs to stay usable.
+// Starting size (in grid cells: about 77 px wide and 100 px tall at a typical desktop width), the smallest size at which the
+// widget still works, and a sensible largest size. Each widget scales its content to whatever size it is given.
+//   clock:    a round face plus the time          -> square
+//   todo:     header, progress, ~6 task rows, add  -> tall
+//   sticky:   room to write a few lines           -> squarish
+//   pomodoro: mode tabs need ~3 columns, dial + buttons need ~3 rows
+//   weather:  current sky on top, a strip of hours below -> wide
 const defaultLayoutMap: Record<string, LayoutDefaults> = {
-  clock: { w: 3, h: 3, minW: 2, minH: 3 },
-  todo: { w: 4, h: 4, minW: 3, minH: 3 },
-  sticky: { w: 3, h: 3, minW: 2, minH: 2 },
-  pomodoro: { w: 3, h: 3, minW: 2, minH: 3, maxW: 5, maxH: 5 },
-  weather: { w: 5, h: 3, minW: 3, minH: 2, maxW: 8, maxH: 4 },
+  clock: { w: 3, h: 3, minW: 2, minH: 3, maxW: 6, maxH: 6 },
+  todo: { w: 4, h: 5, minW: 3, minH: 3, maxW: 8, maxH: 10 },
+  sticky: { w: 3, h: 3, minW: 2, minH: 2, maxW: 8, maxH: 8 },
+  pomodoro: { w: 3, h: 3, minW: 3, minH: 3, maxW: 6, maxH: 6 },
+  weather: { w: 5, h: 3, minW: 3, minH: 3, maxW: 9, maxH: 5 },
+};
+
+// A widget saved at an old, too-small size is brought up to its minimum so it is usable again.
+const withinLimits = (type: string, size: { w: number; h: number }) => {
+  const d = defaultLayoutMap[type];
+  if (!d) return size;
+  return {
+    w: Math.min(Math.max(size.w, d.minW ?? 1), d.maxW ?? COLS),
+    h: Math.min(Math.max(size.h, d.minH ?? 1), d.maxH ?? 100),
+  };
 };
 
 const defaultTint: Record<string, Tint> = { clock: "paper", todo: "paper", sticky: "butter", pomodoro: "peach", weather: "paper" };
@@ -104,7 +120,10 @@ export default function WidgetClient() {
         const loadedData: Record<string, Widget> = {};
         for (const widget of userWidgets) {
           const position = typeof widget.position === "string" ? JSON.parse(widget.position) : widget.position;
-          loadedLayout.push({ i: widget.id, x: Number(position.x), y: Number(position.y), w: Number(position.w), h: Number(position.h), ...constraintsFor(widget.type) });
+          const saved = { w: Number(position.w), h: Number(position.h) };
+          const size = withinLimits(widget.type, saved);
+          if (size.w !== saved.w || size.h !== saved.h) layoutDirty.current = true; // tell the server about the corrected size
+          loadedLayout.push({ i: widget.id, x: Math.min(Number(position.x), COLS - size.w), y: Number(position.y), ...size, ...constraintsFor(widget.type) });
           loadedWidgets[widget.id] = { visible: true, minimized: false };
           loadedData[widget.id] = widget;
         }
@@ -328,7 +347,16 @@ export default function WidgetClient() {
         </div>
       </DayHeader>
 
-      <div className="board" ref={boardRef}>
+      {editMode && (
+        <p className="arrangeHint" role="status">
+          <BasicIcon icon="Edit02Icon" size={16} />
+          <span>
+            <strong>Arranging.</strong> Drag a card to move it, pull a <b>corner</b> or <b>edge</b> to resize it, and pick a colour on the card. Press <b>Done</b> when finished.
+          </span>
+        </p>
+      )}
+
+      <div className={`board ${editMode ? "is-arranging" : ""}`} ref={boardRef}>
         {loadError && <p className="board__note">We couldn&apos;t load your widgets. Refresh to try again.</p>}
 
         {!isLoading && !loadError && visibleLayout.length === 0 && (
@@ -363,7 +391,7 @@ export default function WidgetClient() {
               onLayoutChange={onLayoutChange}
               onDragStop={onUserLayoutChange}
               onResizeStop={onUserLayoutChange}
-              resizeHandles={["se"]}
+              resizeHandles={["se", "sw", "e", "w", "s"]}
               preventCollision={false}
               compactType="vertical"
             >

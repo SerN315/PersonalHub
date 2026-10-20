@@ -5,18 +5,18 @@
   justify-content: space-between;
   gap: 8px;
   height: 100%;
-  padding: 14px;
+  padding: clamp(8px, 4.5cqmin, 20px);
   box-sizing: border-box;
 
   &__modes { display: flex; gap: 4px; padding: 3px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ink) 7%, transparent); }
   &__mode {
-    padding: 4px 10px;
+    padding: 4px clamp(6px, 3.4cqw, 12px);
     border: 0;
     border-radius: var(--r-pill);
     background: transparent;
     color: var(--ink-soft);
     font: inherit;
-    font-size: 11.5px;
+    font-size: clamp(10px, 3.7cqw, 13px);
     font-weight: 800;
     cursor: pointer;
     white-space: nowrap;
@@ -29,8 +29,8 @@
   &__progress { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s linear; }
 
   &__readout { position: relative; display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
-  &__time { font-family: var(--font-display); font-size: clamp(1.6rem, 6vw, 2.4rem); font-weight: 600; font-variant-numeric: tabular-nums; }
-  &__hint { margin-top: 2px; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); }
+  &__time { font-family: var(--font-display); font-size: clamp(1.3rem, 15cqmin, 3.8rem); font-weight: 600; font-variant-numeric: tabular-nums; }
+  &__hint { margin-top: 2px; font-size: clamp(10px, 3.6cqmin, 14px); font-weight: 700; color: var(--ink-soft); }
 
   &__controls { display: flex; align-items: center; gap: 10px; }
   &__play, &__reset {
@@ -42,6 +42,6 @@
     transition: transform 0.15s var(--ease), filter 0.15s;
     &:hover { transform: scale(1.08); }
   }
-  &__play { width: 46px; height: 46px; background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 14px -6px var(--accent); }
-  &__reset { width: 36px; height: 36px; background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
+  &__play { width: clamp(38px, 14cqmin, 62px); height: clamp(38px, 14cqmin, 62px); background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 14px -6px var(--accent); }
+  &__reset { width: clamp(30px, 10cqmin, 46px); height: clamp(30px, 10cqmin, 46px); background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
 }

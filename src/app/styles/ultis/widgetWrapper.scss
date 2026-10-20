@@ -22,7 +22,9 @@
   &[data-tint="lilac"] { --tint-base: var(--c-lilac); }
   &[data-tint="paper"] { --card-bg: var(--surface); }
 
-  &__inner { width: 100%; height: 100%; }
+  // The body is a size container: children size themselves in cqw / cqh / cqmin (percent of THIS widget), so a widget
+  // that is resized scales its content, whatever the screen is.
+  &__inner { width: 100%; height: 100%; container-type: size; }
 
   // Arrange mode: a dashed accent edge and a toolbar in the corner
   &.is-editing {

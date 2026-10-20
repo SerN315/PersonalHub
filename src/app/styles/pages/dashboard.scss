@@ -86,5 +86,61 @@
 // react-grid-layout: soften its placeholder and resize handle to match the cards
 .react-grid-item.react-grid-placeholder { background: var(--accent); opacity: 0.18; border-radius: var(--r-card); }
 .react-grid-item.react-draggable-dragging { z-index: 20; .widgetCard { box-shadow: var(--shadow-pop); transform: rotate(0.6deg); } }
-.react-grid-item > .react-resizable-handle { opacity: 0; transition: opacity 0.15s; &::after { border-color: var(--accent); width: 8px; height: 8px; right: 6px; bottom: 6px; } }
-.dashboard.is-arranging .react-grid-item > .react-resizable-handle, .react-grid-item:hover > .react-resizable-handle { opacity: 1; }
+// Resize grips. They exist only while arranging and are deliberately easy to see: round accent knobs on the corners
+// and pill-shaped bars on the sides, pulsing for a moment when arranging starts so nobody has to discover them by accident.
+.board .react-grid-item > .react-resizable-handle {
+  background-image: none;
+  transform: none; // the library rotates its handles to draw an arrow; ours are drawn with ::before instead
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  z-index: 6;
+  &::after { display: none; }
+  &::before {
+    content: "";
+    position: absolute;
+    border-radius: var(--r-pill);
+    background: var(--accent);
+    border: 2px solid var(--surface);
+    box-shadow: 0 2px 8px rgb(var(--shadow-color) / 0.35);
+    transition: transform 0.15s var(--ease);
+    animation: gripPulse 1.1s ease-out 3;
+  }
+  &:hover::before { transform: scale(1.25); }
+
+  // the library rotates each handle to draw an arrow with it; undo that for every one of them (equal specificity, so it is spelled out)
+  &.react-resizable-handle-se, &.react-resizable-handle-sw, &.react-resizable-handle-e, &.react-resizable-handle-w, &.react-resizable-handle-s { transform: none; }
+
+  // corners: a round knob sitting on the corner
+  &.react-resizable-handle-se { right: -8px; bottom: -8px; cursor: nwse-resize; }
+  &.react-resizable-handle-sw { left: -8px; bottom: -8px; cursor: nesw-resize; }
+  &.react-resizable-handle-se::before, &.react-resizable-handle-sw::before { width: 18px; height: 18px; right: 6px; bottom: 6px; }
+  &.react-resizable-handle-sw::before { right: auto; left: 6px; }
+
+  // edges: a short bar centred on the side
+  &.react-resizable-handle-e, &.react-resizable-handle-w { top: 50%; width: 22px; height: 56px; margin-top: -28px; cursor: ew-resize; }
+  &.react-resizable-handle-e { right: -10px; }
+  &.react-resizable-handle-w { left: -10px; }
+  &.react-resizable-handle-e::before, &.react-resizable-handle-w::before { top: 12px; left: 7px; width: 8px; height: 32px; border: 0; }
+  &.react-resizable-handle-s { left: 50%; bottom: -10px; width: 56px; height: 22px; margin-left: -28px; cursor: ns-resize; }
+  &.react-resizable-handle-s::before { left: 12px; top: 7px; width: 32px; height: 8px; border: 0; }
+}
+@keyframes gripPulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+
+// The banner that explains arrange mode
+.arrangeHint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: -6px 0 18px;
+  padding: 10px 14px;
+  border: 1px dashed var(--accent);
+  border-radius: var(--r-ctl);
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 14px;
+  animation: menuIn 0.2s var(--ease);
+  svg { flex: none; margin-top: 2px; color: var(--accent); }
+  b, strong { font-weight: 800; }
+}
