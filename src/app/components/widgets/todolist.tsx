@@ -156,8 +156,8 @@ function TodoListWidget(props: WidgetProps) {
             <BasicIcon icon="PlusSignIcon" size={16} /> Add a task
           </button>
           <label className="todo__toggle">
-            <input type="checkbox" checked={showCompleted} onChange={(e) => setShowCompleted(e.target.checked)} />
-            Show done
+            <input type="checkbox" aria-label="Show done tasks" checked={showCompleted} onChange={(e) => setShowCompleted(e.target.checked)} />
+            <span className="todo__toggleText">Show done</span>
           </label>
         </footer>
       </div>

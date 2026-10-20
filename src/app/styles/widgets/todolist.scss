@@ -101,3 +101,7 @@
   }
   &__toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--ink-soft); cursor: pointer; input { accent-color: var(--accent); } }
 }
+
+// A narrow list keeps the essentials on one line: the add button stays, "Show done" shrinks to its checkbox.
+.todo__add { white-space: nowrap; }
+@container (max-width: 235px) { .todo__toggleText { display: none; } .todo__empty { font-size: 0.9em; } }

@@ -8,8 +8,8 @@ import { formatTime } from "@/app/utils/commonUltis";
 
 const MODES = [
   { key: "focus", label: "Focus", seconds: 25 * 60 },
-  { key: "short", label: "Short break", seconds: 5 * 60 },
-  { key: "long", label: "Long break", seconds: 15 * 60 },
+  { key: "short", label: "Short", more: " break", seconds: 5 * 60 },
+  { key: "long", label: "Long", more: " break", seconds: 15 * 60 },
 ] as const;
 type ModeKey = (typeof MODES)[number]["key"];
 
@@ -63,6 +63,7 @@ function PomodoroWidget(props: WidgetProps) {
           {MODES.map((m) => (
             <button key={m.key} type="button" role="radio" aria-checked={modeKey === m.key} className="pomo__mode" onClick={() => choose(m.key)}>
               {m.label}
+              {"more" in m && <span className="pomo__more">{m.more}</span>}
             </button>
           ))}
         </div>

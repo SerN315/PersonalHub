@@ -22,19 +22,15 @@ import type * as Icons from "@hugeicons/core-free-icons";
 
 type LayoutDefaults = { w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number };
 
-// Starting size (in grid cells: about 77 px wide and 100 px tall at a typical desktop width), the smallest size at which the
-// widget still works, and a sensible largest size. Each widget scales its content to whatever size it is given.
-//   clock:    a round face plus the time          -> square
-//   todo:     header, progress, ~6 task rows, add  -> tall
-//   sticky:   room to write a few lines           -> squarish
-//   pomodoro: mode tabs need ~3 columns, dial + buttons need ~3 rows
-//   weather:  current sky on top, a strip of hours below -> wide
+// Starting size and the range each widget can be resized to, in grid cells (about 77 px wide and 100 px tall at a typical
+// desktop width). The minimums are the smallest sizes where the widget still does its job, measured by resizing each one
+// cell by cell and checking that its content stays inside and usable; the maximums are generous because content scales up.
 const defaultLayoutMap: Record<string, LayoutDefaults> = {
-  clock: { w: 3, h: 3, minW: 2, minH: 3, maxW: 6, maxH: 6 },
-  todo: { w: 4, h: 5, minW: 3, minH: 3, maxW: 8, maxH: 10 },
-  sticky: { w: 3, h: 3, minW: 2, minH: 2, maxW: 8, maxH: 8 },
-  pomodoro: { w: 3, h: 3, minW: 3, minH: 3, maxW: 6, maxH: 6 },
-  weather: { w: 5, h: 3, minW: 3, minH: 3, maxW: 9, maxH: 5 },
+  clock: { w: 3, h: 3, minW: 2, minH: 2, maxW: 8, maxH: 8 }, // the face scales to any size; 2x2 is the smallest that keeps it readable
+  todo: { w: 4, h: 5, minW: 2, minH: 3, maxW: 8, maxH: 12 }, // 2 wide x 3 tall still shows header, a task or two, and "Add a task"
+  sticky: { w: 3, h: 3, minW: 2, minH: 1, maxW: 12, maxH: 12 }, // from a one-line strip to a full-width page
+  pomodoro: { w: 3, h: 3, minW: 2, minH: 2, maxW: 8, maxH: 8 }, // mode tabs shorten when narrow; the dial still reads at 2x2
+  weather: { w: 5, h: 3, minW: 2, minH: 2, maxW: 12, maxH: 6 }, // hourly strip appears once there is room; a small one is just the sky and temperature
 };
 
 // A widget saved at an old, too-small size is brought up to its minimum so it is usable again.
@@ -159,26 +155,10 @@ export default function WidgetClient() {
   }, [layout, widgets, isLoading]);
 
   // ---- arrange mode ------------------------------------------------------------
-  // Long-press a widget to start arranging (as before); clicking empty space ends it. The Arrange button does the same without a long press.
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    const onDown = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (target.closest(".widgetCard")) {
-        timer = setTimeout(() => setEditMode(true), 600);
-      } else if (!target.closest("[data-keep-editing]")) {
-        setEditMode(false);
-      }
-    };
-    const onUp = () => clearTimeout(timer);
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("mouseup", onUp);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("mouseup", onUp);
-      clearTimeout(timer);
-    };
-  }, [setEditMode]);
+  // Arranging starts and ends ONLY with the Arrange / Done button. Nothing else toggles it (no long-press, no
+  // click-outside), so grabbing a grip or clicking around while resizing never kicks you out of the mode.
+  // It is switched off when you leave the dashboard so the next visit does not open mid-arrange.
+  useEffect(() => () => setEditMode(false), [setEditMode]);
 
   // ---- add menu: closes on outside click or Escape -----------------------------
   useEffect(() => {
@@ -306,7 +286,6 @@ export default function WidgetClient() {
         <BaseButton
           variant={editMode ? "primary" : "ghost"}
           size="sm"
-          data-keep-editing
           aria-pressed={editMode}
           onClick={() => setEditMode(!editMode)}
           disabled={visibleLayout.length === 0}
@@ -315,7 +294,7 @@ export default function WidgetClient() {
           {editMode ? "Done" : "Arrange"}
         </BaseButton>
 
-        <div className="addMenu" ref={menuRef} data-keep-editing>
+        <div className="addMenu" ref={menuRef}>
           <BaseButton size="sm" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} disabled={available.length === 0}>
             <BasicIcon icon="PlusSignIcon" size={16} />
             Add widget

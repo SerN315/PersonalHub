@@ -92,3 +92,5 @@
 
 // When a weather widget is made short, the scene and the current weather matter more than the hours.
 @container (max-height: 250px) { .sky__hours { display: none; } }
+// ...and a narrow one has no room for a useful strip either.
+@container (max-width: 235px) { .sky__hours { display: none; } }
