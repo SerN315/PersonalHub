@@ -4,11 +4,8 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import PomodoroWidget from "@/app/components/widgets/podoromoWidget";
-import StickyNotesWidgets from "@/app/components/widgets/stickyNotes";
-import WatchWidget from "@/app/components/widgets/watch";
-import WeatherWidget from "@/app/components/widgets/weather";
-import TodoListWidget from "@/app/components/widgets/todolist";
+import UnknownWidget from "@/app/components/widgets/UnknownWidget";
+import { WIDGETS, COLS, clampSize, getWidgetDefinition, resizeLimits } from "@/app/widgets/registry";
 import BasicIcon from "@/app/components/ultis/icons";
 import BaseButton from "@/app/components/ui/BaseButton";
 import DayHeader from "./DayHeader";
@@ -18,42 +15,7 @@ import { Widget, WidgetLayout, WidgetState } from "@/app/types/widgets";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { useContainerWidth } from "@/app/utils/useContainerWidth";
 import { TINTS, Tint } from "@/app/utils/preferences";
-import type * as Icons from "@hugeicons/core-free-icons";
 
-type LayoutDefaults = { w: number; h: number; minW?: number; minH?: number; maxW?: number; maxH?: number };
-
-// Starting size and the range each widget can be resized to, in grid cells (about 77 px wide and 100 px tall at a typical
-// desktop width). The minimums are the smallest sizes where the widget still does its job, measured by resizing each one
-// cell by cell and checking that its content stays inside and usable; the maximums are generous because content scales up.
-const defaultLayoutMap: Record<string, LayoutDefaults> = {
-  clock: { w: 3, h: 3, minW: 2, minH: 2, maxW: 8, maxH: 8 }, // the face scales to any size; 2x2 is the smallest that keeps it readable
-  todo: { w: 4, h: 5, minW: 2, minH: 3, maxW: 8, maxH: 12 }, // 2 wide x 3 tall still shows header, a task or two, and "Add a task"
-  sticky: { w: 3, h: 3, minW: 2, minH: 1, maxW: 12, maxH: 12 }, // from a one-line strip to a full-width page
-  pomodoro: { w: 3, h: 3, minW: 2, minH: 2, maxW: 8, maxH: 8 }, // mode tabs shorten when narrow; the dial still reads at 2x2
-  weather: { w: 5, h: 3, minW: 2, minH: 2, maxW: 12, maxH: 6 }, // hourly strip appears once there is room; a small one is just the sky and temperature
-};
-
-// A widget saved at an old, too-small size is brought up to its minimum so it is usable again.
-const withinLimits = (type: string, size: { w: number; h: number }) => {
-  const d = defaultLayoutMap[type];
-  if (!d) return size;
-  return {
-    w: Math.min(Math.max(size.w, d.minW ?? 1), d.maxW ?? COLS),
-    h: Math.min(Math.max(size.h, d.minH ?? 1), d.maxH ?? 100),
-  };
-};
-
-const defaultTint: Record<string, Tint> = { clock: "paper", todo: "paper", sticky: "butter", pomodoro: "peach", weather: "paper" };
-
-const widgetOptions: { id: string; name: string; blurb: string; icon: keyof typeof Icons }[] = [
-  { id: "clock", name: "Clock", blurb: "Time at a glance", icon: "ClockIcon" },
-  { id: "todo", name: "To-do list", blurb: "Little things to do", icon: "TaskDone01Icon" },
-  { id: "sticky", name: "Sticky note", blurb: "Jot something down", icon: "StickyNoteIcon" },
-  { id: "pomodoro", name: "Pomodoro", blurb: "Focus in short bursts", icon: "AlarmClockIcon" },
-  { id: "weather", name: "Weather", blurb: "The sky outside", icon: "SunCloud01Icon" },
-];
-
-const COLS = 12;
 const ROW_HEIGHT = 100;
 const STACK_BELOW = 720; // narrower than this the widgets stack in one column instead of a grid
 
@@ -78,11 +40,6 @@ function getNextPosition(currentLayout: WidgetLayout[], widgetW: number) {
   }
   return { x: 0, y: 0 };
 }
-
-const constraintsFor = (type: string) => {
-  const d = defaultLayoutMap[type];
-  return { ...(d?.minW && { minW: d.minW }), ...(d?.minH && { minH: d.minH }), ...(d?.maxW && { maxW: d.maxW }), ...(d?.maxH && { maxH: d.maxH }) };
-};
 
 export default function WidgetClient() {
   const [layout, setLayout] = useState<WidgetLayout[]>([]);
@@ -117,9 +74,9 @@ export default function WidgetClient() {
         for (const widget of userWidgets) {
           const position = typeof widget.position === "string" ? JSON.parse(widget.position) : widget.position;
           const saved = { w: Number(position.w), h: Number(position.h) };
-          const size = withinLimits(widget.type, saved);
+          const size = clampSize(widget.type, saved);
           if (size.w !== saved.w || size.h !== saved.h) layoutDirty.current = true; // tell the server about the corrected size
-          loadedLayout.push({ i: widget.id, x: Math.min(Number(position.x), COLS - size.w), y: Number(position.y), ...size, ...constraintsFor(widget.type) });
+          loadedLayout.push({ i: widget.id, x: Math.min(Number(position.x), COLS - size.w), y: Number(position.y), ...size, ...resizeLimits(widget.type) });
           loadedWidgets[widget.id] = { visible: true, minimized: false };
           loadedData[widget.id] = widget;
         }
@@ -178,12 +135,12 @@ export default function WidgetClient() {
   // ---- actions (stable, so memoised widgets are not re-rendered by unrelated changes) ----
   const addWidget = useCallback(
     async (type: string) => {
-      const base = defaultLayoutMap[type];
+      const base = getWidgetDefinition(type)?.size;
       if (!base || !userId) return;
       const { x, y } = getNextPosition(layout, base.w);
       try {
         const created = await createWidget({ type, position: { x, y, w: base.w, h: base.h }, data: {} });
-        setLayout((prev) => [...prev, { i: created.id, x, y, w: base.w, h: base.h, ...constraintsFor(type) }]);
+        setLayout((prev) => [...prev, { i: created.id, x, y, w: base.w, h: base.h, ...resizeLimits(type) }]);
         setWidgets((prev) => ({ ...prev, [created.id]: { visible: true, minimized: false } }));
         setWidgetData((prev) => ({ ...prev, [created.id]: created }));
       } catch {
@@ -235,33 +192,23 @@ export default function WidgetClient() {
   // ---- render --------------------------------------------------------------------
   const renderWidget = (type: string, id: string) => {
     const widget = widgetData[id];
+    const definition = getWidgetDefinition(type);
     const tintValue = widget?.data?.tint;
     const common = {
       id,
       minimized: widgets[id]?.minimized,
-      tint: isTint(tintValue) ? tintValue : defaultTint[type],
+      tint: isTint(tintValue) ? tintValue : definition?.tint,
       data: widget?.data,
       onClose: handleClose,
       onTint: handleTint,
       onData: handleData,
     };
-    switch (type) {
-      case "clock":
-        return <WatchWidget {...common} />;
-      case "sticky":
-        return <StickyNotesWidgets {...common} />;
-      case "todo":
-        return <TodoListWidget {...common} />;
-      case "weather":
-        return <WeatherWidget {...common} />;
-      case "pomodoro":
-        return <PomodoroWidget {...common} />;
-      default:
-        return null;
-    }
+    if (!definition) return <UnknownWidget {...common} />;
+    const Component = definition.component;
+    return <Component {...common} />;
   };
 
-  const available = useMemo(() => widgetOptions.filter((opt) => !Object.values(widgetData).some((w) => w.type === opt.id)), [widgetData]);
+  const available = useMemo(() => WIDGETS.filter((definition) => !Object.values(widgetData).some((w) => w.type === definition.type)), [widgetData]);
   const visibleLayout = layout.filter((item) => widgets[item.i]?.visible);
   const stacked = boardWidth > 0 && boardWidth < STACK_BELOW;
   const stackOrder = [...visibleLayout].sort((a, b) => a.y - b.y || a.x - b.x);
@@ -303,13 +250,13 @@ export default function WidgetClient() {
             <div className="addMenu__panel" role="menu">
               {available.map((option) => (
                 <button
-                  key={option.id}
+                  key={option.type}
                   type="button"
                   role="menuitem"
                   className="addMenu__item"
                   onClick={() => {
                     setMenuOpen(false);
-                    addWidget(option.id);
+                    addWidget(option.type);
                   }}
                 >
                   <span className="addMenu__icon">
