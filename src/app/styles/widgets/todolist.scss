@@ -3,10 +3,11 @@
   flex-direction: column;
   gap: 8px;
   height: 100%;
-  padding: 16px 16px 12px;
+  padding: clamp(10px, 4.5cqw, 20px) clamp(10px, 4.5cqw, 20px) clamp(8px, 3.5cqw, 14px);
   box-sizing: border-box;
+  font-size: clamp(13px, 3.4cqw, 17px);
 
-  &__header { display: flex; align-items: baseline; justify-content: space-between; h3 { margin: 0; font-size: 20px; } }
+  &__header { display: flex; align-items: baseline; justify-content: space-between; h3 { margin: 0; font-size: 1.35em; } }
   &__count { font-weight: 800; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
   &__bar {
     height: 6px;
