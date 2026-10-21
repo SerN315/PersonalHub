@@ -1,107 +1,25 @@
-.todo {
+// The Today notepad widget: a small spiral-topped pad. Rows, flags and the quick-add line share the planner's styles.
+.notepad {
+  --line-h: 38px;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   height: 100%;
-  padding: clamp(10px, 4.5cqw, 20px) clamp(10px, 4.5cqw, 20px) clamp(8px, 3.5cqw, 14px);
   box-sizing: border-box;
-  font-size: clamp(13px, 3.4cqw, 17px);
+  padding: clamp(18px, 6cqw, 26px) clamp(10px, 4.5cqw, 18px) clamp(8px, 3cqw, 12px);
+  font-size: clamp(13px, 3.4cqw, 16px);
+  background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--line-h) - 1px), color-mix(in srgb, var(--c-sky) 20%, transparent) calc(var(--line-h) - 1px) var(--line-h)) 0 calc(clamp(18px, 6cqw, 26px) + 36px) / 100% 100% no-repeat;
 
-  &__header { display: flex; align-items: baseline; justify-content: space-between; h3 { margin: 0; font-size: 1.35em; } }
-  &__count { font-weight: 800; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
-  &__bar {
-    height: 6px;
-    border-radius: var(--r-pill);
-    background: color-mix(in srgb, var(--ink) 9%, transparent);
-    overflow: hidden;
-    span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 0.4s var(--ease); }
-  }
+  &__rings { position: absolute; top: 4px; left: 0; right: 0; display: flex; justify-content: space-evenly; pointer-events: none;
+    i { width: 7px; height: 14px; border-radius: 4px; background: linear-gradient(#b9b2a8, #6f6a63); box-shadow: 0 1px 2px rgb(0 0 0 / 0.35); } }
+  &__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  &__view select { max-width: 100%; border: 0; background: transparent; color: var(--ink); font-family: var(--font-display); font-size: 1.35em; font-weight: 600; cursor: pointer; }
+  &__count { min-width: 24px; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); font-weight: 800; font-size: 0.85em; text-align: center; }
+  &__rows { flex: 1; min-height: 0; overflow-y: auto; margin-left: 8px; }
+  &__empty { margin: 8px 0; text-align: center; color: var(--ink-soft); font-family: var(--font-display); }
+  &__open { align-self: flex-end; display: inline-flex; align-items: center; gap: 2px; font-size: 0.85em; font-weight: 800; color: var(--accent); text-decoration: none; &:hover { text-decoration: underline; } }
 
-  &__list { flex: 1; min-height: 0; margin: 4px -4px 0; padding: 0 4px; list-style: none; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-  &__item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px 8px 14px;
-    border: 1px solid color-mix(in srgb, var(--ink) 9%, transparent);
-    border-radius: calc(var(--r-ctl) + 2px);
-    background: color-mix(in srgb, var(--surface) 78%, transparent);
-    transition: background 0.15s, opacity 0.2s;
-    cursor: grab;
-
-    // the task's colour as a small ribbon on the left edge
-    &::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0; background: var(--dot, var(--accent)); }
-    &:hover { background: var(--surface); }
-    &.is-dragging { opacity: 0.4; }
-    &.is-done { opacity: 0.75; .todo__text { text-decoration: line-through; color: var(--ink-soft); } }
-  }
-
-  &__check {
-    position: relative;
-    flex: none;
-    display: grid;
-    cursor: pointer;
-    input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
-  }
-  &__box {
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    border: 2px solid color-mix(in srgb, var(--ink) 35%, transparent);
-    border-radius: 50%;
-    color: transparent;
-    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s var(--ease);
-  }
-  &__check input:checked + &__box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); transform: scale(1.05); }
-  &__check input:focus-visible + &__box { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  &__text { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 600; line-height: 1.3; }
-  &__type {
-    flex: none;
-    max-width: 90px;
-    padding: 1px 8px;
-    border-radius: var(--r-pill);
-    background: color-mix(in srgb, var(--dot, var(--accent)) 20%, transparent);
-    font-size: 11px;
-    font-weight: 800;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  &__actions {
-    display: flex;
-    gap: 2px;
-    opacity: 0;
-    transition: opacity 0.15s;
-    button { display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 8px; background: transparent; color: var(--ink-soft); cursor: pointer; &:hover { background: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--ink); } }
-  }
-  &__item:hover &__actions, &__item:focus-within &__actions { opacity: 1; }
-
-  &__empty { margin: auto; text-align: center; color: var(--ink-soft); font-weight: 700; }
-  &__notice { margin: 0; font-size: 12px; font-weight: 700; color: var(--danger); }
-
-  &__footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 4px; }
-  &__add {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border: 1px dashed var(--accent-line);
-    border-radius: var(--r-pill);
-    background: var(--accent-soft);
-    color: var(--ink);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.15s var(--ease);
-    &:hover { background: color-mix(in srgb, var(--accent) 26%, var(--surface)); transform: translateY(-1px); }
-  }
-  &__toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--ink-soft); cursor: pointer; input { accent-color: var(--accent); } }
+  .qa { margin: 0; &__field { height: 36px; } &__chips { display: none; } }
+  .row { --line-h: 38px; &__clip { left: -12px; } &__stamp { display: none; } }
 }
-
-// A narrow list keeps the essentials on one line: the add button stays, "Show done" shrinks to its checkbox.
-.todo__add { white-space: nowrap; }
-@container (max-width: 235px) { .todo__toggleText { display: none; } .todo__empty { font-size: 0.9em; } }

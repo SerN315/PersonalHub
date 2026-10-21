@@ -27,6 +27,7 @@ export interface WidgetDefinition {
   icon: IconName;
   tint: Tint; // the card colour before the person picks one
   size: WidgetSize;
+  page?: { href: string; label: string }; // a widget that also has a full page gets a link in the side menu
   component: ComponentType<WidgetProps>;
 }
 
@@ -54,6 +55,7 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "TaskDone01Icon",
     tint: "paper",
     size: { w: 4, h: 5, minW: 2, minH: 3, maxW: 8, maxH: 12 }, // 2 wide x 3 tall still shows the header, a task or two and "Add a task"
+    page: { href: "/todo", label: "Planner" },
     component: lazy(() => import("@/app/components/widgets/todolist")),
   },
   {

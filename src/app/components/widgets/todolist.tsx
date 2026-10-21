@@ -1,175 +1,83 @@
 "use client";
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import BaseWidget from "./BaseWidget";
-import TodoModal from "./TodoModal";
+import QuickAdd from "../todo/QuickAdd";
+import TaskRow from "../todo/TaskRow";
+import TaskCard from "../todo/TaskCard";
 import BasicIcon from "../ultis/icons";
-import "../../styles/widgets/todolist.scss";
 import WidgetProps from "@/app/types/widget";
-import { getTodos, createTodo, updateTodo, deleteTodo, updateTodosOrder, Todo } from "@/app/apis/todos";
+import { useTodoStore } from "@/app/utils/todo/store";
+import { selectTasks, subtasksByParent, NO_FILTERS, type Scope } from "@/app/utils/todo/views";
+import "../../styles/pages/planner.scss";
+import "../../styles/widgets/todolist.scss";
 
-type TodoInput = { text: string; type: string; color: string };
+// The desk-top glance at the planner: a small spiral notepad of what is due today (or one list). The same live copy of the
+// tasks as the Planner page, so ticking here ticks there. Which page it shows is remembered in the widget's own data.
+const toScope = (view: unknown): Scope => {
+  if (view === "all") return { kind: "all" };
+  if (typeof view === "string" && view.startsWith("list:")) return { kind: "list", id: view.slice(5) };
+  return { kind: "today" };
+};
 
 function TodoListWidget(props: WidgetProps) {
-  const { id: widgetId } = props;
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [showCompleted, setShowCompleted] = useState(false);
-  const [modal, setModal] = useState<{ open: boolean; editing: Todo | null }>({ open: false, editing: null });
-  const [draggedTodo, setDraggedTodo] = useState<number | null>(null);
-  const [notice, setNotice] = useState("");
+  const { id, data, onData } = props;
+  const status = useTodoStore((s) => s.status);
+  const tasks = useTodoStore((s) => s.tasks);
+  const lists = useTodoStore((s) => s.lists);
+  const today = useTodoStore((s) => s.today);
+  const load = useTodoStore((s) => s.load);
+  const toggle = useTodoStore((s) => s.toggle);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    getTodos(widgetId)
-      .then((data) => {
-        if (cancelled) return;
-        setTodos(data);
-        setLoaded(true);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setFailed(true);
-        setLoaded(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [widgetId]);
+    void load();
+  }, [load]);
 
-  // Every change waits for the server's answer; a failure shows a short notice instead of silently doing nothing.
-  const attempt = async (action: () => Promise<void>, message: string) => {
-    try {
-      setNotice("");
-      await action();
-    } catch {
-      setNotice(message);
-    }
-  };
+  const view = typeof data?.view === "string" ? data.view : "today";
+  const listExists = !view.startsWith("list:") || lists.some((l) => l.id === view.slice(5));
+  const effective: Scope = useMemo(() => (listExists ? toScope(view) : { kind: "today" }), [view, listExists]);
 
-  const handleAdd = (input: TodoInput) =>
-    attempt(async () => {
-      const created = await createTodo({ widget_id: widgetId, ...input, order_index: todos.length });
-      setTodos((prev) => [...prev, created]);
-    }, "Couldn't add that task.");
-
-  const handleEdit = (input: TodoInput) =>
-    attempt(async () => {
-      if (!modal.editing) return;
-      const updated = await updateTodo(modal.editing.id, input);
-      setTodos((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-    }, "Couldn't save your changes.");
-
-  const handleRemove = (todoId: number) =>
-    attempt(async () => {
-      await deleteTodo(todoId);
-      setTodos((prev) => prev.filter((t) => t.id !== todoId));
-    }, "Couldn't remove that task.");
-
-  const handleToggle = (todo: Todo) =>
-    attempt(async () => {
-      const updated = await updateTodo(todo.id, { completed: !todo.completed });
-      setTodos((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-    }, "Couldn't update that task.");
-
-  const handleDrop = (event: React.DragEvent, targetId: number) => {
-    event.preventDefault();
-    if (draggedTodo === null || draggedTodo === targetId) return;
-    const from = todos.findIndex((t) => t.id === draggedTodo);
-    const to = todos.findIndex((t) => t.id === targetId);
-    const reordered = [...todos];
-    const [moved] = reordered.splice(from, 1);
-    reordered.splice(to, 0, moved);
-    const next = reordered.map((todo, index) => ({ ...todo, order_index: index }));
-    setTodos(next);
-    setDraggedTodo(null);
-    attempt(() => updateTodosOrder(next.map((t) => ({ id: t.id, order_index: t.order_index }))), "Couldn't save the new order.");
-  };
-
-  const completed = todos.filter((t) => t.completed).length;
-  const visible = showCompleted ? todos : todos.filter((t) => !t.completed);
-  const progress = todos.length === 0 ? 0 : completed / todos.length;
+  const shown = useMemo(() => selectTasks(tasks, effective, NO_FILTERS, today), [tasks, effective, today]);
+  const subs = useMemo(() => subtasksByParent(tasks), [tasks]);
+  const colorOf = useMemo(() => new Map(lists.map((l) => [l.id, l.color])), [lists]);
+  const onOpen = useCallback((taskId: string) => setOpenId(taskId), []);
+  const closeCard = useCallback(() => setOpenId(null), []);
+  const openTask = openId ? tasks.find((t) => t.id === openId) : undefined;
+  const target = effective.kind === "list" ? effective.id : lists[0]?.id ?? null;
 
   return (
     <BaseWidget title="To-do" {...props}>
-      <div className="todo">
-        <header className="todo__header">
-          <h3>To-do</h3>
-          <span className="todo__count" aria-label={`${completed} of ${todos.length} done`}>
-            {completed}/{todos.length}
-          </span>
-        </header>
-        <div className="todo__bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} aria-label="Tasks done">
-          <span style={{ width: `${progress * 100}%` }} />
-        </div>
-
-        <ul className="todo__list">
-          {visible.map((todo) => (
-            <li
-              key={todo.id}
-              draggable
-              onDragStart={(e) => {
-                setDraggedTodo(todo.id);
-                e.dataTransfer.effectAllowed = "move";
-              }}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => handleDrop(e, todo.id)}
-              onDragEnd={() => setDraggedTodo(null)}
-              className={`todo__item ${todo.completed ? "is-done" : ""} ${draggedTodo === todo.id ? "is-dragging" : ""}`}
-              style={{ ["--dot" as string]: todo.color }}
-            >
-              <label className="todo__check">
-                <input type="checkbox" checked={todo.completed} onChange={() => handleToggle(todo)} />
-                <span className="todo__box" aria-hidden>
-                  <BasicIcon icon="Tick02Icon" size={14} strokeWidth={2.4} />
-                </span>
-                <span className="sr-only">Done: {todo.text}</span>
-              </label>
-              <span className="todo__text" onDoubleClick={() => setModal({ open: true, editing: todo })}>
-                {todo.text}
-              </span>
-              <span className="todo__type">{todo.type}</span>
-              <span className="todo__actions">
-                <button type="button" onClick={() => setModal({ open: true, editing: todo })} aria-label={`Edit ${todo.text}`}>
-                  <BasicIcon icon="Edit02Icon" size={15} />
-                </button>
-                <button type="button" onClick={() => handleRemove(todo.id)} aria-label={`Delete ${todo.text}`}>
-                  <BasicIcon icon="Delete02Icon" size={15} />
-                </button>
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        {loaded && !failed && visible.length === 0 && (
-          <p className="todo__empty">{todos.length === 0 ? "Nothing planned. A quiet day?" : "All done. Enjoy the calm."}</p>
-        )}
-        {failed && <p className="todo__empty">Couldn&apos;t load your tasks.</p>}
-        {notice && (
-          <p className="todo__notice" role="alert">
-            {notice}
-          </p>
-        )}
-
-        <footer className="todo__footer">
-          <button type="button" className="todo__add" onClick={() => setModal({ open: true, editing: null })}>
-            <BasicIcon icon="PlusSignIcon" size={16} /> Add a task
-          </button>
-          <label className="todo__toggle">
-            <input type="checkbox" aria-label="Show done tasks" checked={showCompleted} onChange={(e) => setShowCompleted(e.target.checked)} />
-            <span className="todo__toggleText">Show done</span>
+      <div className="notepad">
+        <div className="notepad__rings" aria-hidden>{Array.from({ length: 9 }, (_, i) => <i key={i} />)}</div>
+        <header className="notepad__head">
+          <label className="notepad__view">
+            <span className="sr-only">Show</span>
+            <select value={listExists ? view : "today"} onChange={(e) => onData?.(id, { view: e.target.value })}>
+              <option value="today">Today</option>
+              <option value="all">All open</option>
+              {lists.map((l) => <option key={l.id} value={`list:${l.id}`}>{l.name}</option>)}
+            </select>
           </label>
-        </footer>
+          <span className="notepad__count">{shown.length}</span>
+        </header>
+
+        <ul className="rows notepad__rows">
+          {shown.map((task) => {
+            const children = subs.get(task.id) ?? [];
+            return (
+              <TaskRow key={task.id} task={task} today={today} compact subsDone={children.filter((c) => c.completed).length} subsTotal={children.length} color={colorOf.get(task.list_id) ?? null} onToggle={toggle} onOpen={onOpen} />
+            );
+          })}
+        </ul>
+        {status === "ready" && shown.length === 0 && <p className="notepad__empty">{effective.kind === "today" ? "Nothing due. A quiet day." : "Nothing here."}</p>}
+        {status === "error" && <p className="notepad__empty">Couldn&apos;t load your tasks.</p>}
+
+        {status === "ready" && <QuickAdd listId={target} dueDate={effective.kind === "today" ? today : null} lists={lists} today={today} placeholder="Add a task" />}
+        <Link href="/todo" className="notepad__open">Open planner <BasicIcon icon="ArrowRight01Icon" size={14} /></Link>
       </div>
 
-      <TodoModal
-        key={modal.editing?.id ?? "new"}
-        isOpen={modal.open}
-        mode={modal.editing ? "edit" : "add"}
-        initialData={modal.editing ? { text: modal.editing.text, type: modal.editing.type, color: modal.editing.color } : undefined}
-        onClose={() => setModal({ open: false, editing: null })}
-        onSave={modal.editing ? handleEdit : handleAdd}
-      />
+      {openTask && <TaskCard key={openTask.id} task={openTask} subtasks={subs.get(openTask.id) ?? []} lists={lists} onClose={closeCard} />}
     </BaseWidget>
   );
 }
