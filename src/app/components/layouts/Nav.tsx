@@ -7,11 +7,14 @@ import { SettingsModal } from "../settings/settings";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { logoutUser } from "@/app/apis/settings";
 import type { IconName } from "../ultis/icons";
+import { WIDGETS } from "@/app/widgets/registry";
 import type { SettingsTab } from "@/app/types/settings";
 
+// Widgets that have a full page of their own (the Planner) add their link here from the registry.
 const LINKS: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Welcome", icon: "Home03Icon" },
   { href: "/dashboard", label: "My day", icon: "DashboardSquare01Icon" },
+  ...WIDGETS.flatMap((w) => (w.page ? [{ ...w.page, icon: w.icon }] : [])),
   { href: "/dictionary", label: "Dictionary", icon: "BookOpen01Icon" },
 ];
 
