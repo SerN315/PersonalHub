@@ -16,10 +16,10 @@ export const onSignedOut = (handler: () => void) => {
   return () => window.removeEventListener(SIGNED_OUT_EVENT, handler);
 };
 
-type Options = { method?: string; body?: unknown; form?: FormData };
+type Options = { method?: string; body?: unknown; form?: FormData; signal?: AbortSignal };
 
-export async function api<T = unknown>(path: string, { method = "GET", body, form }: Options = {}): Promise<T> {
-  const init: RequestInit = { method, credentials: "same-origin" };
+export async function api<T = unknown>(path: string, { method = "GET", body, form, signal }: Options = {}): Promise<T> {
+  const init: RequestInit = { method, credentials: "same-origin", signal };
   if (form) {
     init.body = form;
   } else if (body !== undefined) {
@@ -30,7 +30,8 @@ export async function api<T = unknown>(path: string, { method = "GET", body, for
   let res: Response;
   try {
     res = await fetch(path, init);
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error; // cancelled on purpose (a newer search replaced this one): not a network problem
     throw new ApiError("Can't reach the server. Check your connection and try again.", 0);
   }
 

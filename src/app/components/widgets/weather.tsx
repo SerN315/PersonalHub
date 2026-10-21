@@ -5,7 +5,7 @@ import BasicIcon from "@/app/components/ultis/icons";
 import "../../styles/widgets/weather.scss";
 import WidgetProps from "@/app/types/widget";
 import { getWeatherBackground, getWeatherIconName } from "@/app/utils/weatherMappings";
-import type * as Icons from "@hugeicons/core-free-icons";
+import type { IconName } from "@/app/components/ultis/icons";
 
 interface Hour {
   time: string;
@@ -28,7 +28,7 @@ interface Sky {
 type State = { kind: "loading" } | { kind: "denied" } | { kind: "error" } | { kind: "ready"; sky: Sky };
 
 const HOURS_SHOWN = 12;
-const icon = (code?: number, isDay?: number) => getWeatherIconName(code, isDay) as keyof typeof Icons;
+const icon = (code?: number, isDay?: number) => getWeatherIconName(code, isDay) as IconName;
 
 // "2026-10-19 14:00" -> the next HOURS_SHOWN hours from now, carrying on into tomorrow.
 function upcomingHours(days: { hour?: Hour[] }[] | undefined): Hour[] {

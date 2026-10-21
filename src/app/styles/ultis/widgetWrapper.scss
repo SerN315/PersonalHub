@@ -84,3 +84,28 @@
     &:hover { background: color-mix(in srgb, var(--danger) 28%, transparent); }
   }
 }
+
+// Shown for the instant a widget's code is being fetched (each widget is its own chunk).
+.widgetSkeleton {
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  animation: skeletonPulse 1.2s ease-in-out infinite;
+}
+@keyframes skeletonPulse { 50% { opacity: 0.55; } }
+
+// A widget type this version does not know: a quiet card that can still be removed in Arrange mode.
+.widgetUnknown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 12px;
+  text-align: center;
+  color: var(--ink-soft);
+  p { margin: 0; font-weight: 700; color: var(--ink); }
+  small { font-size: 12px; }
+}

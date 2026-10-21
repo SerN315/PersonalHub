@@ -6,10 +6,10 @@ import BasicIcon from "../ultis/icons";
 import { SettingsModal } from "../settings/settings";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { logoutUser } from "@/app/apis/settings";
-import type * as Icons from "@hugeicons/core-free-icons";
+import type { IconName } from "../ultis/icons";
 import type { SettingsTab } from "@/app/types/settings";
 
-const LINKS: { href: string; label: string; icon: keyof typeof Icons }[] = [
+const LINKS: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Welcome", icon: "Home03Icon" },
   { href: "/dashboard", label: "My day", icon: "DashboardSquare01Icon" },
   { href: "/dictionary", label: "Dictionary", icon: "BookOpen01Icon" },

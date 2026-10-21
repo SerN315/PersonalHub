@@ -22,6 +22,8 @@ function contentSecurityPolicy(nonce: string) {
     `img-src 'self' blob: data: ${imageOrigins.join(" ")}`,
     "font-src 'self'",
     "connect-src 'self'", // the browser only ever talks to this site; /api is proxied to the backend
+    "media-src 'self' https: blob:", // radio streams come from thousands of different stations (https only; audio cannot run code)
+    "frame-src https://www.youtube-nocookie.com https://www.youtube.com", // YouTube's official player, nothing else may be framed
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

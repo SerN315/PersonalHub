@@ -8,9 +8,9 @@ import ProfileSettings from "./ProfileSettings";
 import AppearanceSettings from "./AppearanceSettings";
 import SecuritySettings from "./SecuritySettings";
 import type { SettingsModalProps, SettingsTab } from "@/app/types/settings";
-import type * as Icons from "@hugeicons/core-free-icons";
+import type { IconName } from "@/app/components/ultis/icons";
 
-const TABS: { key: SettingsTab; label: string; blurb: string; icon: keyof typeof Icons }[] = [
+const TABS: { key: SettingsTab; label: string; blurb: string; icon: IconName }[] = [
   { key: "Profile", label: "Profile", blurb: "Who you are", icon: "UserIcon" },
   { key: "Appearance", label: "Appearance", blurb: "Make it feel like yours", icon: "PaintBoardIcon" },
   { key: "Security", label: "Security", blurb: "Password and sign-in", icon: "LockPasswordIcon" },
