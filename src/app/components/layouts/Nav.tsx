@@ -12,7 +12,6 @@ import type { SettingsTab } from "@/app/types/settings";
 
 // Widgets that have a full page of their own (the Planner) add their link here from the registry.
 const LINKS: { href: string; label: string; icon: IconName }[] = [
-  { href: "/", label: "Welcome", icon: "Home03Icon" },
   { href: "/dashboard", label: "My day", icon: "DashboardSquare01Icon" },
   ...WIDGETS.flatMap((w) => (w.page ? [{ ...w.page, icon: w.icon }] : [])),
   { href: "/dictionary", label: "Dictionary", icon: "BookOpen01Icon" },
@@ -80,6 +79,10 @@ export const Nav: React.FC = () => {
             <BasicIcon icon="PaintBoardIcon" size={20} />
             <span>Make it yours</span>
           </button>
+          <Link href="/help" className={`nav__link ${pathname === "/help" ? "is-active" : ""}`} aria-current={pathname === "/help" ? "page" : undefined}>
+            <BasicIcon icon="HelpCircleIcon" size={20} />
+            <span>Help</span>
+          </Link>
           <button type="button" className="nav__link" id="settingsAccountButton" onClick={() => setSettingsTab("Profile")}>
             <BasicIcon icon="Settings02Icon" size={20} />
             <span>Settings</span>
