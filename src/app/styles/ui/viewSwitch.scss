@@ -1,0 +1,37 @@
+// The little switch between the Board and the Room (the two views of My day).
+.viewSwitch {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(var(--shadow-color) / 0.1);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    &:hover { color: var(--ink); }
+    &.is-on { background: var(--accent); color: var(--accent-ink); }
+    &:focus-visible { outline: 2px solid var(--accent-line); outline-offset: 2px; }
+  }
+
+  // over the corner of the Room
+  &--floating { position: absolute; top: 12px; left: 14px; z-index: 20; }
+}
+
+.weatherRoom { position: relative; }
+.wxm > .viewSwitch { align-self: flex-start; flex: none; }
+// on a very narrow screen only the icons show; the names stay available to screen readers
+@media (max-width: 520px) { .viewSwitch button span { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }

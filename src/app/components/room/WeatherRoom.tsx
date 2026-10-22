@@ -5,6 +5,7 @@ import LocationGlobe from "./LocationGlobe";
 import RoomWidgetPanel from "./RoomWidgetPanel";
 import MobileWeather from "./MobileWeather";
 import WindowCurtains from "./WindowCurtains";
+import ViewSwitch from "./ViewSwitch";
 import { StickyNote, TableRadio, WallCalendar, WallClock } from "./RoomObjects";
 import { warmRoomWidgets } from "./useRoomWidget";
 import { preloadWidget } from "@/app/widgets/registry";
@@ -12,6 +13,7 @@ import { PROPS, type RoomProp } from "./roomProps";
 import { useIsMobile } from "./useIsMobile";
 import { useSkyStore } from "@/app/utils/weather/skyStore";
 import "@/app/styles/pages/weatherRoom.scss";
+import "@/app/styles/ui/viewSwitch.scss";
 
 // The Weather tab: a pixel-art room. A modern window with its side panes slid back (so nothing crosses the sky), the
 // animated picture for the current condition behind a soft grey glass, a TV with the forecast on the counter, a globe to look at
@@ -64,10 +66,12 @@ export default function WeatherRoom() {
   const night = sky?.isDay === 0;
   return (
     <div className="weatherRoom">
-      <h1 className="sr-only">Weather</h1>
+      <h1 className="sr-only">My day: the room</h1>
       {mobile ? (
         <MobileWeather onOpen={setOpen} />
       ) : (
+      <>
+      <ViewSwitch floating />
       <div className="room" ref={stage} data-night={night ? "true" : undefined} role="group" aria-label={sky ? `A window onto the sky: ${sky.condition}, ${sky.temperature} degrees in ${sky.location}` : "A window onto the sky"}>
         <div className="scene">
           <div className="room__layer room__wall" style={{ ["--depth" as string]: 3 }} aria-hidden />
@@ -104,6 +108,7 @@ export default function WeatherRoom() {
           </div>
         </div>
       </div>
+      </>
       )}
 
       {open && <RoomWidgetPanel key={open.widget} type={open.widget} create={"create" in open ? open.create : false} onClose={close} />}

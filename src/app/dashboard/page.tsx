@@ -1,9 +1,9 @@
 import dynamic from "next/dynamic";
 import "../styles/pages/dashboard.scss";
 
-// The board is browser-only (it measures its own width and talks to the API with your cookies).
-const WidgetClient = dynamic(() => import("./dasboardComponents/widgetClient"));
+// My day is browser-only (it measures its own width, remembers which view you were in, and talks to the API with your cookies).
+const MyDay = dynamic(() => import("./MyDay"));
 
 export default function DashboardPage() {
-  return <WidgetClient />;
+  return <MyDay />;
 }

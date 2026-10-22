@@ -6,6 +6,7 @@ import { PROPS, type RoomProp } from "./roomProps";
 import { useSkyStore, type Sky } from "@/app/utils/weather/skyStore";
 import { getWeatherIconName } from "@/app/utils/weatherMappings";
 import { preloadWidget } from "@/app/widgets/registry";
+import ViewSwitch from "./ViewSwitch";
 import type { IconName } from "../ultis/icons";
 import "@/app/styles/pages/weatherMobile.scss";
 
@@ -46,6 +47,7 @@ export default function MobileWeather({ onOpen }: { onOpen: (prop: RoomProp) => 
 
   return (
     <div className="wxm" data-night={sky?.isDay === 0 ? "true" : undefined}>
+      <ViewSwitch />
       <section className="wxm__sky" style={background ? { backgroundImage: `url("${background}")` } : undefined} aria-label={sky ? `${sky.condition}, ${sky.temperature} degrees in ${sky.location}` : "The sky"}>
         <div className="wxm__shade" aria-hidden />
         {sky ? (

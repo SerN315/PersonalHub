@@ -97,7 +97,6 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "SunCloud01Icon",
     tint: "paper",
     size: { w: 5, h: 3, minW: 2, minH: 2, maxW: 12, maxH: 6 }, // the hourly strip appears once there is room; a small one is just sky and temperature
-    page: { href: "/weather", label: "Weather" },
     component: lazy(() => import("@/app/components/widgets/weather")),
   },
 ];

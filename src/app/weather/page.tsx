@@ -1,10 +1,6 @@
-import dynamic from "next/dynamic";
+import { redirect } from "next/navigation";
 
-// Browser-only: it asks for your location and talks to the API with your cookies.
-const WeatherRoom = dynamic(() => import("@/app/components/room/WeatherRoom"));
-
-export const metadata = { title: "Weather" };
-
+// The weather room is now the "Room" view of My day. Old links and bookmarks to /weather land there.
 export default function WeatherPage() {
-  return <WeatherRoom />;
+  redirect("/dashboard?view=room");
 }

@@ -9,6 +9,7 @@ import { WIDGETS, COLS, clampSize, getWidgetDefinition, resizeLimits } from "@/a
 import BasicIcon from "@/app/components/ultis/icons";
 import BaseButton from "@/app/components/ui/BaseButton";
 import DayHeader from "./DayHeader";
+import ViewSwitch from "@/app/components/room/ViewSwitch";
 import { useEditMode } from "@/app/contexts/editWidgetContext";
 import { asRecord, getUserWidgets, createWidget, deleteWidget, saveUserWidgetLayout, updateWidget } from "@/app/apis/widgets";
 import { Widget, WidgetLayout, WidgetState } from "@/app/types/widgets";
@@ -230,6 +231,7 @@ export default function WidgetClient() {
   return (
     <div className="dashboard">
       <DayHeader>
+        <ViewSwitch />
         <BaseButton
           variant={editMode ? "primary" : "ghost"}
           size="sm"
