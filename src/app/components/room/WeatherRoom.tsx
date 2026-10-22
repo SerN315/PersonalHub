@@ -4,6 +4,9 @@ import WeatherTv from "./WeatherTv";
 import LocationGlobe from "./LocationGlobe";
 import RoomWidgetPanel from "./RoomWidgetPanel";
 import MobileWeather from "./MobileWeather";
+import { StickyNote, TableRadio, WallCalendar, WallClock } from "./RoomObjects";
+import { warmRoomWidgets } from "./useRoomWidget";
+import { preloadWidget } from "@/app/widgets/registry";
 import { PROPS, type RoomProp } from "./roomProps";
 import { useIsMobile } from "./useIsMobile";
 import { useSkyStore } from "@/app/utils/weather/skyStore";
@@ -24,6 +27,10 @@ export default function WeatherRoom() {
 
   useEffect(() => {
     load();
+    // Everything a press could open is made ready while you look around: your widget list now, the widgets' code when idle.
+    warmRoomWidgets();
+    const idle = window.requestIdleCallback ?? ((run: () => void) => window.setTimeout(run, 1200));
+    idle(() => PROPS.forEach((prop) => preloadWidget(prop.widget)));
   }, [load]);
 
   useEffect(() => {
@@ -79,18 +86,15 @@ export default function WeatherRoom() {
             <div className="window__sill" />
           </div>
 
-          {PROPS.map((prop) => (
-            <div key={prop.widget} className={`room__layer room__prop ${prop.className}`} style={{ ["--depth" as string]: prop.depth }}>
-              <button type="button" className="prop" onClick={() => setOpen(prop)} aria-label={prop.label} aria-haspopup="dialog">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={prop.src} alt="" draggable={false} />
-              </button>
-            </div>
-          ))}
+          <div className="room__layer room__prop room__clock" style={{ ["--depth" as string]: 5 }}><WallClock prop={PROPS[0]} onOpen={setOpen} /></div>
+          <div className="room__layer room__prop room__calendar" style={{ ["--depth" as string]: 5 }}><WallCalendar prop={PROPS[1]} onOpen={setOpen} /></div>
+          <div className="room__layer room__prop room__sticky" style={{ ["--depth" as string]: 9 }}><StickyNote prop={PROPS[2]} onOpen={setOpen} /></div>
 
           <div className="room__layer room__tv" style={{ ["--depth" as string]: 16 }}>
             <WeatherTv />
           </div>
+
+          <div className="room__layer room__stand room__radio" style={{ ["--depth" as string]: 14 }}><div className="stand"><TableRadio prop={PROPS[3]} onOpen={setOpen} /></div></div>
 
           <div className="room__layer room__globe" style={{ ["--depth" as string]: 14 }}>
             <LocationGlobe />

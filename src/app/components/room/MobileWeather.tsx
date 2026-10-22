@@ -5,6 +5,7 @@ import { PlacePanel } from "./LocationGlobe";
 import { PROPS, type RoomProp } from "./roomProps";
 import { useSkyStore, type Sky } from "@/app/utils/weather/skyStore";
 import { getWeatherIconName } from "@/app/utils/weatherMappings";
+import { preloadWidget } from "@/app/widgets/registry";
 import type { IconName } from "../ultis/icons";
 import "@/app/styles/pages/weatherMobile.scss";
 
@@ -95,7 +96,7 @@ export default function MobileWeather({ onOpen }: { onOpen: (prop: RoomProp) => 
 
       <nav className="wxm__props" aria-label="Your things">
         {PROPS.map((prop) => (
-          <button key={prop.widget} type="button" onClick={() => onOpen(prop)} aria-label={prop.label} aria-haspopup="dialog">
+          <button key={prop.widget} type="button" onClick={() => onOpen(prop)} onPointerDown={() => preloadWidget(prop.widget)} aria-label={prop.label} aria-haspopup="dialog">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={prop.src} alt="" draggable={false} />
           </button>

@@ -11,9 +11,9 @@ const WEEKDAY = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "
 const dayName = (date: string, i: number) => (i === 0 ? "TODAY" : WEEKDAY.format(new Date(`${date}T00:00:00Z`)).toUpperCase());
 const hourLabel = (time: string) => `${String(new Date(time.replace(" ", "T")).getHours()).padStart(2, "0")}:00`;
 
-// Where the parts are on the sprite (public/room/tv.png, 80 x 66 pixels): the glass, the dial and the three push buttons.
+// Where the parts are on the sprite (public/room/tv.png, 80 x 64 pixels): the glass, the dial and the three push buttons.
 // Controls are real buttons laid over the drawn ones, so the picture stays the picture and the keyboard still works.
-const SPRITE = { w: 80, h: 66 };
+const SPRITE = { w: 80, h: 64 };
 const place = (x0: number, y0: number, x1: number, y1: number) => ({
   left: `${(x0 / SPRITE.w) * 100}%`,
   top: `${(y0 / SPRITE.h) * 100}%`,

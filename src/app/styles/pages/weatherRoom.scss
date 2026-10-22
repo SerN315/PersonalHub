@@ -58,15 +58,18 @@
   --base: 74%; // the line things stand on
   --tv-l: 60%;
   --tv-w: 37%;
-  --globe-l: 42%;
-  --globe-w: 8cqw;
+  --globe-l: 40%;
+  --globe-w: 9.5cqw;
   --globe-base: var(--base);
-  --clock-l: 6%;
-  --clock-t: 12%;
-  --clock-w: 8cqw;
-  --calendar-l: 84%;
+  --radio-l: 5%;
+  --radio-w: 17cqw;
+  --radio-base: var(--base);
+  --clock-l: 7%;
+  --clock-t: 9%;
+  --clock-w: 9cqw;
+  --calendar-l: 85%;
   --calendar-t: 2%;
-  --calendar-w: 9cqw;
+  --calendar-w: 8cqw;
   --sticky-l: 53.6%;
   --sticky-t: 12%;
   --sticky-w: 5.4cqw;
@@ -196,9 +199,47 @@
   &:hover { transform: translateY(-0.5cqw); }
   &:active { transform: translateY(0.2cqw); }
   &:focus-visible { outline: 0.3cqw dashed #fff; outline-offset: 0.6cqw; }
-  &.is-away img { filter: drop-shadow(0.5cqw 0.5cqw 0 rgb(0 0 0 / 0.22)) hue-rotate(150deg) saturate(1.4); } // the globe changes colour when it shows somewhere other than home
+  // a little red pin on the globe when it shows somewhere other than home
+  &.is-away::after { content: ""; position: absolute; left: 47%; top: 22%; width: 9%; height: 8%; background: #d4442e; box-shadow: 0 0 0 0.2cqw #fff; }
 }
 .room__prop .prop { position: absolute; }
+
+// live details drawn over the sprites (their positions come from each sprite's own pixel grid)
+.prop .clockHands { position: absolute; inset: 0; width: 100%; height: 100%; stroke: #2a1810; fill: none; stroke-linecap: square; &__pin { fill: #2a1810; stroke: none; } }
+.prop .clockPendulum { position: absolute; left: 36.1%; top: 56.9%; width: 25%; height: auto; filter: none; transform-origin: 50% 0; animation: swing 2s ease-in-out infinite alternate; }
+.prop .calendarToday { position: absolute; background: #fff; box-shadow: 0 0 0 0.25cqw #c8402c; }
+.prop.is-playing img { animation: beat 0.5s steps(2) infinite; } // the boombox bounces while the radio plays
+@keyframes swing { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+@keyframes beat { 50% { transform: translateY(-0.45cqw); } }
+
+// Things that STAND on the counter lie in their own flat shadow on it, beside them at the same base line, instead of a shadow
+// dropped below them (which would make them float). Things hanging on the wall keep the offset shadow.
+@mixin table-shadow {
+  &::after {
+    content: "";
+    position: absolute;
+    left: 22%;
+    right: -36%;
+    bottom: -0.3cqw;
+    height: 1.2cqw;
+    background: rgb(60 30 12 / 0.3);
+    clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+    z-index: -1;
+    pointer-events: none;
+  }
+}
+.stand {
+  position: absolute;
+  left: var(--radio-l);
+  top: var(--radio-base);
+  width: var(--radio-w);
+  transform: translateY(-100%);
+  @include table-shadow;
+  .prop { width: 100%; }
+}
+.stand .prop img, .globe .prop img { filter: none; }
+.globe > .prop { width: 100%; }
+.room__stand { pointer-events: none; }
 .room__clock .prop { left: var(--clock-l); top: var(--clock-t); width: var(--clock-w); }
 .room__calendar .prop { left: var(--calendar-l); top: var(--calendar-t); width: var(--calendar-w); }
 .room__sticky .prop { left: var(--sticky-l); top: var(--sticky-t); width: var(--sticky-w); transform: rotate(4deg); &:hover { transform: rotate(4deg) translateY(-0.5cqw); } }
@@ -211,6 +252,7 @@
   top: var(--globe-base);
   width: var(--globe-w);
   transform: translateY(-100%);
+  @include table-shadow;
 
   &__panel {
     position: absolute;
@@ -241,13 +283,14 @@
   left: var(--tv-l);
   top: var(--base);
   width: var(--tv-w);
-  aspect-ratio: 80 / 66;
+  aspect-ratio: 80 / 64;
   transform: translateY(-100%);
   pointer-events: auto;
+  @include table-shadow;
   font-family: "Bold Pixels", "Courier New", monospace;
   letter-spacing: 0.04em;
 
-  &__sprite { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; filter: drop-shadow(0.5cqw 0.5cqw 0 rgb(0 0 0 / 0.22)); pointer-events: none; }
+  &__sprite { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
 
   &__screen {
     position: absolute;
@@ -332,6 +375,7 @@
     animation: panelIn 0.2s var(--ease);
     &--sticky { width: min(320px, 100%); height: min(320px, calc(100dvh - 32px)); }
     &--clock { width: min(300px, 100%); height: min(340px, calc(100dvh - 32px)); }
+    &--radio { width: min(520px, 100%); height: min(430px, calc(100dvh - 32px)); }
   }
   &__close {
     position: absolute;
@@ -371,9 +415,12 @@
     --base: 92%;
     --tv-w: min(88%, 56cqh);
     --tv-l: calc((100% - var(--tv-w)) / 2);
-    --globe-l: 2%;
-    --globe-w: 15cqw;
-    --globe-base: 98%;
+    --globe-l: 85%;
+    --globe-w: 12cqw;
+    --globe-base: 99%;
+    --radio-l: 2%;
+    --radio-w: 28%;
+    --radio-base: 99%;
     --clock-l: 5%;
     --clock-t: 35%;
     --clock-w: 15cqw;

@@ -2,11 +2,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createWidget, getUserWidgets, updateWidget } from "@/app/apis/widgets";
 import { getWidgetDefinition } from "@/app/widgets/registry";
-import type { Widget } from "@/app/types/widgets";
 
 // The widget an object in the room opens is the very same widget as on your dashboard (one per type, as the server allows),
 // so a note written here is the note on "My day". If you do not have that widget yet, `create` makes it the first time it is
 // opened (it then also appears on your dashboard); without `create` the widget simply works without saving anything.
+//
+// Your widgets are listed once and kept (and kept up to date by every save made here), so a widget opens with its data already in
+// hand. `warmRoomWidgets` lists them ahead of time, as soon as the room is up.
 
 export interface RoomWidget {
   id: string;
@@ -15,45 +17,71 @@ export interface RoomWidget {
   ready: boolean;
 }
 
-let widgetsPromise: Promise<Widget[]> | null = null;
-const loadWidgets = () => (widgetsPromise ??= getUserWidgets().catch((error) => ((widgetsPromise = null), Promise.reject(error))));
+interface Entry {
+  id: string;
+  data: Record<string, unknown>;
+  saved: boolean; // false: you have no such widget, so changes are not stored
+}
+
+const cache = new Map<string, Entry>();
+let listing: Promise<void> | null = null;
+
+const loadList = () =>
+  (listing ??= getUserWidgets()
+    .then((widgets) => {
+      for (const widget of widgets) cache.set(widget.type, { id: widget.id, data: widget.data ?? {}, saved: true });
+    })
+    .catch(() => {
+      listing = null; // offline or signed out: the next open tries again
+    }));
+
+export const warmRoomWidgets = () => void loadList();
+
+async function resolve(type: string, create: boolean): Promise<Entry> {
+  await loadList();
+  let entry = cache.get(type);
+  if (!entry && create) {
+    try {
+      const size = getWidgetDefinition(type)?.size ?? { w: 3, h: 3 };
+      const widget = await createWidget({ type, position: { x: 0, y: 0, w: size.w, h: size.h } });
+      entry = { id: widget.id, data: widget.data ?? {}, saved: true };
+      cache.set(type, entry);
+    } catch {
+      /* it still works, it just does not save */
+    }
+  }
+  return entry ?? { id: `room-${type}`, data: {}, saved: false };
+}
 
 export function useRoomWidget(type: string, { create = false }: { create?: boolean } = {}): RoomWidget {
-  const [state, setState] = useState<{ id: string; data: Record<string, unknown>; saved: boolean } | null>(null);
-  const latest = useRef(state);
+  const [entry, setEntry] = useState<Entry | null>(() => cache.get(type) ?? null);
+  const latest = useRef(entry);
   useEffect(() => {
-    latest.current = state;
+    latest.current = entry;
   });
 
   useEffect(() => {
+    if (cache.has(type)) return;
     let cancelled = false;
-    (async () => {
-      let widget: Widget | undefined;
-      try {
-        widget = (await loadWidgets()).find((w) => w.type === type);
-        if (!widget && create) {
-          const size = getWidgetDefinition(type)?.size ?? { w: 3, h: 3 };
-          widget = await createWidget({ type, position: { x: 0, y: 0, w: size.w, h: size.h } });
-          widgetsPromise = null; // the list changed: the next look fetches it again
-        }
-      } catch {
-        /* offline or signed out: the widget still works, it just does not save */
-      }
-      if (cancelled) return;
-      setState(widget ? { id: widget.id, data: widget.data ?? {}, saved: true } : { id: `room-${type}`, data: {}, saved: false });
-    })();
+    void resolve(type, create).then((found) => !cancelled && setEntry(found));
     return () => {
       cancelled = true;
     };
   }, [type, create]);
 
-  const onData = useCallback((_id: string, patch: Record<string, unknown>) => {
-    const current = latest.current;
-    if (!current) return;
-    const data = { ...current.data, ...patch };
-    setState({ ...current, data });
-    if (current.saved) void updateWidget(current.id, { data }).catch(() => {});
-  }, []);
+  const onData = useCallback(
+    (_id: string, patch: Record<string, unknown>) => {
+      const current = latest.current;
+      if (!current) return;
+      const next = { ...current, data: { ...current.data, ...patch } };
+      setEntry(next);
+      if (current.saved) {
+        cache.set(type, next);
+        void updateWidget(current.id, { data: next.data }).catch(() => {});
+      }
+    },
+    [type],
+  );
 
-  return { id: state?.id ?? `room-${type}`, data: state?.data ?? {}, onData, ready: state !== null };
+  return { id: entry?.id ?? `room-${type}`, data: entry?.data ?? {}, onData, ready: entry !== null };
 }
