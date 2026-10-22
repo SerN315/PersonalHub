@@ -4,13 +4,46 @@
 
 @use "../fonts";
 
+// The page is the room: it fills everything beside the menu. Inside it the scene keeps its proportions (16:10) and sits on
+// the floor of the room; where the screen is taller than that, the wall simply carries on upward.
 .weatherRoom {
-  container: weather / inline-size;
-  padding: 24px clamp(10px, 3vw, 40px) 48px;
+  height: 100dvh;
+  @media (max-width: 860px) { height: calc(100dvh - 72px); } // the menu is a bar along the bottom there
 }
 
 .room {
-  // desktop placement, in % of the stage (left/top) and cqw (sizes)
+  --sw: min(100cqw, 160cqh); // the scene's width
+  --wall: color-mix(in srgb, var(--accent) 16%, var(--surface-2));
+  position: relative;
+  width: 100%;
+  height: 100%;
+  container: room / size;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--wall);
+
+  &[data-night="true"] { filter: brightness(0.72) saturate(0.9); }
+
+  &__layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    // each layer drifts by its depth; far layers barely move
+    transform: translate3d(calc(var(--px, 0) * var(--depth, 0) * -1px), calc(var(--py, 0) * var(--depth, 0) * -0.6px), 0);
+    transition: transform 0.25s var(--ease);
+  }
+
+  // the wall and counter run on past the scene in every direction, so any screen shape is filled seamlessly
+  &__wall {
+    inset: -100% -100cqw -4%;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 3cqw, rgb(255 255 255 / 0.06) 3cqw 6cqw),
+      var(--wall);
+  }
+}
+
+.scene {
+  // desktop placement, in % of the scene (left/top) and cqw (sizes)
   --win-l: 30%;
   --win-w: 40%;
   --win-t: 6%;
@@ -26,35 +59,13 @@
   --wood-lo: #5a3622;
   --wood-hi: #b07a52;
 
-  position: relative;
-  width: min(100%, 1180px);
-  margin: 0 auto;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: var(--sw);
   aspect-ratio: 16 / 10;
-  container: room / inline-size;
-  overflow: hidden;
-  border-radius: 22px;
-  background: var(--surface-2);
-  box-shadow: var(--shadow-pop);
-  isolation: isolate;
-
-  &[data-night="true"] { filter: brightness(0.72) saturate(0.9); }
-
-  &__layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    // each layer drifts by its depth; far layers barely move
-    transform: translate3d(calc(var(--px, 0) * var(--depth, 0) * -1px), calc(var(--py, 0) * var(--depth, 0) * -0.6px), 0);
-    transition: transform 0.25s var(--ease);
-  }
-
-  &__wall {
-    inset: -4%;
-    background:
-      linear-gradient(to bottom, rgb(255 255 255 / 0.18), transparent 40%),
-      repeating-linear-gradient(90deg, transparent 0 3cqw, rgb(255 255 255 / 0.06) 3cqw 6cqw),
-      color-mix(in srgb, var(--accent) 16%, var(--surface-2));
-  }
+  transform: translateX(-50%);
+  container: scene / inline-size;
 }
 
 // ---- the window ----------------------------------------------------------------------------------------------------------------------
@@ -120,8 +131,8 @@
 
 // ---- the counter -----------------------------------------------------------------------------------------------------------------------
 .room__counter {
-  left: -4%;
-  right: -4%;
+  left: -100cqw;
+  right: -100cqw;
 }
 .counter {
   &__top {
@@ -382,10 +393,12 @@
 @keyframes tvOn { from { opacity: 0; filter: brightness(2.2); transform: scaleY(0.04); } to { opacity: 1; filter: none; transform: none; } }
 @keyframes tvStatic { 0% { opacity: 0.9; } 70% { opacity: 0.35; } 100% { opacity: 0; } }
 
-// ---- phone: a tall room, the TV below the window ------------------------------------------------------------------------------------
-@container weather (max-width: 720px) {
-  .room {
-    aspect-ratio: 3 / 4;
+// ---- tall screens (phones): the scene is the whole screen, the TV below the window ------------------------------------------------
+@container room (max-aspect-ratio: 1/1) {
+  .scene {
+    width: 100cqw;
+    height: 100cqh;
+    aspect-ratio: auto;
     --win-l: 14%;
     --win-w: 72%;
     --win-t: 3%;
@@ -398,10 +411,10 @@
     --plant-l: 86%;
     --globe-l: 4%;
   }
-  .globe { width: 14cqw; }
-  .globe__panel { width: 68cqw; transform: translateX(-82%); font-size: 13px; }
-  .globe__tag { font-size: 11px; }
   .room__plant svg { width: 12cqw; }
+  .globe { width: 14cqw; }
+  .globe__panel { width: 68cqw; transform: translateX(-4%); font-size: 13px; }
+  .globe__tag { font-size: 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

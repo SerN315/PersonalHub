@@ -49,6 +49,7 @@ export default function WeatherRoom() {
     <div className="weatherRoom">
       <h1 className="sr-only">Weather</h1>
       <div className="room" ref={stage} data-night={night ? "true" : undefined} role="group" aria-label={sky ? `A window onto the sky: ${sky.condition}, ${sky.temperature} degrees in ${sky.location}` : "A window onto the sky"}>
+        <div className="scene">
         <div className="room__layer room__wall" style={{ ["--depth" as string]: 3 }} aria-hidden />
 
         <div className="room__layer room__counter" style={{ ["--depth" as string]: 10 }} aria-hidden>
@@ -84,6 +85,7 @@ export default function WeatherRoom() {
 
         <div className="room__layer room__tv" style={{ ["--depth" as string]: 16 }}>
           <WeatherTv />
+        </div>
         </div>
       </div>
     </div>
