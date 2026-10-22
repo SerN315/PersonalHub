@@ -116,15 +116,19 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
-    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
     border-right: 0;
     border-top: 1px solid var(--line);
     background: color-mix(in srgb, var(--surface) 92%, transparent);
 
-    &__top, &__bottom { flex-direction: row; align-items: center; gap: 2px; }
+    &__top, &__bottom { flex-direction: row; align-items: center; gap: 0; min-width: 0; }
+    &__links { flex-direction: row; gap: 0; } // the links sit in one row, not stacked
     &__brand, &__userText { display: none; }
     &__user { width: auto; margin: 0; padding: 4px; border-radius: 50%; border-color: transparent; background: transparent; }
-    &__link { flex-direction: column; gap: 2px; min-height: 54px; width: auto; padding: 4px 10px; font-size: 11px; }
+    &__link { flex-direction: column; gap: 2px; min-height: 54px; width: auto; min-width: 44px; justify-content: center; padding: 4px 8px; font-size: 10px; span { max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      // only the page you are on shows its name; the rest keep theirs for screen readers
+      &:not(.is-active) span { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    }
     &__link.is-active { box-shadow: none; }
   }
 }

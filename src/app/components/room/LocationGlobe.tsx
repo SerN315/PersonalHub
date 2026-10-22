@@ -33,14 +33,39 @@ const parseCoordinates = (text: string): Place | null => {
   return Math.abs(lat) <= 90 && Math.abs(lon) <= 180 ? { name: `${lat.toFixed(2)}, ${lon.toFixed(2)}`, lat, lon } : null;
 };
 
-// A desk globe on the counter. Click it to look at the sky somewhere else; the choice lasts for this browser tab only.
+// The list of places: shared by the globe on the counter and the phone layout's globe button.
+export function PlacePanel({ className, onPick, onClose }: { className: string; onPick: (place: Place | null) => void; onClose?: () => void }) {
+  const place = useSkyStore((s) => s.place);
+  const [query, setQuery] = useState("");
+  useEscape(() => onClose?.());
+
+  const typed = parseCoordinates(query);
+  const q = query.trim().toLowerCase();
+  const shown = q ? CITIES.filter((c) => c.name.toLowerCase().includes(q)) : CITIES;
+
+  return (
+    <div className={className} role="dialog" aria-label="Choose a place">
+      <p className="globe__note">Just for this tab. Your real location is untouched.</p>
+      <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a city, or type 10.8, 106.7" maxLength={40} aria-label="Search a city or type coordinates" onKeyDown={(e) => e.key === "Enter" && (typed ? onPick(typed) : shown.length === 1 && onPick(shown[0]))} />
+      <ul>
+        <li><button type="button" onClick={() => onPick(null)} className={place ? "" : "is-on"}>My location</button></li>
+        {typed && <li><button type="button" onClick={() => onPick(typed)}>Go to {typed.name}</button></li>}
+        {shown.map((city) => (
+          <li key={city.name}><button type="button" onClick={() => onPick(city)} className={place?.name === city.name ? "is-on" : ""}>{city.name}</button></li>
+        ))}
+        {!typed && shown.length === 0 && <li className="globe__none">No match. Try coordinates like 10.8, 106.7.</li>}
+      </ul>
+    </div>
+  );
+}
+
+// The desk globe. Click it to look at the sky somewhere else; the choice lasts for this browser tab only. The globe carries no
+// label (its job is in its accessible name); a different glow tells you when it is showing somewhere other than home.
 function LocationGlobe() {
   const place = useSkyStore((s) => s.place);
   const setPlace = useSkyStore((s) => s.setPlace);
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const root = useRef<HTMLDivElement>(null);
-  useEscape(() => setOpen(false));
 
   useEffect(() => {
     if (!open) return;
@@ -49,42 +74,18 @@ function LocationGlobe() {
     return () => document.removeEventListener("pointerdown", away);
   }, [open]);
 
-  const typed = parseCoordinates(query);
-  const q = query.trim().toLowerCase();
-  const shown = q ? CITIES.filter((c) => c.name.toLowerCase().includes(q)) : CITIES;
   const pick = (next: Place | null) => {
     setPlace(next);
     setOpen(false);
-    setQuery("");
   };
 
   return (
     <div className="globe" ref={root}>
-      <button type="button" className={`globe__button ${place ? "is-away" : ""}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="dialog" aria-label={place ? `Showing the sky over ${place.name}. Change place` : "Look at the sky somewhere else"}>
-        <svg viewBox="0 0 64 80" aria-hidden>
-          <path className="globe__stand" d="M10 76 H54 M32 62 V76" />
-          <path className="globe__arc" d="M12 56 C 4 38 10 14 32 8" />
-          <circle className="globe__ball" cx="32" cy="34" r="24" />
-          <path className="globe__line" d="M8 34 H56 M32 10 C 20 22 20 46 32 58 C 44 46 44 22 32 10 M14 20 H50 M14 48 H50" />
-          <path className="globe__land" d="M20 24 C 26 20 30 26 26 30 C 22 34 16 30 20 24Z M36 36 C 42 32 48 38 44 44 C 40 48 34 42 36 36Z" />
-        </svg>
-        {place && <span className="globe__tag">{place.name}</span>}
+      <button type="button" className={`prop ${place ? "is-away" : ""}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="dialog" aria-label={place ? `Showing the sky over ${place.name}. Change place` : "Look at the sky somewhere else"}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/room/globe.png" alt="" draggable={false} />
       </button>
-
-      {open && (
-        <div className="globe__panel" role="dialog" aria-label="Choose a place">
-          <p className="globe__note">Just for this tab. Your real location is untouched.</p>
-          <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a city, or type 10.8, 106.7" maxLength={40} aria-label="Search a city or type coordinates" onKeyDown={(e) => e.key === "Enter" && (typed ? pick(typed) : shown.length === 1 && pick(shown[0]))} />
-          <ul>
-            <li><button type="button" onClick={() => pick(null)} className={place ? "" : "is-on"}>My location</button></li>
-            {typed && <li><button type="button" onClick={() => pick(typed)}>Go to {typed.name}</button></li>}
-            {shown.map((city) => (
-              <li key={city.name}><button type="button" onClick={() => pick(city)} className={place?.name === city.name ? "is-on" : ""}>{city.name}</button></li>
-            ))}
-            {!typed && shown.length === 0 && <li className="globe__none">No match. Try coordinates like 10.8, 106.7.</li>}
-          </ul>
-        </div>
-      )}
+      {open && <PlacePanel className="globe__panel" onPick={pick} onClose={() => setOpen(false)} />}
     </div>
   );
 }

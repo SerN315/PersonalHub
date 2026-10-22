@@ -1,7 +1,6 @@
 "use client";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import BasicIcon from "../ultis/icons";
-import Knob from "../widgets/radio/Knob";
 import { useSkyStore, type Sky } from "@/app/utils/weather/skyStore";
 import { getWeatherIconName } from "@/app/utils/weatherMappings";
 import type { IconName } from "../ultis/icons";
@@ -12,12 +11,25 @@ const WEEKDAY = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "
 const dayName = (date: string, i: number) => (i === 0 ? "TODAY" : WEEKDAY.format(new Date(`${date}T00:00:00Z`)).toUpperCase());
 const hourLabel = (time: string) => `${String(new Date(time.replace(" ", "T")).getHours()).padStart(2, "0")}:00`;
 
+// Where the parts are on the sprite (public/room/tv.png, 80 x 66 pixels): the glass, the dial and the three push buttons.
+// Controls are real buttons laid over the drawn ones, so the picture stays the picture and the keyboard still works.
+const SPRITE = { w: 80, h: 66 };
+const place = (x0: number, y0: number, x1: number, y1: number) => ({
+  left: `${(x0 / SPRITE.w) * 100}%`,
+  top: `${(y0 / SPRITE.h) * 100}%`,
+  width: `${((x1 - x0 + 1) / SPRITE.w) * 100}%`,
+  height: `${((y1 - y0 + 1) / SPRITE.h) * 100}%`,
+});
+const GLASS = place(7, 21, 53, 51);
+const DIAL = place(60, 22, 72, 34);
+const BUTTONS = [place(61, 38, 71, 41), place(61, 43, 71, 46), place(61, 48, 71, 51)];
+
 function Now({ sky }: { sky: Sky }) {
   return (
     <div className="tv__now">
       <p className="tv__place">{sky.location}</p>
       <div className="tv__big">
-        <BasicIcon icon={icon(sky.code, sky.isDay)} size={44} strokeWidth={1.5} />
+        <BasicIcon icon={icon(sky.code, sky.isDay)} size={40} strokeWidth={1.5} />
         <span>{sky.temperature}°</span>
       </div>
       <p className="tv__cond">{sky.condition}</p>
@@ -37,7 +49,7 @@ function Hours({ sky }: { sky: Sky }) {
       {sky.hours.map((hour) => (
         <li key={hour.time}>
           <span>{hourLabel(hour.time)}</span>
-          <BasicIcon icon={icon(hour.condition?.code, hour.is_day)} size={22} strokeWidth={1.5} />
+          <BasicIcon icon={icon(hour.condition?.code, hour.is_day)} size={20} strokeWidth={1.5} />
           <b>{Math.round(hour.temp_c)}°</b>
         </li>
       ))}
@@ -47,11 +59,11 @@ function Hours({ sky }: { sky: Sky }) {
 
 function Days({ sky }: { sky: Sky }) {
   return (
-    <ul className="tv__list tv__list--days" aria-label="The next days">
+    <ul className="tv__list" aria-label="The next days">
       {sky.days.map((day, i) => (
         <li key={day.date}>
           <span>{dayName(day.date, i)}</span>
-          <BasicIcon icon={icon(day.code, 1)} size={22} strokeWidth={1.5} />
+          <BasicIcon icon={icon(day.code, 1)} size={20} strokeWidth={1.5} />
           <b>{day.low}-{day.high}°</b>
         </li>
       ))}
@@ -59,7 +71,7 @@ function Days({ sky }: { sky: Sky }) {
   );
 }
 
-// A little tube TV on the counter: power button, a channel knob and CH buttons all work; the channels are the weather now,
+// A pixel-art TV on the counter. The dial switches it on and off; the three push buttons pick the channel: the weather now,
 // hour by hour, and the days ahead. Without a signal (no location, or the server is down) the screen shows static.
 function WeatherTv() {
   const status = useSkyStore((s) => s.status);
@@ -70,56 +82,63 @@ function WeatherTv() {
   const [flicker, setFlicker] = useState(0); // bumping this replays the channel-change static
 
   const tune = useCallback((next: number) => {
-    const clamped = Math.min(CHANNELS.length - 1, Math.max(0, next));
+    setOn(true);
     setChannel((current) => {
-      if (current !== clamped) setFlicker((n) => n + 1);
-      return clamped;
+      if (current !== next) setFlicker((n) => n + 1);
+      return next;
     });
   }, []);
-  const onKnob = useCallback((value: number) => tune(Math.round(value * (CHANNELS.length - 1))), [tune]);
 
-  const noSignal = !sky;
+  // A tap or click on the glass goes to the next channel; a swipe sideways goes forward or back. (The drawn buttons are small on a phone.)
+  const press = useRef<{ x: number; y: number } | null>(null);
+  const onGlassDown = (event: React.PointerEvent) => {
+    press.current = { x: event.clientX, y: event.clientY };
+  };
+  const onGlassUp = (event: React.PointerEvent) => {
+    const start = press.current;
+    press.current = null;
+    if (!start || !on) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    const count = CHANNELS.length;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) tune((channel + (dx < 0 ? 1 : count - 1)) % count);
+    else if (Math.hypot(dx, dy) < 8) tune((channel + 1) % count);
+  };
+
   return (
     <div className={`tv ${on ? "is-on" : "is-off"}`}>
-      <span className="tv__ears" aria-hidden><i /><i /></span>
-      <div className="tv__cabinet">
-        <div className="tv__screen" aria-live="polite">
-          {on && (
-            <>
-              <div className="tv__content" key={`${channel}-${flicker}`}>
-                {noSignal ? (
-                  <div className="tv__nosignal">
-                    <b>NO SIGNAL</b>
-                    <span>{status === "denied" ? "Allow location access to tune in." : status === "error" ? "The sky is out of reach right now." : "Tuning in..."}</span>
-                    {(status === "error" || status === "denied") && <button type="button" onClick={retry}>TRY AGAIN</button>}
-                  </div>
-                ) : channel === 0 ? (
-                  <Now sky={sky} />
-                ) : channel === 1 ? (
-                  <Hours sky={sky} />
-                ) : (
-                  <Days sky={sky} />
-                )}
-              </div>
-              <span className="tv__osd" aria-hidden>CH {channel + 1} · {CHANNELS[channel]}</span>
-              <span className="tv__static" key={`s${flicker}`} aria-hidden />
-            </>
-          )}
-          <span className="tv__glass" aria-hidden />
-        </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="tv__sprite" src="/room/tv.png" alt="" draggable={false} />
 
-        <div className="tv__panel">
-          <div className="tv__channels" role="group" aria-label="Channel">
-            <button type="button" onClick={() => tune(channel - 1)} disabled={!on || channel === 0} aria-label="Previous channel">CH−</button>
-            <button type="button" onClick={() => tune(channel + 1)} disabled={!on || channel === CHANNELS.length - 1} aria-label="Next channel">CH+</button>
-          </div>
-          <Knob label="Channel" value={channel / (CHANNELS.length - 1)} onChange={onKnob} step={1 / (CHANNELS.length - 1)} valueText={CHANNELS[channel]} snaps={CHANNELS.length} />
-          <button type="button" className="tv__power" onClick={() => setOn(!on)} aria-pressed={on} aria-label={on ? "Turn the TV off" : "Turn the TV on"}>
-            <i aria-hidden />
-          </button>
-        </div>
+      <div className="tv__screen" style={GLASS} aria-live="polite" onPointerDown={onGlassDown} onPointerUp={onGlassUp}>
+        {on && (
+          <>
+            <div className="tv__content" key={`${channel}-${flicker}`}>
+              {!sky ? (
+                <div className="tv__nosignal">
+                  <b>NO SIGNAL</b>
+                  <span>{status === "denied" ? "Allow location access to tune in." : status === "error" ? "The sky is out of reach right now." : "Tuning in..."}</span>
+                  {(status === "error" || status === "denied") && <button type="button" onClick={retry}>TRY AGAIN</button>}
+                </div>
+              ) : channel === 0 ? (
+                <Now sky={sky} />
+              ) : channel === 1 ? (
+                <Hours sky={sky} />
+              ) : (
+                <Days sky={sky} />
+              )}
+            </div>
+            <span className="tv__osd" aria-hidden>CH {channel + 1}</span>
+            <span className="tv__static" key={`s${flicker}`} aria-hidden />
+          </>
+        )}
+        <span className="tv__glass" aria-hidden />
       </div>
-      <span className="tv__feet" aria-hidden />
+
+      <button type="button" className={`tv__dial ${on ? "is-lit" : ""}`} style={DIAL} onClick={() => setOn(!on)} aria-pressed={on} aria-label={on ? "Turn the TV off" : "Turn the TV on"} />
+      {BUTTONS.map((box, i) => (
+        <button key={i} type="button" className={`tv__btn ${on && channel === i ? "is-lit" : ""}`} style={box} onClick={() => tune(i)} aria-pressed={on && channel === i} aria-label={`Channel ${i + 1}: ${CHANNELS[i].toLowerCase()}`} />
+      ))}
     </div>
   );
 }
