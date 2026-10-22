@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import WeatherTv from "./WeatherTv";
+import LocationGlobe from "./LocationGlobe";
 import { useSkyStore } from "@/app/utils/weather/skyStore";
 import "@/app/styles/pages/weatherRoom.scss";
 
@@ -75,6 +76,10 @@ export default function WeatherRoom() {
             <path className="plant__pot" d="M18 70 H62 L56 104 H24Z" />
             <rect className="plant__rim" x="14" y="64" width="52" height="10" rx="4" />
           </svg>
+        </div>
+
+        <div className="room__layer room__globe" style={{ ["--depth" as string]: 14 }}>
+          <LocationGlobe />
         </div>
 
         <div className="room__layer room__tv" style={{ ["--depth" as string]: 16 }}>

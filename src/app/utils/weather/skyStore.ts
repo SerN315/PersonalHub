@@ -37,17 +37,44 @@ export interface Sky {
 
 export type SkyStatus = "idle" | "loading" | "denied" | "error" | "ready";
 
+// A place picked by hand instead of your GPS. It lives only in this browser tab (sessionStorage), never on your account.
+export interface Place {
+  name: string;
+  lat: number;
+  lon: number;
+}
+
 interface SkyState {
   status: SkyStatus;
+  place: Place | null; // null = wherever you are
   sky: Sky | null;
   background: string; // the animated scene for the current condition
   load: () => void;
   retry: () => void;
+  setPlace: (place: Place | null) => void;
 }
 
 const HOURS_SHOWN = 12;
 const REFRESH_MS = 30 * 60 * 1000;
+const PLACE_KEY = "personalhub:weather-place";
 let started = false;
+
+const readPlace = (): Place | null => {
+  try {
+    const raw = JSON.parse(sessionStorage.getItem(PLACE_KEY) ?? "null");
+    return raw && typeof raw.name === "string" && Number.isFinite(raw.lat) && Number.isFinite(raw.lon) ? { name: raw.name.slice(0, 60), lat: raw.lat, lon: raw.lon } : null;
+  } catch {
+    return null;
+  }
+};
+const writePlace = (place: Place | null) => {
+  try {
+    if (place) sessionStorage.setItem(PLACE_KEY, JSON.stringify(place));
+    else sessionStorage.removeItem(PLACE_KEY);
+  } catch {
+    /* private window: the choice just lasts until the page is closed */
+  }
+};
 let timer: ReturnType<typeof setInterval> | undefined;
 
 // "2026-10-19 14:00" -> the next HOURS_SHOWN hours from now, carrying on into tomorrow.
@@ -104,6 +131,11 @@ export const useSkyStore = create<SkyState>((set, get) => {
   };
 
   const locate = (quiet: boolean) => {
+    const place = get().place;
+    if (place) {
+      if (!quiet) set({ status: "loading" });
+      return void fetchSky({ latitude: place.lat, longitude: place.lon }, quiet);
+    }
     if (typeof navigator === "undefined" || !navigator.geolocation) return set({ status: "error" });
     if (!quiet) set({ status: "loading" });
     navigator.geolocation.getCurrentPosition(
@@ -114,13 +146,21 @@ export const useSkyStore = create<SkyState>((set, get) => {
 
   return {
     status: "idle",
+    place: null,
     sky: null,
     background: "",
     load: () => {
       if (started) return;
       started = true;
+      set({ place: readPlace() });
       locate(false);
       timer = setInterval(() => document.visibilityState === "visible" && locate(true), REFRESH_MS);
+    },
+    setPlace: (place) => {
+      writePlace(place);
+      set({ place, sky: null, background: "" }); // the window goes blank while the new sky is fetched
+      previous = { condition: "", background: "" };
+      locate(false);
     },
     retry: () => {
       clearInterval(timer);
