@@ -4,6 +4,7 @@ import WeatherTv from "./WeatherTv";
 import LocationGlobe from "./LocationGlobe";
 import RoomWidgetPanel from "./RoomWidgetPanel";
 import MobileWeather from "./MobileWeather";
+import WindowCurtains from "./WindowCurtains";
 import { StickyNote, TableRadio, WallCalendar, WallClock } from "./RoomObjects";
 import { warmRoomWidgets } from "./useRoomWidget";
 import { preloadWidget } from "@/app/widgets/registry";
@@ -85,6 +86,8 @@ export default function WeatherRoom() {
             </div>
             <div className="window__sill" />
           </div>
+
+          <WindowCurtains />
 
           <div className="room__layer room__prop room__clock" style={{ ["--depth" as string]: 5 }}><WallClock prop={PROPS[0]} onOpen={setOpen} /></div>
           <div className="room__layer room__prop room__calendar" style={{ ["--depth" as string]: 5 }}><WallCalendar prop={PROPS[1]} onOpen={setOpen} /></div>

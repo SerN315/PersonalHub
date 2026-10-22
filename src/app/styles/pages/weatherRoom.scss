@@ -64,9 +64,9 @@
   --radio-l: 5%;
   --radio-w: 17cqw;
   --radio-base: var(--base);
-  --clock-l: 7%;
+  --clock-l: 1.8%;
   --clock-t: 9%;
-  --clock-w: 9cqw;
+  --clock-w: 8cqw;
   --calendar-l: 85%;
   --calendar-t: 2%;
   --calendar-w: 8cqw;
@@ -142,6 +142,92 @@
     box-shadow: inset 0 0.5cqw 0 rgb(255 255 255 / 0.35), inset 0 -0.6cqw 0 var(--sill-dark), 0 0.8cqw 0 rgb(0 0 0 / 0.2);
   }
 }
+
+// ---- the curtains: lavender drapes on a brass rod, a sheer veil to close the day out, dust and sunlight ---------------------------------
+.room__curtains { pointer-events: none; }
+.curtainRod {
+  position: absolute;
+  left: calc(var(--win-l) - 12.2cqw);
+  top: calc(var(--win-t) - 2.3cqw);
+  width: calc(var(--win-w) + 24.4cqw);
+  height: 0.9cqw;
+  background: linear-gradient(#f2d98f, #c9a03a 55%, #8a6420);
+  box-shadow: 0.4cqw 0.5cqw 0 rgb(0 0 0 / 0.2);
+  &::before, &::after { content: ""; position: absolute; top: -0.45cqw; width: 1.8cqw; height: 1.8cqw; background: radial-gradient(circle at 35% 30%, #fff2b0, #d9ac45 55%, #8a6420); }
+  &::before { left: -1.2cqw; }
+  &::after { right: -1.2cqw; }
+}
+.curtain {
+  position: absolute;
+  top: calc(var(--win-t) - 2.8cqw);
+  height: calc(var(--win-h) + 4.8cqw);
+  aspect-ratio: 26 / 84;
+  transition: transform 1s cubic-bezier(0.45, 0.05, 0.3, 1);
+  &--left { left: calc(var(--win-l) - 11.4cqw); }
+  &--right { left: calc(var(--win-l) + var(--win-w) - 0.9cqw); transform: scaleX(-1); } // the same drape, mirrored
+  &__btn { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; line-height: 0; &:focus-visible { outline: 0.3cqw dashed #fff; outline-offset: 0.4cqw; } }
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    filter: drop-shadow(0.5cqw 0.4cqw 0 rgb(0 0 0 / 0.18));
+    transform-origin: 50% 0;
+    animation: sway var(--sway, 9s) ease-in-out infinite alternate; // a slow breeze: the hem drifts, the rod stays put
+  }
+  &--right img { animation-delay: -3.4s; }
+}
+.room__curtains[data-drawn] .curtain--left { transform: translateX(3.4cqw); }
+.room__curtains[data-drawn] .curtain--right { transform: scaleX(-1) translateX(3.4cqw); }
+@keyframes sway {
+  from { transform: skewX(calc(var(--breeze, 1) * -0.9deg)); }
+  to { transform: skewX(calc(var(--breeze, 1) * 1.7deg)); }
+}
+
+// the sheer veil drawn across the window: you still sense the light and the weather through it
+.curtainVeil {
+  position: absolute;
+  left: var(--win-l);
+  top: var(--win-t);
+  width: var(--win-w);
+  height: calc(var(--win-h) + 0.6cqw);
+  box-sizing: border-box;
+  background:
+    repeating-linear-gradient(90deg, rgb(250 240 226 / 0.86) 0 1.4cqw, rgb(228 212 234 / 0.86) 1.4cqw 2.8cqw);
+  border-bottom: 0.6cqw solid rgb(160 140 190 / 0.9);
+  opacity: 0;
+  transform: scaleY(0.94);
+  transform-origin: 50% 0;
+  transition: opacity 1s ease, transform 1s cubic-bezier(0.45, 0.05, 0.3, 1);
+}
+.room__curtains[data-drawn] .curtainVeil { opacity: 0.94; transform: none; animation: veil 11s ease-in-out infinite alternate; }
+@keyframes veil { to { transform: translateX(0.5cqw) scaleY(0.995); } }
+
+// dust floating in the light, and the sun on the counter (only when it is day and the curtains are open)
+.motes i {
+  position: absolute;
+  left: calc(var(--win-l) + var(--x) * var(--win-w));
+  top: calc(var(--win-t) + var(--y) * var(--win-h));
+  width: 0.5cqw;
+  height: 0.5cqw;
+  background: #fff6d0;
+  opacity: 0;
+  animation: mote var(--s) ease-in-out var(--d) infinite;
+}
+.room__curtains[data-drawn] .motes { display: none; }
+@keyframes mote { 0%, 100% { opacity: 0; transform: translate(0, 0); } 35%, 65% { opacity: 0.75; } 50% { transform: translate(1.3cqw, -2.4cqw); } }
+.sunbeam {
+  position: absolute;
+  left: calc(var(--win-l) + 2cqw);
+  top: calc(var(--win-t) + var(--win-h));
+  width: calc(var(--win-w) - 4cqw);
+  height: calc(var(--counter-f) - var(--win-t) - var(--win-h) + 6cqw);
+  background: linear-gradient(to bottom, rgb(255 236 170 / 0.3), rgb(255 236 170 / 0));
+  clip-path: polygon(6% 0, 94% 0, 118% 100%, 28% 100%);
+  mix-blend-mode: screen;
+  animation: beam 10s ease-in-out infinite alternate;
+}
+@keyframes beam { to { opacity: 0.6; } }
 
 // ---- the counter: flat wood with a tiled splashback --------------------------------------------------------------------------------
 .room__counter {
@@ -406,8 +492,8 @@
     width: 100cqw;
     height: 100cqh;
     aspect-ratio: auto;
-    --win-l: 12%;
-    --win-w: 76%;
+    --win-l: 18%;
+    --win-w: 64%;
     --win-t: 2%;
     --win-h: 31%;
     --counter-t: 57%;
@@ -438,5 +524,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .room__layer, .window__outside, .prop { transition: none; transform: none; }
+  .curtain img, .motes i, .sunbeam, .curtainVeil { animation: none; }
+  .motes { display: none; }
   .tv__content, .tv__static, .roomPanel, .roomPanel__window { animation: none; }
 }
