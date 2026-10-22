@@ -1,0 +1,341 @@
+// The Weather tab: a kitchen corner. A shut window (soft grey glass) onto the animated sky, a counter below it with a tube TV
+// on the right. Everything is positioned from the variables on .room, so the phone layout only has to change those.
+// Layers sit at different depths and drift with the mouse (--px / --py, set from JS) for a 2.5D feel.
+
+@use "../fonts";
+
+.weatherRoom {
+  container: weather / inline-size;
+  padding: 24px clamp(10px, 3vw, 40px) 48px;
+}
+
+.room {
+  // desktop placement, in % of the stage (left/top) and cqw (sizes)
+  --win-l: 30%;
+  --win-w: 40%;
+  --win-t: 6%;
+  --win-h: 56%;
+  --counter-t: 68%; // the back edge of the counter top
+  --counter-f: 78%; // where its front face starts
+  --base: 74%; // the line things stand on
+  --tv-l: 71%;
+  --tv-w: 26%;
+  --plant-l: 34%;
+  --wood: #8a5a3a;
+  --wood-lo: #5a3622;
+  --wood-hi: #b07a52;
+
+  position: relative;
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  aspect-ratio: 16 / 10;
+  container: room / inline-size;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--surface-2);
+  box-shadow: var(--shadow-pop);
+  isolation: isolate;
+
+  &[data-night="true"] { filter: brightness(0.72) saturate(0.9); }
+
+  &__layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    // each layer drifts by its depth; far layers barely move
+    transform: translate3d(calc(var(--px, 0) * var(--depth, 0) * -1px), calc(var(--py, 0) * var(--depth, 0) * -0.6px), 0);
+    transition: transform 0.25s var(--ease);
+  }
+
+  &__wall {
+    inset: -4%;
+    background:
+      linear-gradient(to bottom, rgb(255 255 255 / 0.18), transparent 40%),
+      repeating-linear-gradient(90deg, transparent 0 3cqw, rgb(255 255 255 / 0.06) 3cqw 6cqw),
+      color-mix(in srgb, var(--accent) 16%, var(--surface-2));
+  }
+}
+
+// ---- the window ----------------------------------------------------------------------------------------------------------------------
+.window {
+  position: absolute;
+  left: var(--win-l);
+  top: var(--win-t);
+  width: var(--win-w);
+  height: var(--win-h);
+  box-sizing: border-box;
+  border: 1.3cqw solid var(--wood-hi);
+  border-radius: 0.9cqw;
+  overflow: hidden;
+  background: #5d7a96;
+  box-shadow: 0 0 0 0.25cqw var(--wood-lo), 0 1.4cqw 3cqw rgb(0 0 0 / 0.35), inset 0 0 2cqw rgb(0 0 0 / 0.5);
+
+  &__outside {
+    position: absolute;
+    inset: -4%;
+    background: #5d7a96 center / cover no-repeat;
+    transform: translate3d(calc(var(--px, 0) * 5px), calc(var(--py, 0) * 3px), 0); // the world outside is far away: it moves the other way
+    transition: transform 0.25s var(--ease);
+  }
+  // the soft grey filter that says "the window is shut"
+  &__glass {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(115deg, rgb(255 255 255 / 0.3) 0 14%, transparent 14% 24%, rgb(255 255 255 / 0.16) 24% 28%, transparent 28%),
+      linear-gradient(to bottom, rgb(150 156 168 / 0.38), rgb(120 126 138 / 0.3));
+    backdrop-filter: blur(0.5px) saturate(0.85);
+    box-shadow: inset 0 0 3cqw rgb(255 255 255 / 0.25);
+  }
+  &__bars {
+    position: absolute;
+    inset: 0;
+    i { position: absolute; background: var(--wood-hi); box-shadow: 0 0 0.4cqw rgb(0 0 0 / 0.45); }
+    i:first-child { left: 50%; width: 1.1cqw; top: 0; bottom: 0; margin-left: -0.55cqw; }
+    i:last-child { top: 50%; height: 1.1cqw; left: 0; right: 0; margin-top: -0.55cqw; }
+  }
+  &__latch {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 2.6cqw;
+    height: 1.3cqw;
+    margin: -0.65cqw 0 0 -1.3cqw;
+    border-radius: 0.6cqw;
+    background: linear-gradient(#f0d58a, #a8812e);
+    box-shadow: 0 0.3cqw 0.6cqw rgb(0 0 0 / 0.5);
+  }
+  &__sill {
+    position: absolute;
+    left: calc(var(--win-l) - 2cqw);
+    width: calc(var(--win-w) + 4cqw);
+    top: calc(var(--win-t) + var(--win-h));
+    height: 2cqw;
+    border-radius: 0.5cqw;
+    background: linear-gradient(var(--wood-hi), var(--wood));
+    box-shadow: 0 1cqw 1.6cqw rgb(0 0 0 / 0.35);
+  }
+}
+
+// ---- the counter -----------------------------------------------------------------------------------------------------------------------
+.room__counter {
+  left: -4%;
+  right: -4%;
+}
+.counter {
+  &__top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--counter-t);
+    height: calc(var(--counter-f) - var(--counter-t));
+    background: linear-gradient(to bottom, #d9b48c, var(--wood-hi) 60%, #a06c46);
+    box-shadow: inset 0 0.3cqw 0 rgb(255 255 255 / 0.35), 0 0.8cqw 1.4cqw rgb(0 0 0 / 0.25);
+    // the tiled splashback behind it
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      height: 4.4cqw;
+      background:
+        repeating-linear-gradient(90deg, rgb(0 0 0 / 0.08) 0 0.2cqw, transparent 0.2cqw 3.2cqw),
+        repeating-linear-gradient(0deg, rgb(0 0 0 / 0.08) 0 0.2cqw, transparent 0.2cqw 2.2cqw),
+        color-mix(in srgb, var(--c-sage) 40%, var(--surface));
+    }
+  }
+  &__front {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--counter-f);
+    bottom: 0;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 24cqw, rgb(0 0 0 / 0.35) 24cqw 24.4cqw),
+      linear-gradient(to bottom, #6b4429, var(--wood-lo));
+    box-shadow: inset 0 0.4cqw 0.8cqw rgb(0 0 0 / 0.4);
+  }
+}
+
+// ---- the plant ------------------------------------------------------------------------------------------------------------------------
+.room__plant svg {
+  position: absolute;
+  left: var(--plant-l);
+  top: var(--base);
+  width: 6.5cqw;
+  transform: translateY(-100%);
+  .plant__leaves path { fill: color-mix(in srgb, var(--c-sage) 85%, #1f3a22); stroke: rgb(0 0 0 / 0.18); stroke-width: 1; }
+  .plant__pot { fill: #c46f4a; }
+  .plant__rim { fill: #d98560; }
+}
+
+// ---- the TV ---------------------------------------------------------------------------------------------------------------------------
+.room__tv { pointer-events: none; }
+.tv {
+  --knob-size: clamp(26px, 15cqw, 50px);
+  --cream: #f3e6c0;
+  --brass: #d1ab55;
+  position: absolute;
+  left: var(--tv-l);
+  top: var(--base);
+  width: var(--tv-w);
+  transform: translateY(-100%);
+  container: tv / inline-size;
+  pointer-events: auto;
+  font-family: "Bold Pixels", "Courier New", monospace;
+  letter-spacing: 0.04em;
+
+  &__ears {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 6cqw);
+    width: 0;
+    height: 0;
+    i { position: absolute; bottom: 0; left: 0; width: 0.9cqw; height: 34cqw; background: linear-gradient(#e8e8e8, #8a8a8a); border-radius: 1cqw; transform-origin: 50% 100%; }
+    i:first-child { transform: rotate(-28deg); }
+    i:last-child { transform: rotate(24deg); }
+  }
+
+  &__cabinet {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 22cqw;
+    gap: 5cqw;
+    padding: 6cqw 5cqw 6cqw 6cqw;
+    border-radius: 7cqw;
+    background: linear-gradient(150deg, #9c6a46, var(--wood) 40%, var(--wood-lo));
+    box-shadow: inset 0 0.8cqw 1cqw rgb(255 255 255 / 0.25), inset 0 -1.2cqw 2cqw rgb(0 0 0 / 0.4), 0 3cqw 4cqw rgb(0 0 0 / 0.45);
+    transform: perspective(110cqw) rotateY(-5deg);
+    transform-origin: 100% 50%;
+  }
+
+  &__screen {
+    position: relative;
+    aspect-ratio: 1.12;
+    overflow: hidden;
+    border-radius: 9cqw / 8cqw; // the curve of a tube
+    color: #d8f0dc;
+    background: radial-gradient(ellipse at 50% 40%, #1d3a38, #0b1514 75%);
+    box-shadow: inset 0 0 5cqw rgb(0 0 0 / 0.9), 0 0 0 1.6cqw #2a1a10, 0 0 0 2.2cqw rgb(255 255 255 / 0.1);
+    text-shadow: 0 0 1.6cqw rgb(150 255 190 / 0.55);
+  }
+  &__content { position: absolute; inset: 0; padding: 8cqw 6cqw 5cqw; box-sizing: border-box; animation: tvOn 0.4s ease-out; }
+  &__osd { position: absolute; right: 7cqw; top: 4cqw; font-size: 3.6cqw; color: #ffd36b; text-shadow: 0 0 1.2cqw rgb(255 190 60 / 0.6); }
+  // scanlines and a glint on the glass
+  &__glass {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(125deg, rgb(255 255 255 / 0.2), transparent 32%),
+      repeating-linear-gradient(0deg, rgb(0 0 0 / 0.16) 0 0.35cqw, transparent 0.35cqw 0.9cqw);
+  }
+  // the burst of static when you change channel
+  &__static {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, #fff 0 0.4cqw, #222 0.4cqw 0.9cqw, #aaa 0.9cqw 1.2cqw, #000 1.2cqw 1.8cqw);
+    mix-blend-mode: screen;
+    animation: tvStatic 0.38s steps(6) forwards;
+  }
+
+  // channel contents
+  &__now { display: grid; gap: 1.4cqw; height: 100%; align-content: start; }
+  &__place { margin: 0; max-width: 62%; font-size: 5.6cqw; color: #ffd36b; text-shadow: 0 0 1.2cqw rgb(255 190 60 / 0.5); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__big { display: flex; align-items: center; gap: 3cqw; span { font-size: 21cqw; line-height: 1; } }
+  &__cond { margin: 0; font-size: 6cqw; }
+  &__facts { margin: 0; display: flex; flex-wrap: wrap; gap: 0.8cqw 3.4cqw; font-size: 4.4cqw; opacity: 0.9; }
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0 1cqw 0 0;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #6bd39a transparent;
+    outline-offset: 2px;
+    li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 2.4cqw; height: 10.5cqw; font-size: 4.8cqw; white-space: nowrap; > span { overflow: hidden; text-overflow: ellipsis; } b { font-weight: normal; color: #ffd36b; } }
+    &--days li small { font-size: 3.2cqw; opacity: 0.7; white-space: nowrap; }
+  }
+  &__nosignal {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 2cqw;
+    height: 100%;
+    text-align: center;
+    font-size: 4.8cqw;
+    b { font-size: 7.4cqw; font-weight: normal; letter-spacing: 0.2em; }
+    button { margin-top: 1cqw; padding: 1cqw 3cqw; border: 1px solid currentColor; border-radius: 1cqw; background: transparent; color: inherit; font: inherit; cursor: pointer; &:hover { background: rgb(255 255 255 / 0.12); } }
+  }
+
+  // the control column
+  &__panel { display: grid; align-content: space-between; justify-items: center; gap: 4cqw; padding: 2cqw 0; }
+  &__channels {
+    display: grid;
+    gap: 2cqw;
+    button {
+      width: 15cqw;
+      padding: 2cqw 0;
+      border: 0;
+      border-radius: 1.6cqw;
+      cursor: pointer;
+      font: inherit;
+      font-size: 4.6cqw;
+      color: #2b1a0c;
+      background: linear-gradient(#f4e2a8, var(--brass));
+      box-shadow: 0 1cqw 0 #5b4416, 0 1.8cqw 2cqw rgb(0 0 0 / 0.45);
+      transition: transform 0.08s, box-shadow 0.08s;
+      &:active:not(:disabled) { transform: translateY(0.8cqw); box-shadow: 0 0.2cqw 0 #5b4416; }
+      &:disabled { opacity: 0.45; cursor: default; }
+      &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    }
+  }
+  &__power {
+    width: 11cqw;
+    aspect-ratio: 1;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    background: radial-gradient(circle at 35% 28%, #ff9d86, #c8402c 58%, #7f2216);
+    box-shadow: 0 1cqw 0 #4e150c, 0 1.8cqw 2cqw rgb(0 0 0 / 0.5);
+    display: grid;
+    place-items: center;
+    &:active { transform: translateY(0.8cqw); box-shadow: 0 0.2cqw 0 #4e150c; }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    i { width: 3.4cqw; height: 3.4cqw; border-radius: 50%; background: #3a1008; box-shadow: inset 0 0 0 0.5cqw rgb(255 255 255 / 0.2); }
+  }
+  &.is-on &__power i { background: #8dff8d; box-shadow: 0 0 2.4cqw #8dff8d; }
+
+  &.is-off &__screen { background: radial-gradient(ellipse at 50% 40%, #232a2b, #070b0b 75%); }
+
+  &__feet { display: block; width: 78%; height: 2.4cqw; margin: 0 auto; background: linear-gradient(#1c120b, #3a2616); border-radius: 0 0 2cqw 2cqw; }
+}
+
+@keyframes tvOn { from { opacity: 0; filter: brightness(2.2); transform: scaleY(0.04); } to { opacity: 1; filter: none; transform: none; } }
+@keyframes tvStatic { 0% { opacity: 0.9; } 70% { opacity: 0.35; } 100% { opacity: 0; } }
+
+// ---- phone: a tall room, the TV below the window ------------------------------------------------------------------------------------
+@container weather (max-width: 720px) {
+  .room {
+    aspect-ratio: 3 / 4;
+    --win-l: 14%;
+    --win-w: 72%;
+    --win-t: 3%;
+    --win-h: 40%;
+    --counter-t: 58%;
+    --counter-f: 93%;
+    --base: 86%;
+    --tv-l: 16%;
+    --tv-w: 68%;
+    --plant-l: 4%;
+  }
+  .room__plant svg { width: 12cqw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room__layer, .window__outside { transition: none; transform: none; }
+  .tv__content, .tv__static { animation: none; }
+}

@@ -1,5 +1,6 @@
 "use client";
 import React, { memo, useEffect, useRef } from "react";
+import "@/app/styles/ui/knob.scss";
 
 interface KnobProps {
   label: string; // "Volume", "Tuning": announced by screen readers
