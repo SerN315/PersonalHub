@@ -10,7 +10,7 @@ import BasicIcon from "@/app/components/ultis/icons";
 import BaseButton from "@/app/components/ui/BaseButton";
 import DayHeader from "./DayHeader";
 import { useEditMode } from "@/app/contexts/editWidgetContext";
-import { getUserWidgets, createWidget, deleteWidget, saveUserWidgetLayout, updateWidget } from "@/app/apis/widgets";
+import { asRecord, getUserWidgets, createWidget, deleteWidget, saveUserWidgetLayout, updateWidget } from "@/app/apis/widgets";
 import { Widget, WidgetLayout, WidgetState } from "@/app/types/widgets";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { useContainerWidth } from "@/app/utils/useContainerWidth";
@@ -174,7 +174,7 @@ export default function WidgetClient() {
   const handleData = useCallback((widgetId: string, patch: Record<string, unknown>) => {
     const current = widgetDataRef.current[widgetId];
     if (!current) return;
-    const data = { ...(current.data ?? {}), ...patch };
+    const data = { ...asRecord(current.data), ...patch };
     setWidgetData((prev) => (prev[widgetId] ? { ...prev, [widgetId]: { ...prev[widgetId], data } } : prev));
     updateWidget(widgetId, { data }).catch(() => {
       /* offline: the screen keeps the change; it is sent again with the next edit */

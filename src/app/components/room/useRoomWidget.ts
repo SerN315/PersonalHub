@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createWidget, getUserWidgets, updateWidget } from "@/app/apis/widgets";
+import { asRecord, createWidget, getUserWidgets, updateWidget } from "@/app/apis/widgets";
 import { getWidgetDefinition } from "@/app/widgets/registry";
 
 // The widget an object in the room opens is the very same widget as on your dashboard (one per type, as the server allows),
@@ -73,7 +73,7 @@ export function useRoomWidget(type: string, { create = false }: { create?: boole
     (_id: string, patch: Record<string, unknown>) => {
       const current = latest.current;
       if (!current) return;
-      const next = { ...current, data: { ...current.data, ...patch } };
+      const next = { ...current, data: { ...asRecord(current.data), ...patch } };
       setEntry(next);
       if (current.saved) {
         cache.set(type, next);

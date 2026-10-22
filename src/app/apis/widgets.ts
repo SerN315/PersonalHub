@@ -1,14 +1,19 @@
 import { api } from "./http";
+import { asRecord } from "@/app/utils/widgetData";
+
+export { asRecord };
 import type { Widget } from "@/app/types/widgets";
 
 type Position = { x: number; y: number; w: number; h: number };
 
 // The server knows who you are from the session cookie: no user id travels in any URL or body.
 
-export const getUserWidgets = () => api<Widget[]>("/api/widgets");
+const clean = (widget: Widget): Widget => ({ ...widget, data: asRecord(widget.data) });
 
-export const createWidget = (widget: { type: string; position: Position; data?: object }) =>
-  api<Widget>("/api/widgets", { method: "POST", body: widget });
+export const getUserWidgets = async () => (await api<Widget[]>("/api/widgets")).map(clean);
+
+export const createWidget = async (widget: { type: string; position: Position; data?: object }) =>
+  clean(await api<Widget>("/api/widgets", { method: "POST", body: widget }));
 
 export const updateWidget = (widgetId: string, changes: { position?: Position; data?: object }) =>
   api<Widget>(`/api/widgets/${encodeURIComponent(widgetId)}`, { method: "PUT", body: changes });
