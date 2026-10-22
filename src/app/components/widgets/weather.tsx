@@ -1,93 +1,26 @@
 "use client";
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useSkyStore } from "@/app/utils/weather/skyStore";
 import BaseWidget from "./BaseWidget";
 import BasicIcon from "@/app/components/ultis/icons";
 import "../../styles/widgets/weather.scss";
 import WidgetProps from "@/app/types/widget";
-import { getWeatherBackground, getWeatherIconName } from "@/app/utils/weatherMappings";
+import { getWeatherIconName } from "@/app/utils/weatherMappings";
 import type { IconName } from "@/app/components/ultis/icons";
 
-interface Hour {
-  time: string;
-  temp_c: number;
-  is_day?: number;
-  condition?: { text?: string; code?: number };
-}
-
-interface Sky {
-  location: string;
-  temperature: number;
-  condition: string;
-  code?: number;
-  isDay?: number;
-  high?: number;
-  low?: number;
-  hours: Hour[];
-}
-
-type State = { kind: "loading" } | { kind: "denied" } | { kind: "error" } | { kind: "ready"; sky: Sky };
-
-const HOURS_SHOWN = 12;
 const icon = (code?: number, isDay?: number) => getWeatherIconName(code, isDay) as IconName;
-
-// "2026-10-19 14:00" -> the next HOURS_SHOWN hours from now, carrying on into tomorrow.
-function upcomingHours(days: { hour?: Hour[] }[] | undefined): Hour[] {
-  const all = (days ?? []).flatMap((d) => d.hour ?? []);
-  const now = Date.now() - 30 * 60 * 1000;
-  const future = all.filter((h) => new Date(h.time.replace(" ", "T")).getTime() >= now);
-  return (future.length ? future : all).slice(0, HOURS_SHOWN);
-}
 
 // The sky outside your window: the animated scene reflects the current condition, the details sit on top of it.
 function WeatherWidget(props: WidgetProps) {
-  const [state, setState] = useState<State>(() =>
-    typeof navigator !== "undefined" && !navigator.geolocation ? { kind: "error" } : { kind: "loading" }
-  );
-  const [background, setBackground] = useState("");
-  const previous = useRef({ condition: "", background: "" });
+  const status = useSkyStore((s) => s.status);
+  const sky = useSkyStore((s) => s.sky);
+  const background = useSkyStore((s) => s.background);
+  const load = useSkyStore((s) => s.load);
+  const state = status === "ready" && sky ? { kind: "ready" as const, sky } : { kind: status === "denied" ? ("denied" as const) : status === "error" ? ("error" as const) : ("loading" as const) };
 
   useEffect(() => {
-    let cancelled = false;
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        // The weather key lives on the server; the browser only asks our own API.
-        const query = `lat=${coords.latitude}&lon=${coords.longitude}`;
-        try {
-          const [now, forecast] = await Promise.all([fetch(`/api/weather/current?${query}`), fetch(`/api/weather/forecast?${query}&days=2`)]);
-          if (!now.ok || !forecast.ok) throw new Error("Weather unavailable");
-          const [current, ahead] = await Promise.all([now.json(), forecast.json()]);
-          if (cancelled) return;
-
-          const condition: string = current.current.condition.text;
-          const nextBackground = getWeatherBackground(condition, previous.current.condition, previous.current.background);
-          previous.current = { condition, background: nextBackground };
-          setBackground(nextBackground);
-
-          const today = ahead.forecast?.forecastday?.[0]?.day;
-          setState({
-            kind: "ready",
-            sky: {
-              location: current.location.name,
-              temperature: Math.round(current.current.temp_c),
-              condition,
-              code: current.current.condition.code,
-              isDay: current.current.is_day,
-              high: today ? Math.round(today.maxtemp_c) : undefined,
-              low: today ? Math.round(today.mintemp_c) : undefined,
-              hours: upcomingHours(ahead.forecast?.forecastday),
-            },
-          });
-        } catch {
-          if (!cancelled) setState({ kind: "error" });
-        }
-      },
-      () => !cancelled && setState({ kind: "denied" })
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    load();
+  }, [load]);
 
   // Hourly strip: native scroll-snap, with arrows that page it.
   const stripRef = useRef<HTMLDivElement>(null);
@@ -105,10 +38,8 @@ function WeatherWidget(props: WidgetProps) {
     const observer = new ResizeObserver(measureEdges);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [state, measureEdges]);
+  }, [sky, measureEdges]);
   const page = (direction: 1 | -1) => stripRef.current?.scrollBy({ left: direction * stripRef.current.clientWidth * 0.8, behavior: "smooth" });
-
-  const sky = state.kind === "ready" ? state.sky : null;
 
   return (
     <BaseWidget title="Weather" {...props} tintable={false}>

@@ -27,10 +27,10 @@ const topLevel = (tasks: Task[]) => tasks.filter((t) => t.parent_id === null);
 export function byDue(a: Task, b: Task) {
   if (a.due_date !== b.due_date) return a.due_date === null ? 1 : b.due_date === null ? -1 : a.due_date < b.due_date ? -1 : 1;
   if (a.due_time !== b.due_time) return a.due_time === null ? 1 : b.due_time === null ? -1 : a.due_time < b.due_time ? -1 : 1;
-  return b.priority - a.priority || a.order_index - b.order_index || Number(a.id) - Number(b.id);
+  return b.priority - a.priority || a.order_index - b.order_index || a.id.localeCompare(b.id, undefined, { numeric: true });
 }
-export const byManual = (a: Task, b: Task) => a.order_index - b.order_index || Number(a.id) - Number(b.id);
-const byCompleted = (a: Task, b: Task) => (b.completed_at ?? "").localeCompare(a.completed_at ?? "") || Number(b.id) - Number(a.id);
+export const byManual = (a: Task, b: Task) => a.order_index - b.order_index || a.id.localeCompare(b.id, undefined, { numeric: true });
+const byCompleted = (a: Task, b: Task) => (b.completed_at ?? "").localeCompare(a.completed_at ?? "") || b.id.localeCompare(a.id, undefined, { numeric: true });
 
 export function matchesFilters(task: Task, subtasks: Task[], f: Filters) {
   if (f.minPriority && task.priority < f.minPriority) return false;

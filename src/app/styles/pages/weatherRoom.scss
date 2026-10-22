@@ -1,0 +1,530 @@
+// The Weather tab: a pixel-art room. A modern window with its side panes slid back, a counter below it, a TV on the right, and
+// props (clock, calendar, sticky note, globe) that open their widget. Flat colours and hard edges throughout, to sit with the
+// pixel-art sprites in public/room and with the weather scenes. Layers sit at different depths and drift with the mouse
+// (--px / --py, set from JS) for a 2.5D feel.
+
+@use "../fonts";
+
+// The page is the room: it fills everything beside the menu. Inside it the scene keeps its proportions (16:10) and sits on
+// the floor of the room; where the screen is taller than that, the wall simply carries on upward.
+.weatherRoom {
+  height: 100dvh;
+  @media (max-width: 860px) { height: calc(100dvh - 72px); } // the menu is a bar along the bottom there
+}
+
+.room {
+  --sw: min(100cqw, 160cqh); // the scene's width
+  --wall: #e3c6ad;
+  --frame: #93745f;
+  --frame-dark: #6e5242;
+  --sill: #deb9a5;
+  --sill-dark: #bd9d8c;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  container: room / size;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--wall);
+
+  &[data-night="true"] { filter: brightness(0.7) saturate(0.85); }
+
+  &__layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    // each layer drifts by its depth; far layers barely move
+    transform: translate3d(calc(var(--px, 0) * var(--depth, 0) * -1px), calc(var(--py, 0) * var(--depth, 0) * -0.6px), 0);
+    transition: transform 0.25s var(--ease);
+  }
+
+  // the wall and counter run on past the scene in every direction, so any screen shape is filled seamlessly
+  &__wall {
+    inset: -100% -100cqw -4%;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 4cqw, rgb(0 0 0 / 0.035) 4cqw 8cqw),
+      var(--wall);
+  }
+}
+
+.scene {
+  // desktop placement, in % of the scene (left/top) and cqw (sizes)
+  --win-l: 22%;
+  --win-w: 36%;
+  --win-t: 6%;
+  --win-h: 56%;
+  --counter-t: 68%; // the back edge of the counter top
+  --counter-f: 78%; // where its front face starts
+  --base: 74%; // the line things stand on
+  --tv-l: 60%;
+  --tv-w: 37%;
+  --globe-l: 40%;
+  --globe-w: 9.5cqw;
+  --globe-base: var(--base);
+  --radio-l: 5%;
+  --radio-w: 17cqw;
+  --radio-base: var(--base);
+  --clock-l: 1.8%;
+  --clock-t: 9%;
+  --clock-w: 8cqw;
+  --calendar-l: 85%;
+  --calendar-t: 2%;
+  --calendar-w: 8cqw;
+  --sticky-l: 53.6%;
+  --sticky-t: 12%;
+  --sticky-w: 5.4cqw;
+
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: var(--sw);
+  aspect-ratio: 16 / 10;
+  transform: translateX(-50%);
+  container: scene / inline-size;
+}
+
+// ---- the window: modern, the side panes slid back so nothing crosses the sky --------------------------------------------------------
+.window {
+  position: absolute;
+  left: var(--win-l);
+  top: var(--win-t);
+  width: var(--win-w);
+  height: var(--win-h);
+  box-sizing: border-box;
+  border: 1.2cqw solid var(--frame);
+  box-shadow: 0 0 0 0.35cqw var(--frame-dark), inset 0 0 0 0.35cqw var(--frame-dark), 0.8cqw 1cqw 0 rgb(0 0 0 / 0.22);
+  overflow: hidden;
+  background: #5d7a96;
+
+  &__outside {
+    position: absolute;
+    inset: -3%;
+    background: #5d7a96 center / cover no-repeat;
+    image-rendering: pixelated;
+    transform: translate3d(calc(var(--px, 0) * 5px), calc(var(--py, 0) * 3px), 0); // the world outside is far away: it moves the other way
+    transition: transform 0.25s var(--ease);
+  }
+
+  // the two slid-back panes at the sides: a rail, a slit of glass, a rail, and a small handle
+  &__sash {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 5.2cqw;
+    box-sizing: border-box;
+    border: 0.7cqw solid var(--frame);
+    background: rgb(165 185 205 / 0.18);
+    box-shadow: inset 0 0 0 0.3cqw var(--frame-dark), 0 0 0 0.3cqw var(--frame-dark);
+    &--left { left: 0; border-left: 0; }
+    &--right { right: 0; border-right: 0; }
+    i { position: absolute; top: 46%; width: 0.7cqw; height: 4cqw; background: #3b2f2a; box-shadow: 0.2cqw 0.2cqw 0 rgb(0 0 0 / 0.25); }
+    &--left i { right: 0.5cqw; }
+    &--right i { left: 0.5cqw; }
+  }
+
+  // the soft grey filter that says "the window is shut", with one hard-edged glint
+  &__glass {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(115deg, transparent 0 22%, rgb(255 255 255 / 0.2) 22% 30%, transparent 30% 36%, rgb(255 255 255 / 0.12) 36% 39%, transparent 39%),
+      rgb(140 146 158 / 0.3);
+  }
+
+  &__sill {
+    position: absolute;
+    left: calc(var(--win-l) - 1.6cqw);
+    width: calc(var(--win-w) + 3.2cqw);
+    top: calc(var(--win-t) + var(--win-h));
+    height: 2.4cqw;
+    background: var(--sill);
+    box-shadow: inset 0 0.5cqw 0 rgb(255 255 255 / 0.35), inset 0 -0.6cqw 0 var(--sill-dark), 0 0.8cqw 0 rgb(0 0 0 / 0.2);
+  }
+}
+
+// ---- the curtains: lavender drapes on a brass rod, a sheer veil to close the day out, dust and sunlight ---------------------------------
+.room__curtains { pointer-events: none; }
+.curtainRod {
+  position: absolute;
+  left: calc(var(--win-l) - 12.2cqw);
+  top: calc(var(--win-t) - 2.3cqw);
+  width: calc(var(--win-w) + 24.4cqw);
+  height: 0.9cqw;
+  background: linear-gradient(#f2d98f, #c9a03a 55%, #8a6420);
+  box-shadow: 0.4cqw 0.5cqw 0 rgb(0 0 0 / 0.2);
+  &::before, &::after { content: ""; position: absolute; top: -0.45cqw; width: 1.8cqw; height: 1.8cqw; background: radial-gradient(circle at 35% 30%, #fff2b0, #d9ac45 55%, #8a6420); }
+  &::before { left: -1.2cqw; }
+  &::after { right: -1.2cqw; }
+}
+.curtain {
+  position: absolute;
+  top: calc(var(--win-t) - 2.8cqw);
+  height: calc(var(--win-h) + 4.8cqw);
+  aspect-ratio: 26 / 84;
+  transition: transform 1s cubic-bezier(0.45, 0.05, 0.3, 1);
+  &--left { left: calc(var(--win-l) - 11.4cqw); }
+  &--right { left: calc(var(--win-l) + var(--win-w) - 0.9cqw); transform: scaleX(-1); } // the same drape, mirrored
+  &__btn { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; line-height: 0; &:focus-visible { outline: 0.3cqw dashed #fff; outline-offset: 0.4cqw; } }
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    filter: drop-shadow(0.5cqw 0.4cqw 0 rgb(0 0 0 / 0.18));
+    transform-origin: 50% 0;
+    animation: sway var(--sway, 9s) ease-in-out infinite alternate; // a slow breeze: the hem drifts, the rod stays put
+  }
+  &--right img { animation-delay: -3.4s; }
+}
+.room__curtains[data-drawn] .curtain--left { transform: translateX(3.4cqw); }
+.room__curtains[data-drawn] .curtain--right { transform: scaleX(-1) translateX(3.4cqw); }
+@keyframes sway {
+  from { transform: skewX(calc(var(--breeze, 1) * -0.9deg)); }
+  to { transform: skewX(calc(var(--breeze, 1) * 1.7deg)); }
+}
+
+// the sheer veil drawn across the window: you still sense the light and the weather through it
+.curtainVeil {
+  position: absolute;
+  left: var(--win-l);
+  top: var(--win-t);
+  width: var(--win-w);
+  height: calc(var(--win-h) + 0.6cqw);
+  box-sizing: border-box;
+  background:
+    repeating-linear-gradient(90deg, rgb(250 240 226 / 0.86) 0 1.4cqw, rgb(228 212 234 / 0.86) 1.4cqw 2.8cqw);
+  border-bottom: 0.6cqw solid rgb(160 140 190 / 0.9);
+  opacity: 0;
+  transform: scaleY(0.94);
+  transform-origin: 50% 0;
+  transition: opacity 1s ease, transform 1s cubic-bezier(0.45, 0.05, 0.3, 1);
+}
+.room__curtains[data-drawn] .curtainVeil { opacity: 0.94; transform: none; animation: veil 11s ease-in-out infinite alternate; }
+@keyframes veil { to { transform: translateX(0.5cqw) scaleY(0.995); } }
+
+// dust floating in the light, and the sun on the counter (only when it is day and the curtains are open)
+.motes i {
+  position: absolute;
+  left: calc(var(--win-l) + var(--x) * var(--win-w));
+  top: calc(var(--win-t) + var(--y) * var(--win-h));
+  width: 0.5cqw;
+  height: 0.5cqw;
+  background: #fff6d0;
+  opacity: 0;
+  animation: mote var(--s) ease-in-out var(--d) infinite;
+}
+.room__curtains[data-drawn] .motes { display: none; }
+@keyframes mote { 0%, 100% { opacity: 0; transform: translate(0, 0); } 35%, 65% { opacity: 0.75; } 50% { transform: translate(1.3cqw, -2.4cqw); } }
+.sunbeam {
+  position: absolute;
+  left: calc(var(--win-l) + 2cqw);
+  top: calc(var(--win-t) + var(--win-h));
+  width: calc(var(--win-w) - 4cqw);
+  height: calc(var(--counter-f) - var(--win-t) - var(--win-h) + 6cqw);
+  background: linear-gradient(to bottom, rgb(255 236 170 / 0.3), rgb(255 236 170 / 0));
+  clip-path: polygon(6% 0, 94% 0, 118% 100%, 28% 100%);
+  mix-blend-mode: screen;
+  animation: beam 10s ease-in-out infinite alternate;
+}
+@keyframes beam { to { opacity: 0.6; } }
+
+// ---- the counter: flat wood with a tiled splashback --------------------------------------------------------------------------------
+.room__counter {
+  left: -100cqw;
+  right: -100cqw;
+}
+.counter {
+  &__top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--counter-t);
+    height: calc(var(--counter-f) - var(--counter-t));
+    background: #c98f5c;
+    box-shadow: inset 0 0.7cqw 0 #e2ab78, inset 0 -0.7cqw 0 #a8703f;
+    // the tiled splashback behind it
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      height: 4.4cqw;
+      background:
+        repeating-linear-gradient(90deg, #86a389 0 0.3cqw, transparent 0.3cqw 3.2cqw),
+        repeating-linear-gradient(0deg, #86a389 0 0.3cqw, transparent 0.3cqw 2.2cqw),
+        #a7c0a8;
+    }
+  }
+  &__front {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--counter-f);
+    bottom: 0;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 23.6cqw, #5f3b24 23.6cqw 24cqw),
+      #8a5a3a;
+    box-shadow: inset 0 0.6cqw 0 #5f3b24;
+  }
+}
+
+// ---- props: pixel sprites you can press -----------------------------------------------------------------------------------------------
+.prop {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  line-height: 0;
+  transition: transform 0.12s steps(2);
+  img { display: block; width: 100%; height: auto; image-rendering: pixelated; filter: drop-shadow(0.5cqw 0.5cqw 0 rgb(0 0 0 / 0.22)); }
+  &:hover { transform: translateY(-0.5cqw); }
+  &:active { transform: translateY(0.2cqw); }
+  &:focus-visible { outline: 0.3cqw dashed #fff; outline-offset: 0.6cqw; }
+  // a little red pin on the globe when it shows somewhere other than home
+  &.is-away::after { content: ""; position: absolute; left: 47%; top: 22%; width: 9%; height: 8%; background: #d4442e; box-shadow: 0 0 0 0.2cqw #fff; }
+}
+.room__prop .prop { position: absolute; }
+
+// live details drawn over the sprites (their positions come from each sprite's own pixel grid)
+.prop .clockHands { position: absolute; inset: 0; width: 100%; height: 100%; stroke: #2a1810; fill: none; stroke-linecap: square; &__pin { fill: #2a1810; stroke: none; } }
+.prop .clockPendulum { position: absolute; left: 36.1%; top: 56.9%; width: 25%; height: auto; filter: none; transform-origin: 50% 0; animation: swing 2s ease-in-out infinite alternate; }
+.prop .calendarToday { position: absolute; background: #fff; box-shadow: 0 0 0 0.25cqw #c8402c; }
+.prop.is-playing img { animation: beat 0.5s steps(2) infinite; } // the boombox bounces while the radio plays
+@keyframes swing { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+@keyframes beat { 50% { transform: translateY(-0.45cqw); } }
+
+// Things that STAND on the counter lie in their own flat shadow on it, beside them at the same base line, instead of a shadow
+// dropped below them (which would make them float). Things hanging on the wall keep the offset shadow.
+@mixin table-shadow {
+  &::after {
+    content: "";
+    position: absolute;
+    left: 22%;
+    right: -36%;
+    bottom: -0.3cqw;
+    height: 1.2cqw;
+    background: rgb(60 30 12 / 0.3);
+    clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+    z-index: -1;
+    pointer-events: none;
+  }
+}
+.stand {
+  position: absolute;
+  left: var(--radio-l);
+  top: var(--radio-base);
+  width: var(--radio-w);
+  transform: translateY(-100%);
+  @include table-shadow;
+  .prop { width: 100%; }
+}
+.stand .prop img, .globe .prop img { filter: none; }
+.globe > .prop { width: 100%; }
+.room__stand { pointer-events: none; }
+.room__clock .prop { left: var(--clock-l); top: var(--clock-t); width: var(--clock-w); }
+.room__calendar .prop { left: var(--calendar-l); top: var(--calendar-t); width: var(--calendar-w); }
+.room__sticky .prop { left: var(--sticky-l); top: var(--sticky-t); width: var(--sticky-w); transform: rotate(4deg); &:hover { transform: rotate(4deg) translateY(-0.5cqw); } }
+
+// ---- the globe (temporary place picker) -------------------------------------------------------------------------------------------------
+.room__globe { pointer-events: none; z-index: 4; }
+.globe {
+  position: absolute;
+  left: var(--globe-l);
+  top: var(--globe-base);
+  width: var(--globe-w);
+  transform: translateY(-100%);
+  @include table-shadow;
+
+  &__panel {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 1cqw);
+    z-index: 5;
+    width: 26cqw;
+    transform: translateX(-30%);
+    padding: 1.4cqw;
+    background: var(--surface);
+    color: var(--ink);
+    border: 0.3cqw solid var(--frame-dark);
+    box-shadow: 0.8cqw 0.8cqw 0 rgb(0 0 0 / 0.3);
+    pointer-events: auto;
+    font: 600 max(12px, 1.2cqw) / 1.3 var(--font-body);
+    ul { list-style: none; margin: 0.8cqw 0 0; padding: 0; max-height: 22cqw; overflow-y: auto; }
+    input { width: 100%; box-sizing: border-box; padding: 0.7cqw 1cqw; border: 1px solid var(--line); background: var(--bg); color: inherit; font: inherit; }
+    li button { width: 100%; padding: 0.7cqw 1cqw; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; &:hover { background: var(--accent-soft); } &.is-on { background: var(--accent); color: var(--accent-ink); } }
+  }
+  &__note { margin: 0 0 0.8cqw; font-size: max(11px, 1.05cqw); color: var(--ink-soft); }
+  &__none { padding: 0.7cqw 1cqw; color: var(--ink-soft); }
+}
+
+// ---- the TV: the sprite, with the live weather drawn on its glass ------------------------------------------------------------------------
+.room__tv { pointer-events: none; }
+.tv {
+  position: absolute;
+  left: var(--tv-l);
+  top: var(--base);
+  width: var(--tv-w);
+  aspect-ratio: 80 / 64;
+  transform: translateY(-100%);
+  pointer-events: auto;
+  @include table-shadow;
+  font-family: "Bold Pixels", "Courier New", monospace;
+  letter-spacing: 0.04em;
+
+  &__sprite { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
+
+  &__screen {
+    position: absolute;
+    cursor: pointer; // a tap or click on the glass goes to the next channel, a swipe goes either way
+    touch-action: pan-y;
+    container: screen / inline-size;
+    overflow: hidden;
+    color: #d8f0dc;
+    background: #0e1f1d;
+    text-shadow: 0 0 4cqw rgb(150 255 190 / 0.5);
+    border-radius: 3cqw / 4cqw;
+  }
+  &__content { position: absolute; inset: 0; padding: calc(13cqw * var(--ts, 1)) 6cqw 4cqw; box-sizing: border-box; overflow-y: auto; animation: tvOn 0.4s steps(5); }
+  &__osd { position: absolute; right: 6cqw; top: 3cqw; font-size: calc(6cqw * var(--ts, 1)); color: #ffd36b; }
+  // scanlines
+  &__glass {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgb(0 0 0 / 0.2) 0 0.8cqw, transparent 0.8cqw 2cqw);
+  }
+  // the burst of static when you change channel
+  &__static {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, #fff 0 1cqw, #222 1cqw 2.2cqw, #aaa 2.2cqw 3cqw, #000 3cqw 4.4cqw);
+    mix-blend-mode: screen;
+    animation: tvStatic 0.38s steps(6) forwards;
+  }
+
+  // channel contents (sizes are % of the glass width)
+  &__now { display: grid; gap: 2cqw; height: 100%; align-content: start; }
+  &__place { position: absolute; top: 3cqw; left: 6cqw; margin: 0; max-width: 58%; font-size: calc(6.4cqw * var(--ts, 1)); color: #ffd36b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__big { display: flex; align-items: center; gap: 6cqw; span { font-size: calc(22cqw * var(--ts, 1)); line-height: 1; } }
+  &__cond { margin: 0; font-size: calc(8cqw * var(--ts, 1)); }
+  &__facts { margin: 0; display: flex; flex-wrap: wrap; gap: 0 4cqw; font-size: calc(5.2cqw * var(--ts, 1)); opacity: 0.9; }
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0 2cqw 0 0;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #6bd39a transparent;
+    outline-offset: 2px;
+    li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4cqw; height: calc(16cqw * var(--ts, 1)); font-size: calc(8cqw * var(--ts, 1)); white-space: nowrap; b { font-weight: normal; color: #ffd36b; } }
+  }
+  &__nosignal {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 3cqw;
+    height: 100%;
+    text-align: center;
+    font-size: calc(7cqw * var(--ts, 1));
+    b { font-size: calc(11cqw * var(--ts, 1)); font-weight: normal; letter-spacing: 0.2em; }
+    button { margin-top: 1cqw; padding: 1.4cqw 4cqw; border: 1px solid currentColor; background: transparent; color: inherit; font: inherit; cursor: pointer; &:hover { background: rgb(255 255 255 / 0.12); } }
+  }
+
+  // the dial and the three push buttons are real buttons over the drawn ones; a lit one gets a bright pixel bar
+  &__dial, &__btn { position: absolute; padding: 0; border: 0; background: transparent; cursor: pointer; border-radius: 0; &:focus-visible { outline: 0.3cqw dashed #fff; outline-offset: 0.3cqw; } &:active { background: rgb(0 0 0 / 0.25); } }
+  &__dial { border-radius: 50%; &.is-lit::after { content: ""; position: absolute; left: 50%; top: 14%; width: 10%; height: 28%; margin-left: -5%; background: #8dff8d; box-shadow: 0 0 1cqw #8dff8d; } }
+  &__btn.is-lit::after { content: ""; position: absolute; inset: 22% 14%; background: #ffd36b; box-shadow: 0 0 1cqw #ffd36b; }
+}
+
+// ---- a widget opened from the room ------------------------------------------------------------------------------------------------------
+.roomPanel {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(20 14 10 / 0.5);
+  animation: fade 0.15s;
+
+  &__window {
+    position: relative;
+    width: min(360px, 100%);
+    height: min(440px, calc(100dvh - 32px));
+    animation: panelIn 0.2s var(--ease);
+    &--sticky { width: min(320px, 100%); height: min(320px, calc(100dvh - 32px)); }
+    &--clock { width: min(300px, 100%); height: min(340px, calc(100dvh - 32px)); }
+    &--radio { width: min(520px, 100%); height: min(430px, calc(100dvh - 32px)); }
+  }
+  &__close {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 2px solid #6e5242;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    &:hover { background: var(--accent-soft); }
+  }
+}
+
+@keyframes tvOn { from { opacity: 0; filter: brightness(2.2); } to { opacity: 1; filter: none; } }
+@keyframes tvStatic { 0% { opacity: 0.9; } 70% { opacity: 0.35; } 100% { opacity: 0; } }
+@keyframes panelIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } }
+@keyframes fade { from { opacity: 0; } }
+
+// ---- tall or narrow screens (phones): the scene is the whole screen; the TV, as big as fits, sits below the window --------------------
+@container room ((max-aspect-ratio: 1/1) or (max-width: 900px)) {
+  .scene {
+    width: 100cqw;
+    height: 100cqh;
+    aspect-ratio: auto;
+    --win-l: 18%;
+    --win-w: 64%;
+    --win-t: 2%;
+    --win-h: 31%;
+    --counter-t: 57%;
+    --counter-f: 95%;
+    --base: 92%;
+    --tv-w: min(88%, 56cqh);
+    --tv-l: calc((100% - var(--tv-w)) / 2);
+    --globe-l: 85%;
+    --globe-w: 12cqw;
+    --globe-base: 99%;
+    --radio-l: 2%;
+    --radio-w: 28%;
+    --radio-base: 99%;
+    --clock-l: 5%;
+    --clock-t: 35%;
+    --clock-w: 15cqw;
+    --calendar-l: 76%;
+    --calendar-t: 36%;
+    --calendar-w: 17cqw;
+    --sticky-l: 75%;
+    --sticky-t: 4%;
+    --sticky-w: 12cqw;
+  }
+  .tv__screen { --ts: 1.1; }
+  .tv__facts span:nth-child(n + 3) { display: none; } // the glass is small here: the two facts that matter most
+  .globe__panel { width: 68cqw; transform: translateX(-4%); font-size: 13px; bottom: auto; top: calc(100% + 1cqw); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room__layer, .window__outside, .prop { transition: none; transform: none; }
+  .curtain img, .motes i, .sunbeam, .curtainVeil { animation: none; }
+  .motes { display: none; }
+  .tv__content, .tv__static, .roomPanel, .roomPanel__window { animation: none; }
+}

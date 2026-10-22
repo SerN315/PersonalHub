@@ -1,0 +1,84 @@
+// The phone layout of the Weather tab: the sky in a frame, the forecast under it, and the little pixel objects as buttons.
+// Plain on purpose: big targets, one column, nothing to figure out.
+
+@use "../fonts";
+
+.wxm {
+  --wall: #e3c6ad;
+  --frame: #93745f;
+  --frame-dark: #6e5242;
+  --paper: #f6e7d6;
+  --ink: #3a2e27;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 14px 14px 12px;
+  overflow-y: auto;
+  background: var(--wall);
+  color: var(--ink);
+  &[data-night="true"] { filter: brightness(0.75) saturate(0.9); }
+
+  &__sky {
+    position: relative;
+    flex: none;
+    height: clamp(210px, 36dvh, 320px);
+    border: 5px solid var(--frame);
+    box-shadow: 0 0 0 2px var(--frame-dark), 4px 5px 0 rgb(0 0 0 / 0.22);
+    background: #5d7a96 center / cover no-repeat;
+    image-rendering: pixelated;
+    color: #fff;
+    font-family: "Bold Pixels", "Courier New", monospace;
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 6px rgb(0 0 0 / 0.55);
+    overflow: hidden;
+  }
+  // the same soft grey glass as the window, and a shade so the text always reads
+  &__shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgb(20 14 10 / 0.1), rgb(20 14 10 / 0.55)), rgb(140 146 158 / 0.22); }
+  &__now { position: absolute; left: 14px; right: 14px; bottom: 12px; display: grid; gap: 2px; }
+  &__place { margin: 0; font-size: 16px; opacity: 0.92; }
+  &__temp { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 56px; line-height: 1; }
+  &__cond { margin: 0; font-size: 18px; }
+  &__note { position: absolute; inset: 0; display: grid; place-content: center; gap: 10px; padding: 20px; text-align: center; font-size: 16px;
+    p { margin: 0; }
+    button { justify-self: center; padding: 8px 16px; border: 2px solid #fff; background: transparent; color: #fff; font: inherit; cursor: pointer; } }
+
+  &__tabs {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 3px solid var(--frame-dark);
+    background: var(--paper);
+    button { min-height: 46px; border: 0; background: transparent; color: var(--ink); font: 800 15px var(--font-body); cursor: pointer; &:not(:last-child) { border-right: 3px solid var(--frame-dark); } &.is-on { background: var(--frame); color: #fff; } &:focus-visible { outline: 3px dashed var(--frame-dark); outline-offset: -6px; } }
+  }
+
+  &__panel { flex: 1 1 auto; min-height: 0; padding: 14px; border: 3px solid var(--frame-dark); background: var(--paper); }
+  &__facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0;
+    div { display: grid; gap: 2px; }
+    dt { font-size: 13px; font-weight: 700; color: #7b6552; }
+    dd { margin: 0; font: 22px "Bold Pixels", "Courier New", monospace; letter-spacing: 0.04em; } }
+  &__hours { display: flex; gap: 8px; margin: 0 -14px; padding: 0 14px 4px; list-style: none; overflow-x: auto; scroll-snap-type: x proximity;
+    li { flex: none; display: grid; justify-items: center; gap: 6px; min-width: 62px; padding: 10px 6px; border: 2px solid var(--frame-dark); background: #fff7ec; scroll-snap-align: start; font-size: 13px; font-weight: 700; }
+    b { font: 18px "Bold Pixels", "Courier New", monospace; } }
+  &__days { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none;
+    li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 14px; min-height: 44px; padding: 0 12px; border: 2px solid var(--frame-dark); background: #fff7ec; font-weight: 800; }
+    b { font: 18px "Bold Pixels", "Courier New", monospace; } }
+
+  // the little objects as big, easy buttons
+  &__props {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    button { display: grid; place-items: center; min-height: 64px; padding: 6px; border: 3px solid var(--frame-dark); background: var(--paper); cursor: pointer; box-shadow: 0 3px 0 var(--frame-dark); &:active { transform: translateY(3px); box-shadow: none; } &:focus-visible { outline: 3px dashed var(--frame-dark); outline-offset: 3px; } &.is-away { position: relative; &::after { content: ""; position: absolute; right: 12px; top: 10px; width: 8px; height: 8px; background: #d4442e; box-shadow: 0 0 0 2px #fff; } } }
+    img { display: block; max-width: 100%; max-height: 46px; width: auto; height: auto; image-rendering: pixelated; }
+  }
+
+  // the place picker as a sheet from the bottom
+  &__sheetScrim { position: fixed; inset: 0; z-index: 60; display: grid; align-items: end; background: rgb(20 14 10 / 0.5); }
+  &__sheet.globe__panel { position: static; width: 100%; max-height: 75dvh; box-sizing: border-box; transform: none; padding: 16px; border: 0; border-top: 4px solid var(--frame-dark); box-shadow: none; font-size: 16px;
+    input { padding: 12px; font-size: 16px; }
+    ul { max-height: 45dvh; }
+    li button { padding: 12px; font-size: 16px; } }
+}

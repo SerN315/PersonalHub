@@ -34,7 +34,12 @@ export interface WidgetDefinition {
 const Loading = () => <div className="widgetSkeleton" aria-busy="true" />;
 
 // Every widget is its own chunk: it is downloaded only if it is on your dashboard, not for everyone.
-const lazy = (load: () => Promise<{ default: ComponentType<WidgetProps> }>) => dynamic(load, { loading: Loading });
+const loaders = new Map<ComponentType<WidgetProps>, () => Promise<unknown>>();
+const lazy = (load: () => Promise<{ default: ComponentType<WidgetProps> }>) => {
+  const component = dynamic(load, { loading: Loading });
+  loaders.set(component, load);
+  return component;
+};
 
 // The minimums are the smallest sizes where each widget still does its job, found by resizing it cell by cell and
 // checking that its content stays inside and usable. The maximums are generous because content scales up with the card.
@@ -92,11 +97,19 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "SunCloud01Icon",
     tint: "paper",
     size: { w: 5, h: 3, minW: 2, minH: 2, maxW: 12, maxH: 6 }, // the hourly strip appears once there is room; a small one is just sky and temperature
+    page: { href: "/weather", label: "Weather" },
     component: lazy(() => import("@/app/components/widgets/weather")),
   },
 ];
 
 const byType = new Map(WIDGETS.map((definition) => [definition.type, definition]));
+
+// Starts downloading a widget's code ahead of time (when you point at the thing that opens it), so it appears at once. Safe to call
+// again and again: the browser only fetches it once.
+export const preloadWidget = (type: string) => {
+  const definition = byType.get(type);
+  if (definition) void loaders.get(definition.component)?.();
+};
 
 // undefined for a type this version does not know (for example one added by a newer version of the app).
 export const getWidgetDefinition = (type: string) => byType.get(type);

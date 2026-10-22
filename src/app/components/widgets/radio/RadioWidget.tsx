@@ -99,16 +99,35 @@ function RadioWidget(props: WidgetProps) {
 
   // ---- save changes to the account, a moment after they stop -------------------------------------------------------
   const lastSaved = useRef(JSON.stringify(initial)); // what was loaded is already saved: only real changes are sent
+  const unsaved = useRef<{ snapshot: string; data: Record<string, unknown> } | null>(null);
+  const save = useRef(onData);
+  useEffect(() => {
+    save.current = onData;
+  });
+  const flush = useCallback(() => {
+    const pending = unsaved.current;
+    if (!pending) return;
+    unsaved.current = null;
+    lastSaved.current = pending.snapshot;
+    save.current?.(props.id, pending.data);
+  }, [props.id]);
   useEffect(() => {
     const current = { source, favorites, playlists, activePlaylist: activePlaylistId, volume: Math.round(volume * 100) / 100, lastStation: station };
     const snapshot = JSON.stringify(current);
     if (snapshot === lastSaved.current) return;
-    const timer = setTimeout(() => {
-      lastSaved.current = snapshot;
-      onData?.(props.id, current);
-    }, SAVE_DELAY_MS);
+    unsaved.current = { snapshot, data: current };
+    const timer = setTimeout(flush, SAVE_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [source, favorites, playlists, activePlaylistId, volume, station, onData, props.id]);
+  }, [source, favorites, playlists, activePlaylistId, volume, station, flush]);
+
+  // Closing the widget, or leaving the page, must not lose a change made in the last moment.
+  useEffect(() => {
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, [flush]);
 
   // ---- the dial ------------------------------------------------------------------------------------------------------
   const presets = favorites.length >= 2 ? favorites : results; // the stations the knob turns through
