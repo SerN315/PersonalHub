@@ -4,7 +4,7 @@ export const PROPS = [
   { widget: "clock", src: "/room/clock.png", className: "room__clock", label: "Open the clock", depth: 5 },
   { widget: "todo", src: "/room/calendar.png", className: "room__calendar", label: "Open your to-do list", depth: 5 },
   { widget: "sticky", src: "/room/sticky.png", className: "room__sticky", label: "Open your sticky note", depth: 9, create: true },
-  { widget: "radio", src: "/room/radio.png", className: "room__radio", label: "Open the radio", depth: 14 },
+  { widget: "radio", src: "/room/radio.png", className: "room__radio", label: "Open the radio", depth: 14, create: true },
 ] as const;
 
 export type RoomProp = (typeof PROPS)[number];
