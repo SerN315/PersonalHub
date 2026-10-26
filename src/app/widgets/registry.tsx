@@ -79,6 +79,7 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "AlarmClockIcon",
     tint: "peach",
     size: { w: 3, h: 3, minW: 2, minH: 2, maxW: 8, maxH: 8 }, // the mode tabs shorten when narrow; the dial still reads at 2x2
+    page: { href: "/focus", label: "Focus" },
     component: lazy(() => import("@/app/components/widgets/podoromoWidget")),
   },
   {

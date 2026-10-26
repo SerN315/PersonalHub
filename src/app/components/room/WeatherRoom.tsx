@@ -6,7 +6,7 @@ import RoomWidgetPanel from "./RoomWidgetPanel";
 import MobileWeather from "./MobileWeather";
 import WindowCurtains from "./WindowCurtains";
 import ViewSwitch from "./ViewSwitch";
-import { StickyNote, TableRadio, WallCalendar, WallClock } from "./RoomObjects";
+import { StickyNote, TableHourglass, TableRadio, WallCalendar, WallClock } from "./RoomObjects";
 import { warmRoomWidgets } from "./useRoomWidget";
 import { preloadWidget } from "@/app/widgets/registry";
 import { PROPS, type RoomProp } from "./roomProps";
@@ -102,6 +102,8 @@ export default function WeatherRoom() {
           </div>
 
           <div className="room__layer room__stand room__radio" style={{ ["--depth" as string]: 14 }}><div className="stand"><TableRadio prop={PROPS[3]} onOpen={setOpen} /></div></div>
+
+          <div className="room__layer room__stand room__hourglass" style={{ ["--depth" as string]: 14 }}><div className="stand stand--hourglass"><TableHourglass prop={PROPS[4]} onOpen={setOpen} /></div></div>
 
           <div className="room__layer room__globe" style={{ ["--depth" as string]: 14 }}>
             <LocationGlobe />

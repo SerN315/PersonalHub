@@ -63,6 +63,8 @@
   --globe-base: var(--base);
   --radio-l: 5%;
   --radio-w: 17cqw;
+  --hourglass-l: 29%;
+  --hourglass-w: 5.4cqw;
   --radio-base: var(--base);
   --clock-l: 1.8%;
   --clock-t: 9%;
@@ -324,6 +326,11 @@
   .prop { width: 100%; }
 }
 .stand .prop img, .globe .prop img { filter: none; }
+.stand--hourglass { left: var(--hourglass-l); width: var(--hourglass-w); }
+// a thin stream of sand through the neck while the timer runs (the neck is at 50% across and 48-53% down on the 24 x 36 sprite)
+.prop .hourglassStream { position: absolute; left: 50%; top: 52%; width: 4%; height: 30%; margin-left: -2%; background: #ecca74; opacity: 0; }
+.prop.is-running .hourglassStream { opacity: 1; animation: stream 0.5s steps(2) infinite; }
+@keyframes stream { 50% { opacity: 0.5; } }
 .globe > .prop { width: 100%; }
 .room__stand { pointer-events: none; }
 .room__clock .prop { left: var(--clock-l); top: var(--clock-t); width: var(--clock-w); }
@@ -461,6 +468,7 @@
     animation: panelIn 0.2s var(--ease);
     &--sticky { width: min(320px, 100%); height: min(320px, calc(100dvh - 32px)); }
     &--clock { width: min(300px, 100%); height: min(340px, calc(100dvh - 32px)); }
+    &--pomodoro { width: min(300px, 100%); height: min(340px, calc(100dvh - 32px)); }
     &--radio { width: min(520px, 100%); height: min(430px, calc(100dvh - 32px)); }
   }
   &__close {
@@ -507,6 +515,8 @@
     --radio-l: 2%;
     --radio-w: 28%;
     --radio-base: 99%;
+    --hourglass-l: 38%;
+    --hourglass-w: 8cqw;
     --clock-l: 5%;
     --clock-t: 35%;
     --clock-w: 15cqw;
