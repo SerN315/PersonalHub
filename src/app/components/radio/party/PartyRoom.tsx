@@ -109,7 +109,7 @@ function Reactions() {
 }
 
 // ---- people ------------------------------------------------------------------------------------------------------------------------
-function Person({ member, canRemove, onRemove }: { member: PartyMember; canRemove: boolean; onRemove: (member: PartyMember) => void }) {
+const Person = memo(function Person({ member, canRemove, onRemove }: { member: PartyMember; canRemove: boolean; onRemove: (member: PartyMember) => void }) {
   return (
     <li className="person">
       <span className="person__dot" aria-hidden>
@@ -124,7 +124,7 @@ function Person({ member, canRemove, onRemove }: { member: PartyMember; canRemov
       )}
     </li>
   );
-}
+});
 
 function People() {
   const members = usePartyStore((s) => s.party?.members ?? []);
@@ -157,7 +157,7 @@ function People() {
 }
 
 // ---- the line-up -------------------------------------------------------------------------------------------------------------------
-function Row({ item, isHost }: { item: QueueItem; isHost: boolean }) {
+const Row = memo(function Row({ item, isHost }: { item: QueueItem; isHost: boolean }) {
   const act = usePartyStore((s) => s.act);
   return (
     <li className={`lineup__item ${item.status === "pending" ? "is-pending" : ""}`}>
@@ -187,7 +187,7 @@ function Row({ item, isHost }: { item: QueueItem; isHost: boolean }) {
       </span>
     </li>
   );
-}
+});
 
 function LineUp() {
   const queue = usePartyStore((s) => s.party?.queue ?? []);

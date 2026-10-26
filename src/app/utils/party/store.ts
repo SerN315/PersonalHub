@@ -3,6 +3,7 @@ import { ApiError } from "@/app/apis/http";
 import * as party from "@/app/apis/party";
 import { useRadioStore } from "@/app/utils/radio/engine";
 import type { PartyState, Reaction } from "@/app/apis/party";
+import { shareState } from "./share";
 
 // The party you are in. It lives outside React so the music (which follows the host) keeps going while you move around the hub, and so
 // one timer asks the server for news (every few seconds, slower when the tab is in the background) however many parts of the page look.
@@ -35,6 +36,7 @@ interface PartyStore {
   end: () => Promise<void>;
   act: (call: (id: string) => Promise<unknown>) => Promise<boolean>; // a control (host or guest): runs it, then fetches the result at once
   react: (emoji: string) => void;
+  receive: (state: PartyState) => void; // take in what the server said (also used by tests)
   poke: () => void; // ask for news right now
   suspend: () => void; // stop asking (the page was left); you are still in the party and are found again on return
   dismiss: () => void;
@@ -59,8 +61,12 @@ export const usePartyStore = create<PartyStore>((set, get) => {
 
   const apply = (state: PartyState) => {
     const fresh = state.reactions.filter((r) => !r.mine); // yours were already shown the moment you pressed
-    set((s) => ({ status: "active", party: state, online: true, floating: [...s.floating, ...floats(fresh)].slice(-MAX_FLOATING) }));
+    set((s) => ({ status: "active", party: shareState(s.party, { ...state, reactions: [] }), online: true, floating: [...s.floating, ...floats(fresh)].slice(-MAX_FLOATING) }));
   };
+
+  // only reactions arrived: nothing else is touched, so nothing else is redrawn
+  const reactionsOnly = (news: { rseq: number; reactions: Reaction[] }) =>
+    set((s) => (s.party ? { party: { ...s.party, rseq: news.rseq }, online: true, floating: [...s.floating, ...floats(news.reactions.filter((r) => !r.mine))].slice(-MAX_FLOATING) } : s));
 
   // the music that came with the party stops with it
   const hush = () => useRadioStore.getState().status === "playing" && useRadioStore.getState().pause();
@@ -83,6 +89,7 @@ export const usePartyStore = create<PartyStore>((set, get) => {
       if (signal.aborted) return;
       if ("ended" in news) return gone("The party has ended.");
       if ("unchanged" in news) set({ online: true });
+      else if ("partial" in news) reactionsOnly(news);
       else apply(news);
     } catch (error) {
       if (signal.aborted) return;
@@ -179,6 +186,7 @@ export const usePartyStore = create<PartyStore>((set, get) => {
       void party.sendReaction(current.id, emoji).catch((error) => set({ message: wording(error) }));
     },
 
+    receive: (state) => apply(state),
     poke: () => void refresh(),
     suspend: () => {
       stop();

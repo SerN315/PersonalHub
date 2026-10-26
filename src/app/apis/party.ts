@@ -57,7 +57,8 @@ export interface PartyState {
   reactions: Reaction[];
 }
 
-export type Poll = PartyState | { unchanged: true; seq: number; rseq: number } | { ended: true };
+// the answer to a poll: everything, or "nothing new", or only new reactions (people, songs and the line-up are as they were), or "it ended"
+export type Poll = PartyState | { unchanged: true; seq: number; rseq: number } | { partial: true; seq: number; rseq: number; reactions: Reaction[] } | { ended: true };
 
 export const EMOJIS = ["❤️", "🔥", "👏", "😂", "🎶", "😴"];
 
