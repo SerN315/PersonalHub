@@ -21,12 +21,24 @@ export interface PartyMember {
   id: string;
   name: string;
   host: boolean;
+  muted?: boolean; // the host has silenced them in the chat
+}
+
+// What the server tells us about the chat: a message, or that the host took message `target` away.
+export interface ChatEvent {
+  n: number;
+  kind: "msg" | "del";
+  name?: string;
+  text?: string;
+  at?: number;
+  mine?: boolean;
+  target?: number;
 }
 
 export interface QueueItem {
   id: string;
   status: "pending" | "queued";
-  kind: "station" | "video";
+  kind: "station" | "video" | "playlist";
   ref: string;
   title: string | null;
   name: string | null;
@@ -55,10 +67,12 @@ export interface PartyState {
   queue: QueueItem[];
   rseq: number;
   reactions: Reaction[];
+  cn: number; // how far along the chat is
+  chat: ChatEvent[];
 }
 
 // the answer to a poll: everything, or "nothing new", or only new reactions (people, songs and the line-up are as they were), or "it ended"
-export type Poll = PartyState | { unchanged: true; seq: number; rseq: number } | { partial: true; seq: number; rseq: number; reactions: Reaction[] } | { ended: true };
+export type Poll = PartyState | { unchanged: true; seq: number; rseq: number } | { partial: true; seq: number; rseq: number; cn: number; reactions: Reaction[]; chat: ChatEvent[] } | { ended: true };
 
 export const EMOJIS = ["❤️", "🔥", "👏", "😂", "🎶", "😴"];
 
@@ -74,7 +88,7 @@ const ok = { method: "POST" } as const;
 export const createParty = (name: string) => api<PartyState>("/api/party", { method: "POST", body: name.trim() ? { name: name.trim() } : {} });
 export const joinParty = (code: string) => api<PartyState>("/api/party/join", { method: "POST", body: { code } });
 export const myParty = () => api<{ party: PartyState | null }>("/api/party/mine").then((r) => r.party);
-export const pollParty = (id: string, seq: number, rseq: number, signal?: AbortSignal) => api<Poll>(`${base(id)}?seq=${seq}&rseq=${rseq}`, { signal });
+export const pollParty = (id: string, seq: number, rseq: number, cn: number, signal?: AbortSignal) => api<Poll>(`${base(id)}?seq=${seq}&rseq=${rseq}&cn=${cn}`, { signal });
 
 export const leaveParty = (id: string) => api(`${base(id)}/leave`, ok);
 export const endParty = (id: string) => api(base(id), { method: "DELETE" });
@@ -86,4 +100,7 @@ export const suggestSong = (id: string, pick: Pick) => api(`${base(id)}/queue`, 
 export const approveItem = (id: string, item: string) => api(`${base(id)}/queue/${item}/approve`, ok);
 export const playItem = (id: string, item: string) => api(`${base(id)}/queue/${item}/play`, ok);
 export const removeItem = (id: string, item: string) => api(`${base(id)}/queue/${item}`, { method: "DELETE" });
+export const sendChat = (id: string, text: string) => api<{ n: number }>(`${base(id)}/chat`, { method: "POST", body: { text } });
+export const deleteChat = (id: string, n: number) => api(`${base(id)}/chat/${n}`, { method: "DELETE" });
+export const muteMember = (id: string, member: string, muted: boolean) => api(`${base(id)}/mute/${member}`, { method: "POST", body: { muted } });
 export const sendReaction = (id: string, emoji: string) => api(`${base(id)}/react`, { method: "POST", body: { emoji } });

@@ -31,6 +31,7 @@ interface Player {
   getCurrentTime: () => number;
   getPlayerState: () => number;
   getPlaylistIndex: () => number;
+  getPlaylist: () => string[] | null;
   destroy: () => void;
 }
 
@@ -39,16 +40,23 @@ interface Props {
   serverMs: number; // the server's clock when `song` was read
   host: boolean;
   partyId: string;
+  onTracks?: (tracks: { ids: string[]; index: number }) => void; // the playlist's songs and the one playing, when they change
+  register?: (handle: { playAt: (index: number) => void } | null) => void; // lets the host's list jump to a song
 }
 
-function PartyPlayer({ song, serverMs, host, partyId }: Props) {
+function PartyPlayer({ song, serverMs, host, partyId, onTracks, register }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
   const player = useRef<Player | null>(null);
   const ready = useRef(false);
-  const latest = useRef({ song, serverMs, host, partyId });
+  const latest = useRef({ song, serverMs, host, partyId, onTracks });
   useEffect(() => {
-    latest.current = { song, serverMs, host, partyId };
+    latest.current = { song, serverMs, host, partyId, onTracks };
   });
+  const lastTracks = useRef("");
+  useEffect(() => {
+    register?.({ playAt: (index) => player.current?.playVideoAt(index) });
+    return () => register?.(null);
+  }, [register]);
   // what this page has already done about the host's pause and track, so only a change is acted on
   const applied = useRef({ playing: true, index: 0 });
   const pauseWhenStarted = useRef(false); // joined while the host was paused: start the video, then hold it
@@ -89,6 +97,19 @@ function PartyPlayer({ song, serverMs, host, partyId }: Props) {
               load.current();
             },
             onStateChange: (event: { data: number }) => {
+              // tell the page which songs the playlist has and which one is playing (only when that changed)
+              const p = player.current;
+              if (p && latest.current.song.kind === "playlist") {
+                const ids = p.getPlaylist?.() ?? [];
+                const index = Math.max(0, p.getPlaylistIndex?.() ?? 0);
+                const key = `${ids.length}:${index}`;
+                if (ids.length > 0 && key !== lastTracks.current) {
+                  lastTracks.current = key;
+                  latest.current.onTracks?.({ ids, index });
+                }
+                // the last song of a playlist ended: the host's page moves the party on
+                if (event.data === 0 && latest.current.host && ids.length > 0 && index >= ids.length - 1) void usePartyStore.getState().act((id) => skipSong(id));
+              }
               if (event.data === 1 && pauseWhenStarted.current) {
                 pauseWhenStarted.current = false;
                 player.current?.pauseVideo();

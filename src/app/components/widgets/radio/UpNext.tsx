@@ -15,9 +15,11 @@ interface Props {
   index: number; // the one playing
   onPlay: (index: number) => void;
   onClose: () => void;
+  readOnly?: boolean; // shown but not pressable (a guest in a party follows the host)
+  inline?: boolean; // part of the page rather than dropping down from the radio's display
 }
 
-function UpNext({ ids, index, onPlay, onClose }: Props) {
+function UpNext({ ids, index, onPlay, onClose, readOnly = false, inline = false }: Props) {
   const [shown, setShown] = useState(STEP); // how many, counting from the one playing
   const [, refresh] = useState(0);
   const [failed, setFailed] = useState(false);
@@ -61,14 +63,14 @@ function UpNext({ ids, index, onPlay, onClose }: Props) {
 
   const left = ids.length - (index + upcoming.length);
   return (
-    <div className="upNext" role="region" aria-label="Songs coming up">
+    <div className={`upNext ${inline ? "upNext--inline" : ""}`} role="region" aria-label="Songs coming up">
       <ol className="upNext__list" start={index + 1}>
         {upcoming.map((id, offset) => {
           const i = index + offset;
           const isNow = offset === 0;
           return (
             <li key={`${id}-${i}`} ref={isNow ? current : undefined} className={isNow ? "is-now" : ""}>
-              <button type="button" onClick={() => onPlay(i)} aria-current={isNow ? "true" : undefined}>
+              <button type="button" disabled={readOnly} onClick={() => onPlay(i)} aria-current={isNow ? "true" : undefined}>
                 <span className="upNext__n">{isNow ? "▶" : i + 1}</span>
                 <span className="upNext__t">{label(id, i)}</span>
               </button>

@@ -37,6 +37,15 @@ export interface YouTubeName {
 // The title and channel of a YouTube video or playlist (nulls when it is private, removed, or YouTube did not answer).
 export const getYouTubeName = (kind: "video" | "playlist", id: string, signal?: AbortSignal) => api<YouTubeName>(`/api/radio/youtube?kind=${kind}&id=${encodeURIComponent(id)}`, { signal });
 
+export interface PlaylistSong {
+  id: string;
+  title: string;
+  author: string | null;
+}
+
+// The songs of a playlist that is not playing (null when they cannot be listed: private, or no YouTube key is set up on the server).
+export const getPlaylistSongs = (id: string, signal?: AbortSignal) => api<{ songs: PlaylistSong[] | null }>(`/api/radio/youtube/playlist?id=${encodeURIComponent(id)}`, { signal }).then((r) => r.songs);
+
 // The names of up to 25 songs at once, by video id.
 export async function getVideoNames(ids: string[], signal?: AbortSignal): Promise<Record<string, YouTubeName | null>> {
   const data = await api<{ videos: Record<string, YouTubeName | null> }>(`/api/radio/youtube/videos?ids=${ids.map(encodeURIComponent).join(",")}`, { signal });

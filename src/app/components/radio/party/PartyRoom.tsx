@@ -1,10 +1,13 @@
 "use client";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import BasicIcon from "../../ultis/icons";
 import AddSong from "./AddSong";
+import ChatBox from "./ChatBox";
 import PartyPlayer from "./PartyPlayer";
 import PartySync, { stationOf } from "./PartySync";
-import { EMOJIS, approveItem, kickMember, playItem, removeItem, skipSong, type PartyMember, type PartySong, type QueueItem } from "@/app/apis/party";
+import PlaylistSongs from "./PlaylistSongs";
+import UpNext from "../../widgets/radio/UpNext";
+import { EMOJIS, approveItem, kickMember, muteMember, playItem, removeItem, skipSong, type PartyMember, type PartySong, type QueueItem } from "@/app/apis/party";
 import { usePartyStore } from "@/app/utils/party/store";
 import { useRadioStore } from "@/app/utils/radio/engine";
 import "@/app/styles/pages/party.scss";
@@ -18,6 +21,7 @@ function NowPlaying() {
   const isHost = usePartyStore((s) => s.party?.isHost ?? false);
   const partyId = usePartyStore((s) => s.party?.id ?? "");
   const act = usePartyStore((s) => s.act);
+  const hasQueued = usePartyStore((s) => s.party?.queue.some((q) => q.status === "queued") ?? false);
   const engineStation = useRadioStore((s) => s.station);
   const engineStatus = useRadioStore((s) => s.status);
   const engineTitle = useRadioStore((s) => s.title);
@@ -44,10 +48,10 @@ function NowPlaying() {
         </div>
       )}
       {now && now.kind !== "station" && <PartyVideo key={now.kind} song={now} serverMs={serverMs} host={isHost} partyId={partyId} />}
-      {isHost && now && (
+      {isHost && (now || hasQueued) && (
         <div className="partyNow__host">
           <button type="button" className="miniBtn" onClick={() => void act((id) => skipSong(id))}>
-            <BasicIcon icon="NextIcon" size={13} /> Next
+            <BasicIcon icon="NextIcon" size={13} /> {now ? "Next" : "Start the line-up"}
           </button>
         </div>
       )}
@@ -56,13 +60,28 @@ function NowPlaying() {
 }
 
 function PartyVideo({ song, serverMs, host, partyId }: { song: PartySong; serverMs: number; host: boolean; partyId: string }) {
+  const [tracks, setTracks] = useState<{ ids: string[]; index: number } | null>(null); // the playlist's songs, from the player itself
+  const [open, setOpen] = useState(false);
+  const handle = useRef<{ playAt: (index: number) => void } | null>(null);
+  const register = useCallback((next: { playAt: (index: number) => void } | null) => {
+    handle.current = next;
+  }, []);
+  const many = song.kind === "playlist" && tracks && tracks.ids.length > 1;
   return (
     <div className="partyNow__video">
-      <PartyPlayer song={song} serverMs={serverMs} host={host} partyId={partyId} />
-      <p className="partyNow__caption">
-        {labelOf(song)}
-        {!host && song.kind === "video" && <small> · follows the host (within a few seconds)</small>}
-      </p>
+      <PartyPlayer song={song} serverMs={serverMs} host={host} partyId={partyId} onTracks={setTracks} register={register} />
+      <div className="partyNow__captionRow">
+        <p className="partyNow__caption">
+          {labelOf(song)}
+          {!host && song.kind !== "station" && <small> · follows the host (within a few seconds)</small>}
+        </p>
+        {many && (
+          <button type="button" className="miniBtn" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+            <BasicIcon icon="ArrowDown01Icon" size={13} /> {open ? "Hide songs" : `Songs (${tracks.ids.length})`}
+          </button>
+        )}
+      </div>
+      {many && open && <UpNext inline readOnly={!host} ids={tracks.ids} index={tracks.index} onPlay={(i) => handle.current?.playAt(i)} onClose={() => setOpen(false)} />}
     </div>
   );
 }
@@ -110,6 +129,7 @@ function Reactions() {
 
 // ---- people ------------------------------------------------------------------------------------------------------------------------
 const Person = memo(function Person({ member, canRemove, onRemove }: { member: PartyMember; canRemove: boolean; onRemove: (member: PartyMember) => void }) {
+  const act = usePartyStore((s) => s.act);
   return (
     <li className="person">
       <span className="person__dot" aria-hidden>
@@ -117,10 +137,16 @@ const Person = memo(function Person({ member, canRemove, onRemove }: { member: P
       </span>
       <span className="person__name">{member.name}</span>
       {member.host && <span className="person__tag">Host</span>}
+      {member.muted && <span className="person__tag person__tag--quiet">Muted</span>}
       {canRemove && !member.host && (
-        <button type="button" className="miniBtn miniBtn--danger" onClick={() => onRemove(member)} aria-label={`Remove ${member.name} from the party`}>
-          <BasicIcon icon="Cancel01Icon" size={13} />
-        </button>
+        <>
+          <button type="button" className="miniBtn" onClick={() => void act((id) => muteMember(id, member.id, !member.muted))} aria-label={member.muted ? `Let ${member.name} chat again` : `Mute ${member.name} in the chat`} title={member.muted ? "Let them chat again" : "Mute in the chat"}>
+            {member.muted ? "Unmute" : "Mute"}
+          </button>
+          <button type="button" className="miniBtn miniBtn--danger" onClick={() => onRemove(member)} aria-label={`Remove ${member.name} from the party`}>
+            <BasicIcon icon="Cancel01Icon" size={13} />
+          </button>
+        </>
       )}
     </li>
   );
@@ -159,16 +185,23 @@ function People() {
 // ---- the line-up -------------------------------------------------------------------------------------------------------------------
 const Row = memo(function Row({ item, isHost }: { item: QueueItem; isHost: boolean }) {
   const act = usePartyStore((s) => s.act);
+  const [open, setOpen] = useState(false); // a playlist's drop-down of songs
   return (
     <li className={`lineup__item ${item.status === "pending" ? "is-pending" : ""}`}>
-      <BasicIcon icon={item.kind === "station" ? "Radio01Icon" : "YoutubeIcon"} size={16} />
+      <BasicIcon icon={item.kind === "station" ? "Radio01Icon" : item.kind === "playlist" ? "PlayListIcon" : "YoutubeIcon"} size={16} />
       <span className="lineup__text">
         <strong>{labelOf(item)}</strong>
         <small>
+          {item.kind === "playlist" ? "Playlist · " : ""}
           {item.mine ? "You" : item.by} · {item.status === "pending" ? "waiting for the host" : "up next"}
         </small>
       </span>
       <span className="lineup__acts">
+        {item.kind === "playlist" && (
+          <button type="button" className="miniBtn" aria-expanded={open} onClick={() => setOpen((v) => !v)} aria-label={open ? `Hide the songs in ${labelOf(item)}` : `Show the songs in ${labelOf(item)}`} title="Songs">
+            <BasicIcon icon="ArrowDown01Icon" size={13} />
+          </button>
+        )}
         {isHost && item.status === "pending" && (
           <button type="button" className="miniBtn miniBtn--go" onClick={() => void act((id) => approveItem(id, item.id))} aria-label={`Approve ${labelOf(item)}`}>
             <BasicIcon icon="Tick02Icon" size={13} />
@@ -185,6 +218,11 @@ const Row = memo(function Row({ item, isHost }: { item: QueueItem; isHost: boole
           </button>
         )}
       </span>
+      {item.kind === "playlist" && open && (
+        <div className="lineup__songs">
+          <PlaylistSongs id={item.ref} />
+        </div>
+      )}
     </li>
   );
 });
@@ -299,6 +337,7 @@ function PartyRoom() {
         </div>
         <div className="party__side">
           <People />
+          <ChatBox />
           <LineUp />
         </div>
       </div>
