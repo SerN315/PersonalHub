@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dialNumber, indexFor, parsePlaylistId, positionFor, sanitizeFavorites, sanitizePlaylists, sanitizeStation, stepIndex, toggleFavorite, MAX_FAVORITES } from "./radioData.ts";
+import { dialNumber, indexFor, parsePlaylistId, parseYouTubeLink, positionFor, sanitizeFavorites, sanitizePlaylists, sanitizeStation, stepIndex, toggleFavorite, MAX_FAVORITES } from "./radioData.ts";
 
 const UUID = "9617a958-0601-11e8-ae97-52543be04c81";
 const station = (over: Record<string, unknown> = {}) => ({ id: UUID, name: "Chill FM", url: "https://stream.example/chill.mp3", country: "Vietnam", countryCode: "VN", tags: ["chill"], codec: "MP3", bitrate: 128, votes: 9, ...over });
@@ -84,4 +84,19 @@ test("the dial: positions and indexes agree, and stepping wraps round", () => {
   assert.equal(dialNumber(1), "108.0");
   assert.equal(dialNumber(0.5), "98.0");
   assert.equal(dialNumber(7), "108.0");
+});
+
+test("YouTube links: one video, a playlist, or a bare id, from every kind of link", () => {
+  const video = { kind: "video", ref: "dQw4w9WgXcQ" };
+  const id = "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf";
+  for (const input of ["dQw4w9WgXcQ", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "youtube.com/watch?v=dQw4w9WgXcQ&t=40s", "https://youtu.be/dQw4w9WgXcQ?si=abc", "https://music.youtube.com/watch?v=dQw4w9WgXcQ", "https://www.youtube.com/shorts/dQw4w9WgXcQ", "https://www.youtube.com/embed/dQw4w9WgXcQ", `https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=${id}`, "  https://m.youtube.com/watch?v=dQw4w9WgXcQ  "]) {
+    assert.deepEqual(parseYouTubeLink(input), video, input);
+  }
+  for (const input of [id, `https://www.youtube.com/playlist?list=${id}`, `https://music.youtube.com/playlist?list=${id}`]) assert.deepEqual(parseYouTubeLink(input), { kind: "playlist", ref: id }, input);
+});
+
+test("YouTube links: anything else is rejected", () => {
+  for (const input of ["", "hello world", "javascript:alert(1)", "https://evil.example/watch?v=dQw4w9WgXcQ", "https://youtube.com.evil.example/watch?v=dQw4w9WgXcQ", "https://www.youtube.com/watch?v=short", "https://www.youtube.com/watch", "https://user:pw@www.youtube.com/watch?v=dQw4w9WgXcQ", "ftp://www.youtube.com/watch?v=dQw4w9WgXcQ", "x".repeat(400), "<script>", "https://www.youtube.com/watch?v=dQw4w9WgXc\"><b"]) {
+    assert.equal(parseYouTubeLink(input), null, input.slice(0, 60));
+  }
 });
