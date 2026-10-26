@@ -70,6 +70,7 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "StickyNoteIcon",
     tint: "butter",
     size: { w: 3, h: 3, minW: 2, minH: 1, maxW: 12, maxH: 12 }, // from a one-line strip to a full-width page
+    page: { href: "/notes", label: "Notes" },
     component: lazy(() => import("@/app/components/widgets/stickyNotes")),
   },
   {
@@ -79,6 +80,7 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "AlarmClockIcon",
     tint: "peach",
     size: { w: 3, h: 3, minW: 2, minH: 2, maxW: 8, maxH: 8 }, // the mode tabs shorten when narrow; the dial still reads at 2x2
+    page: { href: "/focus", label: "Focus" },
     component: lazy(() => import("@/app/components/widgets/podoromoWidget")),
   },
   {
@@ -88,6 +90,7 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "Radio01Icon",
     tint: "paper", // it is a wooden radio, not a card: the colour picker is off for it
     size: { w: 5, h: 4, minW: 3, minH: 3, maxW: 12, maxH: 10 }, // plain radio works from 3 x 3; YouTube's player needs about 5 x 4 and says so when it has less
+    page: { href: "/radio", label: "Radio" },
     component: lazy(() => import("@/app/components/widgets/radio/RadioWidget")),
   },
   {
@@ -97,7 +100,6 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "SunCloud01Icon",
     tint: "paper",
     size: { w: 5, h: 3, minW: 2, minH: 2, maxW: 12, maxH: 6 }, // the hourly strip appears once there is room; a small one is just sky and temperature
-    page: { href: "/weather", label: "Weather" },
     component: lazy(() => import("@/app/components/widgets/weather")),
   },
 ];

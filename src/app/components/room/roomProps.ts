@@ -5,6 +5,7 @@ export const PROPS = [
   { widget: "todo", src: "/room/calendar.png", className: "room__calendar", label: "Open your to-do list", depth: 5 },
   { widget: "sticky", src: "/room/sticky.png", className: "room__sticky", label: "Open your sticky note", depth: 9, create: true },
   { widget: "radio", src: "/room/radio.png", className: "room__radio", label: "Open the radio", depth: 14, create: true },
+  { widget: "pomodoro", src: "/room/hourglass.png", className: "room__hourglass", label: "Open the focus timer", depth: 14 },
 ] as const;
 
 export type RoomProp = (typeof PROPS)[number];

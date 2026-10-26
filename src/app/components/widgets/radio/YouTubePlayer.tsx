@@ -35,7 +35,7 @@ interface YTPlayer {
   getPlaylistIndex: () => number;
   destroy: () => void;
 }
-interface YTApi {
+export interface YTApi {
   Player: new (element: HTMLElement, options: Record<string, unknown>) => YTPlayer;
 }
 declare global {
@@ -46,7 +46,7 @@ declare global {
 }
 
 let apiPromise: Promise<YTApi> | null = null;
-function loadYouTubeApi(): Promise<YTApi> {
+export function loadYouTubeApi(): Promise<YTApi> {
   if (window.YT?.Player) return Promise.resolve(window.YT);
   apiPromise ??= new Promise<YTApi>((resolve, reject) => {
     const previous = window.onYouTubeIframeAPIReady;

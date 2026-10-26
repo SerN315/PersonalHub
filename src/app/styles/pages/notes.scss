@@ -1,0 +1,142 @@
+// The Notes tab: a leather notebook. An index down the side (the coloured edges of the pages), and the page you write on, ruled and in the
+// colour of paper you chose. A pinned note gets a ribbon.
+
+.notes {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px clamp(16px, 3vw, 40px) 72px;
+
+  &__head { margin-bottom: 18px; }
+  &__eyebrow { margin: 0 0 2px; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+  h1 { margin: 0; font-family: var(--font-display); font-size: clamp(1.6rem, 3.6vw, 2.4rem); line-height: 1.1; font-weight: 600; }
+}
+
+[data-paper] {
+  --sheet: var(--c-paper);
+  &[data-paper="butter"] { --sheet: color-mix(in srgb, var(--c-butter) 30%, var(--surface)); }
+  &[data-paper="peach"] { --sheet: color-mix(in srgb, var(--c-peach) 28%, var(--surface)); }
+  &[data-paper="rose"] { --sheet: color-mix(in srgb, var(--c-rose) 24%, var(--surface)); }
+  &[data-paper="sage"] { --sheet: color-mix(in srgb, var(--c-sage) 28%, var(--surface)); }
+  &[data-paper="sky"] { --sheet: color-mix(in srgb, var(--c-sky) 26%, var(--surface)); }
+  &[data-paper="lilac"] { --sheet: color-mix(in srgb, var(--c-lilac) 26%, var(--surface)); }
+}
+
+.notebook {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 0;
+  min-height: min(720px, calc(100dvh - 190px));
+  padding: 16px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #5a3a28, #3f271a);
+  box-shadow: var(--shadow-pop), inset 0 2px 0 rgb(255 255 255 / 0.12);
+  // the stitching round the cover
+  outline: 2px dashed rgb(240 215 170 / 0.35);
+  outline-offset: -8px;
+}
+
+// ---- the index -------------------------------------------------------------------------------------------------------------
+.index {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  padding: 14px;
+  border-radius: 12px 0 0 12px;
+  background: color-mix(in srgb, var(--surface-2) 90%, #fff);
+  color: var(--ink);
+
+  &__tools { display: grid; gap: 8px; }
+  &__search { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink-soft);
+    input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: inherit; outline: 0; }
+    &:focus-within { box-shadow: 0 0 0 2px var(--accent); } }
+  &__new, &__sticky { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 14px; border: 0; border-radius: var(--r-pill); background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 800; cursor: pointer; &:hover { filter: brightness(1.06); } &:focus-visible { outline: 3px solid var(--accent-line); outline-offset: 2px; } }
+  &__sticky { background: color-mix(in srgb, var(--c-butter) 45%, var(--surface)); color: var(--ink); }
+  &__list { flex: 1; min-height: 0; margin: 0; padding: 0 2px 0 0; list-style: none; display: grid; align-content: start; gap: 6px; overflow-y: auto; max-height: calc(100dvh - 330px); scrollbar-width: thin; }
+  &__item {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    padding: 9px 12px 9px 14px;
+    border: 0;
+    border-left: 6px solid color-mix(in srgb, var(--sheet) 90%, var(--ink) 20%);
+    border-radius: 4px 10px 10px 4px;
+    background: color-mix(in srgb, var(--sheet) 55%, var(--surface));
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.12s var(--ease);
+    &:hover { transform: translateX(3px); }
+    &.is-active { background: var(--sheet); box-shadow: 0 0 0 2px var(--accent); transform: translateX(6px); }
+    &:focus-visible { outline: 3px solid var(--accent-line); outline-offset: 2px; }
+  }
+  &__title { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; svg { color: var(--accent); vertical-align: -1px; } }
+  &__preview { font-size: 13px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__note { margin: 4px 2px; font-size: 14px; color: var(--ink-soft); button { border: 0; background: none; color: var(--accent); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; } }
+  &__foot { margin: 0; font-size: 12px; font-weight: 700; color: var(--ink-soft); a { color: var(--accent); } }
+}
+
+// ---- the page ----------------------------------------------------------------------------------------------------------------
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 18px clamp(16px, 3vw, 34px) 14px 54px;
+  border-radius: 0 12px 12px 0;
+  color: var(--ink);
+  background:
+    linear-gradient(to right, transparent 40px, color-mix(in srgb, var(--c-rose) 55%, transparent) 40px 42px, transparent 42px),
+    repeating-linear-gradient(to bottom, transparent 0 31px, color-mix(in srgb, var(--c-sky) 22%, transparent) 31px 32px),
+    var(--sheet);
+  box-shadow: inset 10px 0 14px -12px rgb(var(--shadow-color) / 0.4);
+
+  &__ribbon { position: absolute; top: -4px; right: 36px; width: 18px; height: 54px; background: var(--c-rose); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%); box-shadow: 0 2px 4px rgb(0 0 0 / 0.3); }
+  &__empty { margin: auto; display: grid; justify-items: center; gap: 12px; padding: 40px 20px; text-align: center; color: var(--ink-soft); p { margin: 0; font-family: var(--font-display); font-size: 1.2rem; } }
+
+  &__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-right: 40px; }
+  &__back { display: none; align-items: center; gap: 4px; padding: 6px 12px; border: 0; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); font: inherit; font-weight: 800; cursor: pointer; }
+  &__mode { display: inline-flex; padding: 3px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ink) 8%, transparent);
+    button { padding: 4px 14px; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--ink-soft); font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; &[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgb(var(--shadow-color) / 0.25); } } }
+  &__colors { display: inline-flex; gap: 6px; margin-left: auto;
+    button { width: 20px; height: 20px; padding: 0; border: 2px solid transparent; border-radius: 50%; background: var(--sheet); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 25%, transparent); cursor: pointer; &[aria-checked="true"] { border-color: var(--ink); } &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; } } }
+  &__icon { display: inline-flex; align-items: center; gap: 4px; min-width: 32px; height: 32px; justify-content: center; padding: 0 8px; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--ink-soft); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer;
+    &:hover { background: color-mix(in srgb, var(--ink) 10%, transparent); } &.is-on { color: var(--c-butter); } &--danger:hover, &.is-armed { background: var(--danger); color: #fff; } }
+
+  &__conflict { display: grid; gap: 6px; padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb, var(--danger) 16%, var(--surface)); border: 1px solid var(--danger); line-height: 1.4;
+    span { display: flex; flex-wrap: wrap; gap: 8px; } button { padding: 6px 12px; border: 0; border-radius: var(--r-pill); background: var(--surface); color: var(--ink); font: inherit; font-weight: 800; cursor: pointer; } }
+
+  &__title { padding: 4px 0; border: 0; border-bottom: 2px dashed transparent; background: transparent; color: var(--ink); font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 600; outline: 0; &:hover, &:focus { border-bottom-color: var(--accent-line); } &::placeholder { color: var(--ink-soft); opacity: 0.7; } }
+  &__body, &__read { flex: 1; min-height: min(420px, 50dvh); }
+  &__body { padding: 0; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 1.02rem; line-height: 32px; resize: none; outline: 0; &::placeholder { color: var(--ink-soft); opacity: 0.6; } }
+  &__read { line-height: 32px; overflow-wrap: anywhere; }
+  &__foot { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+  &__status--offline, &__status--error, &__status--conflict { color: var(--danger); }
+}
+
+// ---- a note shown in "Read" ---------------------------------------------------------------------------------------------------
+.noteView {
+  h2, h3, h4 { margin: 0; font-family: var(--font-display); line-height: 32px; }
+  h2 { font-size: 1.5rem; } h3 { font-size: 1.25rem; } h4 { font-size: 1.1rem; }
+  p, ul, ol, blockquote { margin: 0; white-space: pre-wrap; }
+  ul { padding-left: 24px; list-style: disc; }
+  ol { padding-left: 26px; list-style: decimal; }
+  blockquote { padding-left: 14px; border-left: 4px solid var(--accent-line); color: var(--ink-soft); font-style: italic; }
+  hr { margin: 15px 0; border: 0; border-top: 2px dashed var(--accent-line); }
+  code { padding: 1px 6px; border-radius: 6px; background: color-mix(in srgb, var(--ink) 10%, transparent); font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.92em; }
+  a { color: var(--accent); font-weight: 700; }
+  &__tasks { list-style: none; padding-left: 0 !important; li label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; } input { width: 18px; height: 18px; margin-top: 7px; accent-color: var(--accent); } .is-done span { text-decoration: line-through; color: var(--ink-soft); } }
+  &__empty { margin: 0; color: var(--ink-soft); }
+}
+
+@media (max-width: 800px) {
+  .notebook { grid-template-columns: minmax(0, 1fr); padding: 10px; min-height: 0; }
+  .index { border-radius: 12px; }
+  .index__list { max-height: none; }
+  .notebook.has-page .index { display: none; }
+  .notebook:not(.has-page) .page { display: none; }
+  .page { border-radius: 12px; padding-left: 46px; &__back { display: inline-flex; } &__colors { margin-left: 0; } }
+}
+@media (prefers-reduced-motion: reduce) { .index__item { transition: none; } }

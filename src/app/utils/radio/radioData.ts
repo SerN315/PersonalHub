@@ -34,6 +34,32 @@ export function parsePlaylistId(input: string): string | null {
   return list && PLAYLIST_ID.test(list) ? list : null;
 }
 
+const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+
+// A link to one video (youtube.com/watch, youtu.be, shorts, embed, YouTube Music) or a whole playlist, or a bare id. A link with a video in it
+// means the video; a link with only a list means the playlist. Anything that is not YouTube is rejected.
+export function parseYouTubeLink(input: string): { kind: "video" | "playlist"; ref: string } | null {
+  const text = input.trim();
+  if (!text || text.length > 300) return null;
+  if (VIDEO_ID.test(text)) return { kind: "video", ref: text };
+  if (PLAYLIST_ID.test(text)) return { kind: "playlist", ref: text };
+  let url: URL;
+  try {
+    url = new URL(/^https?:\/\//i.test(text) ? text : `https://${text}`);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+  if (url.username || url.password) return null;
+  const host = url.hostname.toLowerCase();
+  if (!YOUTUBE_HOSTS.has(host)) return null;
+  const inPath = url.pathname.match(/^\/(?:shorts|embed|live|v)\/([A-Za-z0-9_-]{11})(?:\/|$)/)?.[1];
+  const video = host === "youtu.be" ? url.pathname.match(/^\/([A-Za-z0-9_-]{11})(?:\/|$)/)?.[1] : url.searchParams.get("v") ?? inPath;
+  if (video && VIDEO_ID.test(video)) return { kind: "video", ref: video };
+  const list = url.searchParams.get("list");
+  return list && PLAYLIST_ID.test(list) ? { kind: "playlist", ref: list } : null;
+}
+
 // ---- restoring saved data (it comes back from the server as untrusted JSON) -----------------------------------------
 
 const text = (value: unknown, max: number) => (typeof value === "string" ? value.replace(/[\u0000-\u001f\u007f-\u009f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max) : "");

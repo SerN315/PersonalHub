@@ -2,6 +2,7 @@
 import { memo, useEffect, useState } from "react";
 import { preloadWidget } from "@/app/widgets/registry";
 import { useRadioStore } from "@/app/utils/radio/engine";
+import { useFocusBoot, useFocusStore } from "@/app/utils/focus/engine";
 import type { RoomProp } from "./roomProps";
 
 // The things in the room that open a widget. Each is a real button holding its sprite (no text: the job is in the accessible
@@ -90,3 +91,15 @@ function TableRadioBase(props: Props) {
   return <Sprite {...props} className={playing ? "is-playing" : ""} />;
 }
 export const TableRadio = memo(TableRadioBase);
+
+// An hourglass on the counter: while the Focus timer runs, a thin stream of sand falls through it.
+function TableHourglassBase(props: Props) {
+  useFocusBoot();
+  const running = useFocusStore((s) => s.status === "running");
+  return (
+    <Sprite {...props} className={running ? "is-running" : ""}>
+      <span className="hourglassStream" aria-hidden />
+    </Sprite>
+  );
+}
+export const TableHourglass = memo(TableHourglassBase);
