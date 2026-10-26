@@ -90,6 +90,7 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "Radio01Icon",
     tint: "paper", // it is a wooden radio, not a card: the colour picker is off for it
     size: { w: 5, h: 4, minW: 3, minH: 3, maxW: 12, maxH: 10 }, // plain radio works from 3 x 3; YouTube's player needs about 5 x 4 and says so when it has less
+    page: { href: "/radio", label: "Radio" },
     component: lazy(() => import("@/app/components/widgets/radio/RadioWidget")),
   },
   {

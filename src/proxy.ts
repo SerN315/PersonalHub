@@ -4,7 +4,7 @@ const isDev = process.env.NODE_ENV === "development";
 
 // Pages that need a session. The cookie is only checked for presence here (an early, cheap redirect);
 // the backend verifies it on every API call, so a forged cookie opens an empty page and nothing else.
-const PROTECTED = ["/dashboard", "/todo", "/weather", "/focus", "/notes"];
+const PROTECTED = ["/dashboard", "/todo", "/weather", "/focus", "/notes", "/radio"];
 
 // Where avatars are served from (Supabase Storage). Override with IMAGE_ORIGINS="https://<ref>.supabase.co".
 const imageOrigins = process.env.IMAGE_ORIGINS?.split(",").map((o) => o.trim()).filter(Boolean) ?? [

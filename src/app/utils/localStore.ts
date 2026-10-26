@@ -36,6 +36,7 @@ export function createLocalStore<T>(key: string, clean: (raw: unknown) => T, emp
 
   return {
     use: () => useSyncExternalStore(subscribe, read, () => empty),
+    get: read,
     set(value: T) {
       lastRaw = JSON.stringify(value);
       lastValue = clean(value);
