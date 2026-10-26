@@ -5,11 +5,12 @@ import BasicIcon from "@/app/components/ultis/icons";
 import Knob from "./Knob";
 import StationPanel from "./StationPanel";
 import PlaylistPanel from "./PlaylistPanel";
+import UpNext from "./UpNext";
 import YouTubePlayer, { type YouTubeHandle, type YouTubeInfo } from "./YouTubePlayer";
 import WidgetProps from "@/app/types/widget";
 import { searchStations, type Station } from "@/app/apis/radio";
 import { useRadioStore } from "@/app/utils/radio/engine";
-import { dialNumber, indexFor, positionFor, sanitizeFavorites, sanitizePlaylists, sanitizeStation, stepIndex, toggleFavorite, type Playlist } from "@/app/utils/radio/radioData";
+import { dialNumber, indexFor, isVideo, playlistName, positionFor, titleWithAuthor, sanitizeFavorites, sanitizePlaylists, sanitizeStation, stepIndex, toggleFavorite, type Playlist } from "@/app/utils/radio/radioData";
 import "../../../styles/widgets/radio.scss";
 
 type Source = "radio" | "youtube";
@@ -18,7 +19,7 @@ const SAVE_DELAY_MS = 800;
 const TURN_DELAY_MS = 350; // turning the knob scrubs past stations; only the one it rests on is opened
 // YouTube's player rules need it to be at least 200 x 200 and visible, so it only appears when the radio has the room.
 const YOUTUBE_MIN = { width: 330, height: 430 };
-const YT_IDLE: YouTubeInfo = { status: "idle", title: null, index: 0, count: 0, error: null };
+const YT_IDLE: YouTubeInfo = { status: "idle", title: null, author: null, index: 0, count: 0, ids: [], error: null };
 
 // Long text scrolls past like a real tuner's display, but only when it does not fit.
 function Marquee({ text, className }: { text: string; className?: string }) {
@@ -82,6 +83,7 @@ function RadioWidget(props: WidgetProps) {
 
   const [results, setResults] = useState<Station[]>([]); // what the guide last showed; the knob walks through it when there are no favorites
   const [panelOpen, setPanelOpen] = useState(false);
+  const [upNextOpen, setUpNextOpen] = useState(false); // the drop-down list of the songs coming up
   const [yt, setYt] = useState<YouTubeInfo>(YT_IDLE);
   const [turning, setTurning] = useState<number | null>(null); // the knob's position while it is being turned
   const ytRef = useRef<YouTubeHandle>(null);
@@ -180,6 +182,7 @@ function RadioWidget(props: WidgetProps) {
   const chooseSource = (next: Source) => {
     if (next === source) return;
     setPanelOpen(false);
+    setUpNextOpen(false);
     if (next === "youtube") engine().pause();
     setSource(next);
     setYtAutoplay(false);
@@ -189,6 +192,7 @@ function RadioWidget(props: WidgetProps) {
     setYtAutoplay(true);
     setActivePlaylistId(playlist.id);
     setPanelOpen(false);
+    setUpNextOpen(false);
     if (source !== "youtube") chooseSource("youtube");
   };
 
@@ -214,10 +218,13 @@ function RadioWidget(props: WidgetProps) {
     line2 = status === "error" ? (error ?? "Can't play this station") : status === "loading" ? "Tuning…" : status === "playing" ? (title ?? "On air") : status === "paused" ? "Paused" : station ? "Press play" : "Open the guide or press play";
   } else if (!activePlaylist) {
     line1 = "YouTube";
-    line2 = "Open the guide to add a playlist";
+    line2 = "Open the guide to add a playlist or a song";
   } else {
-    line1 = activePlaylist.label;
-    line2 = !canYouTube ? "Make the radio bigger to play" : yt.error ?? (yt.status === "loading" ? "Loading…" : yt.title ?? (yt.status === "paused" ? "Paused" : "Press play"));
+    const song = titleWithAuthor(yt.title, yt.author); // the song that is playing, as "title - channel"
+    // a single song is named by its own title; a playlist by its name, with the song that is playing underneath
+    line1 = isVideo(activePlaylist) && !activePlaylist.label && song ? song : playlistName(activePlaylist);
+    const idle = yt.status === "paused" ? "Paused" : "Press play";
+    line2 = !canYouTube ? "Make the radio bigger to play" : yt.error ?? (yt.status === "loading" ? "Loading…" : isVideo(activePlaylist) ? (yt.status === "playing" ? "Playing" : idle) : song || idle);
   }
 
   const tuningValue = turning ?? (source === "radio" ? radioPosition : positionFor(yt.index, yt.count));
@@ -253,7 +260,7 @@ function RadioWidget(props: WidgetProps) {
             </div>
           ) : activePlaylist && canYouTube ? (
             <div className="ytWindow">
-              <YouTubePlayer ref={ytRef} playlistId={activePlaylist.id} volume={volume} autoplay={ytAutoplay} onInfo={setYt} />
+              <YouTubePlayer ref={ytRef} playlistId={activePlaylist.id} kind={isVideo(activePlaylist) ? "video" : "playlist"} volume={volume} autoplay={ytAutoplay} onInfo={setYt} />
             </div>
           ) : (
             <div className="ytNotice">
@@ -264,12 +271,20 @@ function RadioWidget(props: WidgetProps) {
           )}
         </div>
 
+        <div className="radio__lcdWrap">
         <div className="radio__lcd" aria-live="polite">
           <span className={`lamp ${playing ? "is-lit" : ""}`} aria-hidden title="On air" />
           <div className="radio__lines">
             <Marquee text={line1} className="radio__line1" />
             <Marquee text={line2} className={`radio__line2 ${status === "error" && source === "radio" ? "is-error" : ""}`} />
           </div>
+          {source === "youtube" && activePlaylist && !isVideo(activePlaylist) && yt.count > 1 && (
+            <button type="button" className="radio__more" aria-expanded={upNextOpen} onClick={() => setUpNextOpen((open) => !open)} aria-label={upNextOpen ? "Hide the songs coming up" : "Show the songs coming up"} title="Up next">
+              <BasicIcon icon="ArrowDown01Icon" size={16} />
+            </button>
+          )}
+        </div>
+        {upNextOpen && source === "youtube" && yt.count > 1 && <UpNext ids={yt.ids} index={yt.index} onPlay={(i) => ytRef.current?.playAt(i)} onClose={() => setUpNextOpen(false)} />}
         </div>
 
         <div className="radio__grille" aria-hidden>
@@ -326,7 +341,8 @@ function RadioWidget(props: WidgetProps) {
             playlists={playlists}
             activeId={activePlaylistId}
             onPlay={playPlaylist}
-            onAdd={(playlist) => setPlaylists((list) => [...list.filter((p) => p.id !== playlist.id), playlist])}
+            onAdd={(playlist) => setPlaylists((list) => (list.some((p) => p.id === playlist.id) ? list.map((p) => (p.id === playlist.id ? playlist : p)) : [...list, playlist]))}
+            onUpdate={(id, patch) => setPlaylists((list) => list.map((p) => (p.id === id && !p.title && patch.title ? { ...p, title: patch.title, ...(patch.author ? { author: patch.author } : {}) } : p)))}
             onRemove={(id) => {
               setPlaylists((list) => list.filter((p) => p.id !== id));
               if (activePlaylistId === id) setActivePlaylistId(null);

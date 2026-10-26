@@ -8,6 +8,7 @@ import type { PartyState, Reaction } from "@/app/apis/party";
 // one timer asks the server for news (every few seconds, slower when the tab is in the background) however many parts of the page look.
 
 const POLL_MS = 2500;
+const VIDEO_MS = 1200; // while a video is playing, so a seek or a pause reaches you quickly
 const HIDDEN_MS = 10_000;
 const OFFLINE_MS = 6000;
 const MAX_FLOATING = 12;
@@ -76,7 +77,7 @@ export const usePartyStore = create<PartyStore>((set, get) => {
     stop();
     controller = new AbortController();
     const { signal } = controller;
-    let wait = document.hidden ? HIDDEN_MS : POLL_MS;
+    let wait = document.hidden ? HIDDEN_MS : current.now && current.now.kind !== "station" ? VIDEO_MS : POLL_MS;
     try {
       const news = await party.pollParty(current.id, current.seq, current.rseq, signal);
       if (signal.aborted) return;

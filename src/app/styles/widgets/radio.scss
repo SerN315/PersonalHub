@@ -399,3 +399,53 @@
   .pkey { font-size: 9px; letter-spacing: 0.04em; }
   .pkey:not(.pkey--star) svg { display: none; }
 }
+
+// ---- the drop-down of songs coming up -----------------------------------------------------------------------------------
+.radio__lcdWrap { position: relative; flex: 0 0 auto; z-index: 5; }
+.radio__more {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  color: #e0a64a;
+  background: rgb(224 166 74 / 0.14);
+  &:hover { background: rgb(224 166 74 / 0.28); }
+  &:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  svg { transition: transform 0.2s; }
+  &[aria-expanded="true"] svg { transform: rotate(180deg); }
+}
+.upNext {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: min(300px, 55cqh);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  overflow-y: auto;
+  border-radius: 10px;
+  color: #3a2615;
+  background: linear-gradient(180deg, #f6ecd0, #ecdcae);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.65), inset 0 0 0 2px var(--brass);
+  animation: panelIn 0.18s cubic-bezier(0.22, 0.8, 0.3, 1);
+  scrollbar-width: thin;
+
+  &__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px;
+    button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px; border: 0; border-radius: 7px; background: transparent; color: inherit; font: 700 13px var(--font-body); text-align: left; cursor: pointer;
+      &:hover { background: rgb(138 106 36 / 0.18); } &:focus-visible { outline: 2px solid #b6322a; outline-offset: -2px; } }
+    .is-now button { background: #3a2615; color: #f6ecd0; } }
+  &__n { flex: none; min-width: 22px; text-align: right; font-size: 11px; opacity: 0.75; }
+  &__t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__note { margin: 2px 6px; font-size: 12px; font-weight: 700; }
+  &__more { padding: 6px; border: 0; border-radius: 7px; background: rgb(138 106 36 / 0.2); color: inherit; font: 800 12px var(--font-body); cursor: pointer; &:hover { background: rgb(138 106 36 / 0.32); } }
+}
+.radioPanel__found { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: #3a2615; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { .radio__more svg { transition: none; } .upNext { animation: none; } }
+.radioPanel__sub { display: flex; align-items: center; justify-content: space-between; margin: 10px 4px 4px; h4 { margin: 0; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.8; } }
+.radioPanel__link { padding: 0; border: 0; background: none; color: #8a2a1c; font: 800 12px var(--font-body); text-decoration: underline; cursor: pointer; }

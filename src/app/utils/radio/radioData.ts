@@ -5,10 +5,28 @@ import type { Station } from "@/app/apis/radio";
 export const MAX_FAVORITES = 30; // the saved data must stay small: the backend caps a widget's data at 20 kB
 export const MAX_PLAYLISTS = 10;
 
+// A saved YouTube playlist or single song. `label` is a name the person typed (empty when they did not); otherwise the title and channel that
+// YouTube reports are shown.
 export interface Playlist {
-  id: string; // YouTube's playlist id
+  id: string; // YouTube's playlist id, or a video id when kind is "video"
   label: string;
+  kind?: "playlist" | "video"; // missing means a playlist (what was saved before songs were possible)
+  title?: string;
+  author?: string;
 }
+
+const LEGACY_LABEL = "My playlist"; // what an unnamed playlist used to be called
+
+export const isVideo = (item: Playlist) => item.kind === "video";
+
+// "Title - Channel" as shown on the radio's display
+export const titleWithAuthor = (title: string | null | undefined, author: string | null | undefined) => (title ? (author ? `${title} - ${author}` : title) : "");
+
+// What to call it: the name the person gave, else YouTube's own title and channel, else a plain word.
+export const playlistName = (item: Playlist) => (item.label && item.label !== LEGACY_LABEL ? item.label : titleWithAuthor(item.title, item.author) || (isVideo(item) ? "YouTube song" : "YouTube playlist"));
+
+// true when there is nothing to show but the plain word (so the name is worth looking up)
+export const needsName = (item: Playlist) => (!item.label || item.label === LEGACY_LABEL) && !item.title;
 
 // ---- YouTube links -------------------------------------------------------------------------------------------------
 
@@ -99,7 +117,7 @@ export function sanitizeFavorites(value: unknown): Station[] {
   return out;
 }
 
-export function sanitizePlaylists(value: unknown): Playlist[] {
+export function sanitizePlaylists(value: unknown, max = MAX_PLAYLISTS): Playlist[] {
   if (!Array.isArray(value)) return [];
   const seen = new Set<string>();
   const out: Playlist[] = [];
@@ -108,9 +126,17 @@ export function sanitizePlaylists(value: unknown): Playlist[] {
     const id = typeof raw.id === "string" && PLAYLIST_ID.test(raw.id) ? raw.id : null;
     if (id && !seen.has(id)) {
       seen.add(id);
-      out.push({ id, label: text(raw.label, 40) || "My playlist" });
+      const entry: Playlist = { id, label: text(raw.label, 40) };
+      if (raw.kind === "video") entry.kind = "video";
+      const title = text(raw.title, 120);
+      if (title) {
+        entry.title = title;
+        const author = text(raw.author, 60);
+        if (author) entry.author = author;
+      }
+      out.push(entry);
     }
-    if (out.length >= MAX_PLAYLISTS) break;
+    if (out.length >= max) break;
   }
   return out;
 }

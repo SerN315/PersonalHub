@@ -1,9 +1,9 @@
 "use client";
 import { memo, useEffect, useState, type ReactNode } from "react";
 import BasicIcon from "../../ultis/icons";
-import { searchStations, type Station } from "@/app/apis/radio";
+import { getYouTubeName, searchStations, type Station } from "@/app/apis/radio";
 import { playNow, suggestSong, type Pick } from "@/app/apis/party";
-import { parseYouTubeLink } from "@/app/utils/radio/radioData";
+import { parseYouTubeLink, titleWithAuthor } from "@/app/utils/radio/radioData";
 import { usePartyStore } from "@/app/utils/party/store";
 
 // Choosing music for the party. The host plays things straight away or lines them up; everyone else suggests, and the host decides.
@@ -81,7 +81,11 @@ function AddSong({ host }: { host: boolean }) {
     if (parsed.kind === "playlist" && !host) return setProblem("Suggest one video at a time. The host can play whole playlists.");
     if (parsed.kind === "playlist" && how === "line") return setProblem("A whole playlist can be played right now, not lined up. Use a link to one video to line it up.");
     setProblem(null);
-    const pick: Pick = { kind: parsed.kind, ref: parsed.ref, ...(title.trim() ? { title: title.trim().slice(0, 120) } : {}) };
+    // no name typed: use the title and channel YouTube reports (the song still plays if they cannot be found)
+    const typed = title.trim();
+    const found = typed ? null : await getYouTubeName(parsed.kind, parsed.ref).catch(() => null);
+    const name = typed || titleWithAuthor(found?.title, found?.author);
+    const pick: Pick = { kind: parsed.kind, ref: parsed.ref, ...(name ? { title: name.slice(0, 120) } : {}) };
     const done = await act((id) => (how === "now" ? playNow(id, pick) : suggestSong(id, pick)));
     if (done) {
       setLink("");
@@ -131,7 +135,7 @@ function AddSong({ host }: { host: boolean }) {
           </label>
           <label>
             <span className="sr-only">Name (optional)</span>
-            <input type="text" value={title} maxLength={120} placeholder="Name it (optional)" onChange={(e) => setTitle(e.target.value)} />
+            <input type="text" value={title} maxLength={120} placeholder="Name it (optional, we use the title)" onChange={(e) => setTitle(e.target.value)} />
           </label>
           <span className="addSong__acts">
             {host && (
