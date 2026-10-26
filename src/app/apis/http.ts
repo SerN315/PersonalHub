@@ -2,7 +2,7 @@
 // JSON in and out, and a readable Error for every failure.
 
 export class ApiError extends Error {
-  constructor(message: string, readonly status: number) {
+  constructor(message: string, readonly status: number, readonly data: unknown = null) {
     super(message);
     this.name = "ApiError";
   }
@@ -39,7 +39,7 @@ export async function api<T = unknown>(path: string, { method = "GET", body, for
   if (!res.ok) {
     // A 401 on a normal call means the session is gone; the login form itself handles its own 401s.
     if (res.status === 401 && !path.startsWith("/api/login")) window.dispatchEvent(new Event(SIGNED_OUT_EVENT));
-    throw new ApiError(data?.error || `Request failed (${res.status})`, res.status);
+    throw new ApiError(data?.error || `Request failed (${res.status})`, res.status, data);
   }
   return data as T;
 }

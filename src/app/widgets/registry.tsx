@@ -70,6 +70,7 @@ export const WIDGETS: readonly WidgetDefinition[] = [
     icon: "StickyNoteIcon",
     tint: "butter",
     size: { w: 3, h: 3, minW: 2, minH: 1, maxW: 12, maxH: 12 }, // from a one-line strip to a full-width page
+    page: { href: "/notes", label: "Notes" },
     component: lazy(() => import("@/app/components/widgets/stickyNotes")),
   },
   {
