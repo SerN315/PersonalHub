@@ -11,6 +11,8 @@ export interface PartySong {
   name: string | null; // a station's name
   url: string | null; // a station's stream, as the server found it in the directory
   posMs: number; // where the host was in a video, as of posAtMs
+  playing: boolean; // the host's video is playing (false: paused)
+  index: number; // the track of a playlist the host is on
   posAtMs: number | null; // server time of that
   startedMs: number | null;
 }
@@ -55,7 +57,8 @@ export interface PartyState {
   reactions: Reaction[];
 }
 
-export type Poll = PartyState | { unchanged: true; seq: number; rseq: number } | { ended: true };
+// the answer to a poll: everything, or "nothing new", or only new reactions (people, songs and the line-up are as they were), or "it ended"
+export type Poll = PartyState | { unchanged: true; seq: number; rseq: number } | { partial: true; seq: number; rseq: number; reactions: Reaction[] } | { ended: true };
 
 export const EMOJIS = ["❤️", "🔥", "👏", "😂", "🎶", "😴"];
 
@@ -76,7 +79,7 @@ export const pollParty = (id: string, seq: number, rseq: number, signal?: AbortS
 export const leaveParty = (id: string) => api(`${base(id)}/leave`, ok);
 export const endParty = (id: string) => api(base(id), { method: "DELETE" });
 export const playNow = (id: string, pick: Pick) => api(`${base(id)}/now`, { method: "POST", body: pick });
-export const sendPosition = (id: string, posMs: number) => api(`${base(id)}/position`, { method: "POST", body: { posMs: Math.round(posMs) } });
+export const sendPosition = (id: string, where: { posMs: number; playing?: boolean; index?: number }) => api(`${base(id)}/position`, { method: "POST", body: { ...where, posMs: Math.round(where.posMs) } });
 export const skipSong = (id: string) => api(`${base(id)}/skip`, ok);
 export const kickMember = (id: string, member: string) => api(`${base(id)}/kick/${member}`, ok);
 export const suggestSong = (id: string, pick: Pick) => api(`${base(id)}/queue`, { method: "POST", body: pick });

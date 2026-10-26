@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dialNumber, indexFor, parsePlaylistId, parseYouTubeLink, positionFor, sanitizeFavorites, sanitizePlaylists, sanitizeStation, stepIndex, toggleFavorite, MAX_FAVORITES } from "./radioData.ts";
+import { dialNumber, indexFor, parsePlaylistId, parseYouTubeLink, playlistName, needsName, titleWithAuthor, positionFor, sanitizeFavorites, sanitizePlaylists, sanitizeStation, stepIndex, toggleFavorite, MAX_FAVORITES } from "./radioData.ts";
 
 const UUID = "9617a958-0601-11e8-ae97-52543be04c81";
 const station = (over: Record<string, unknown> = {}) => ({ id: UUID, name: "Chill FM", url: "https://stream.example/chill.mp3", country: "Vietnam", countryCode: "VN", tags: ["chill"], codec: "MP3", bitrate: 128, votes: 9, ...over });
@@ -46,10 +46,10 @@ test("saved stations: text is cleaned, lists are capped and de-duplicated", () =
   assert.deepEqual(sanitizeFavorites("nope"), []);
 });
 
-test("saved playlists: only valid ids survive, with a default name", () => {
+test("saved playlists: only valid ids survive, an unnamed one stays unnamed", () => {
   assert.deepEqual(sanitizePlaylists([{ id: "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf", label: "  Study  beats " }, { id: "bad id" }, { id: "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf" }, { id: "RDCLAK5uy_kmPRjHDEC" }, null, 7]), [
     { id: "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf", label: "Study beats" },
-    { id: "RDCLAK5uy_kmPRjHDEC", label: "My playlist" },
+    { id: "RDCLAK5uy_kmPRjHDEC", label: "" },
   ]);
   assert.equal(sanitizePlaylists(Array.from({ length: 30 }, (_, i) => ({ id: `PLabcdefghij${String(i).padStart(2, "0")}` }))).length, 10);
 });
@@ -99,4 +99,30 @@ test("YouTube links: anything else is rejected", () => {
   for (const input of ["", "hello world", "javascript:alert(1)", "https://evil.example/watch?v=dQw4w9WgXcQ", "https://youtube.com.evil.example/watch?v=dQw4w9WgXcQ", "https://www.youtube.com/watch?v=short", "https://www.youtube.com/watch", "https://user:pw@www.youtube.com/watch?v=dQw4w9WgXcQ", "ftp://www.youtube.com/watch?v=dQw4w9WgXcQ", "x".repeat(400), "<script>", "https://www.youtube.com/watch?v=dQw4w9WgXc\"><b"]) {
     assert.equal(parseYouTubeLink(input), null, input.slice(0, 60));
   }
+});
+
+test("saved playlists and songs: the kind, title and channel survive; junk does not", () => {
+  const id = "PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf";
+  const saved = sanitizePlaylists([
+    { id, label: "  Study  ", kind: "playlist", title: "Beats", author: "Chan" },
+    { id: "dQw4w9WgXcQ", label: "", kind: "video", title: "A song", author: "An artist" },
+    { id: "abcdefghijk", label: "x", kind: "nonsense", title: 5, author: "orphan" },
+  ]);
+  assert.deepEqual(saved[0], { id, label: "Study", title: "Beats", author: "Chan" });
+  assert.deepEqual(saved[1], { id: "dQw4w9WgXcQ", label: "", kind: "video", title: "A song", author: "An artist" });
+  assert.deepEqual(saved[2], { id: "abcdefghijk", label: "x" }, "an unknown kind is a playlist, and a channel without a title is dropped");
+});
+
+test("names: yours first, then YouTube's title - channel, then a plain word", () => {
+  assert.equal(playlistName({ id: "x", label: "My mix", title: "T", author: "A" }), "My mix");
+  assert.equal(playlistName({ id: "x", label: "", title: "T", author: "A" }), "T - A");
+  assert.equal(playlistName({ id: "x", label: "", title: "T" }), "T");
+  assert.equal(playlistName({ id: "x", label: "My playlist", title: "T", author: "A" }), "T - A", "the old automatic name gives way to the real title");
+  assert.equal(playlistName({ id: "x", label: "" }), "YouTube playlist");
+  assert.equal(playlistName({ id: "x", label: "", kind: "video" }), "YouTube song");
+  assert.equal(titleWithAuthor(null, "A"), "");
+  assert.equal(needsName({ id: "x", label: "" }), true);
+  assert.equal(needsName({ id: "x", label: "My playlist" }), true);
+  assert.equal(needsName({ id: "x", label: "Mine" }), false);
+  assert.equal(needsName({ id: "x", label: "", title: "T" }), false);
 });

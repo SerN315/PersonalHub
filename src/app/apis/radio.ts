@@ -29,6 +29,20 @@ export async function searchStations(query: StationQuery, signal?: AbortSignal):
   return data.stations;
 }
 
+export interface YouTubeName {
+  title: string | null;
+  author: string | null;
+}
+
+// The title and channel of a YouTube video or playlist (nulls when it is private, removed, or YouTube did not answer).
+export const getYouTubeName = (kind: "video" | "playlist", id: string, signal?: AbortSignal) => api<YouTubeName>(`/api/radio/youtube?kind=${kind}&id=${encodeURIComponent(id)}`, { signal });
+
+// The names of up to 25 songs at once, by video id.
+export async function getVideoNames(ids: string[], signal?: AbortSignal): Promise<Record<string, YouTubeName | null>> {
+  const data = await api<{ videos: Record<string, YouTubeName | null> }>(`/api/radio/youtube/videos?ids=${ids.map(encodeURIComponent).join(",")}`, { signal });
+  return data.videos;
+}
+
 // The title the station is playing right now (null when the station does not announce one).
 export async function getNowPlaying(stationId: string, signal?: AbortSignal): Promise<string | null> {
   const data = await api<{ title: string | null }>(`/api/radio/now-playing?station=${encodeURIComponent(stationId)}`, { signal });
