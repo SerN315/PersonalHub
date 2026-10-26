@@ -78,8 +78,6 @@ function AddSong({ host }: { host: boolean }) {
   const submitLink = async (how: "now" | "line") => {
     const parsed = parseYouTubeLink(link);
     if (!parsed) return setProblem("That does not look like a YouTube or YouTube Music link.");
-    if (parsed.kind === "playlist" && !host) return setProblem("Suggest one video at a time. The host can play whole playlists.");
-    if (parsed.kind === "playlist" && how === "line") return setProblem("A whole playlist can be played right now, not lined up. Use a link to one video to line it up.");
     setProblem(null);
     // no name typed: use the title and channel YouTube reports (the song still plays if they cannot be found)
     const typed = title.trim();
@@ -131,7 +129,7 @@ function AddSong({ host }: { host: boolean }) {
         >
           <label>
             <span className="sr-only">YouTube link</span>
-            <input type="text" value={link} maxLength={300} placeholder={host ? "Paste a video or playlist link" : "Paste a video link"} onChange={(e) => setLink(e.target.value)} aria-invalid={problem ? true : undefined} />
+            <input type="text" value={link} maxLength={300} placeholder="Paste a video or playlist link" onChange={(e) => setLink(e.target.value)} aria-invalid={problem ? true : undefined} />
           </label>
           <label>
             <span className="sr-only">Name (optional)</span>

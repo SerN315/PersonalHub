@@ -38,7 +38,7 @@ export interface ChatEvent {
 export interface QueueItem {
   id: string;
   status: "pending" | "queued";
-  kind: "station" | "video";
+  kind: "station" | "video" | "playlist";
   ref: string;
   title: string | null;
   name: string | null;

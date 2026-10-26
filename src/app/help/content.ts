@@ -105,7 +105,7 @@ export const GUIDE: GuideSection[] = [
     open: "Open the radio",
     what: "The same radio as on My day, big enough for YouTube, with a sleep timer and the stations you played lately. Start a party and friends who are signed in can join with an invite code to hear the same thing.",
     why: "Music is better together. You choose what plays; guests suggest stations and videos, you approve them, and everyone can send little emoji reactions.",
-    tips: ["Start a party, then press Copy invite link and send it. Guests press Join.", "Stations play at the same moment for everyone. YouTube videos follow the host to within a few seconds, so it is together rather than to the frame.", "There is a short chat in the room: the last sixty messages, plain text, gone when the party ends. The host can remove a message or mute someone.", "Remove anyone from the party for good; end it any time. A party also ends by itself after hours of nobody being there.", "Staying in the party while on another tab keeps the music going, but it only follows the host while the Radio tab is open."],
+    tips: ["Start a party, then press Copy invite link and send it. Guests press Join.", "Stations play at the same moment for everyone. YouTube videos follow the host to within a few seconds, so it is together rather than to the frame.", "Whole playlists can wait in the line-up too. Press the arrow on one to see its songs (listing songs of a playlist that is not playing needs the optional YouTube key on the backend; the playlist plays either way).", "There is a short chat in the room: the last sixty messages, plain text, gone when the party ends. The host can remove a message or mute someone.", "Remove anyone from the party for good; end it any time. A party also ends by itself after hours of nobody being there.", "Staying in the party while on another tab keeps the music going, but it only follows the host while the Radio tab is open."],
   },
   {
     id: "dictionary",
@@ -199,6 +199,7 @@ export const SCORECARD: { name: string; score: number; note: string }[] = [
 export const HOUSEKEEPING = [
   "Run db/upgrade-tabs.sql in Supabase (Focus, Notes and listening parties need their tables) and redeploy the backend from the dev branch.",
   "Run db/repair-widget-json.sql in Supabase and redeploy the backend (fixes widget data that was saved the wrong way).",
+  "Optional: set YOUTUBE_API_KEY on the backend (a free YouTube Data API key) so a playlist waiting in a party line-up can show its songs.",
   "Set ADMIN_USER_IDS on the backend, and ENABLE_FOLIA=1 once you want the dictionary live.",
   "Rotate the weather key (it was once visible in the browser) and keep it only on the backend.",
   "Set the Site URL in Supabase to your real address so emailed links do not point at localhost.",
