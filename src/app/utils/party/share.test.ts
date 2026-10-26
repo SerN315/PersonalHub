@@ -5,7 +5,7 @@ import type { PartyState } from "@/app/apis/party";
 
 const member = (id: string, name = id, host = false) => ({ id, name, host });
 const item = (id: string, over: Record<string, unknown> = {}) => ({ id, status: "queued" as const, kind: "video" as const, ref: "x", title: id, name: null, url: null, by: "A", mine: false, ...over });
-const state = (over: Record<string, unknown> = {}): PartyState => ({ id: "p", name: "P", isHost: false, me: "m1", seq: 1, serverMs: 1, now: null, members: [member("m1"), member("m2")], queue: [item("q1"), item("q2")], rseq: 0, reactions: [], ...over } as PartyState);
+const state = (over: Record<string, unknown> = {}): PartyState => ({ id: "p", name: "P", isHost: false, me: "m1", seq: 1, serverMs: 1, now: null, members: [member("m1"), member("m2")], queue: [item("q1"), item("q2")], rseq: 0, reactions: [], cn: 0, chat: [], ...over } as PartyState);
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
 
 test("nothing changed: the very same lists come back, so nothing is redrawn", () => {

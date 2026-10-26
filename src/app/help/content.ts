@@ -105,7 +105,7 @@ export const GUIDE: GuideSection[] = [
     open: "Open the radio",
     what: "The same radio as on My day, big enough for YouTube, with a sleep timer and the stations you played lately. Start a party and friends who are signed in can join with an invite code to hear the same thing.",
     why: "Music is better together. You choose what plays; guests suggest stations and videos, you approve them, and everyone can send little emoji reactions.",
-    tips: ["Start a party, then press Copy invite link and send it. Guests press Join.", "Stations play at the same moment for everyone. YouTube videos follow the host to within a few seconds, so it is together rather than to the frame.", "Remove anyone from the party for good; end it any time. A party also ends by itself after hours of nobody being there.", "Staying in the party while on another tab keeps the music going, but it only follows the host while the Radio tab is open."],
+    tips: ["Start a party, then press Copy invite link and send it. Guests press Join.", "Stations play at the same moment for everyone. YouTube videos follow the host to within a few seconds, so it is together rather than to the frame.", "There is a short chat in the room: the last sixty messages, plain text, gone when the party ends. The host can remove a message or mute someone.", "Remove anyone from the party for good; end it any time. A party also ends by itself after hours of nobody being there.", "Staying in the party while on another tab keeps the music going, but it only follows the host while the Radio tab is open."],
   },
   {
     id: "dictionary",

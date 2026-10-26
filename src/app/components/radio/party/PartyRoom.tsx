@@ -2,9 +2,10 @@
 import { memo, useEffect, useRef, useState } from "react";
 import BasicIcon from "../../ultis/icons";
 import AddSong from "./AddSong";
+import ChatBox from "./ChatBox";
 import PartyPlayer from "./PartyPlayer";
 import PartySync, { stationOf } from "./PartySync";
-import { EMOJIS, approveItem, kickMember, playItem, removeItem, skipSong, type PartyMember, type PartySong, type QueueItem } from "@/app/apis/party";
+import { EMOJIS, approveItem, kickMember, muteMember, playItem, removeItem, skipSong, type PartyMember, type PartySong, type QueueItem } from "@/app/apis/party";
 import { usePartyStore } from "@/app/utils/party/store";
 import { useRadioStore } from "@/app/utils/radio/engine";
 import "@/app/styles/pages/party.scss";
@@ -110,6 +111,7 @@ function Reactions() {
 
 // ---- people ------------------------------------------------------------------------------------------------------------------------
 const Person = memo(function Person({ member, canRemove, onRemove }: { member: PartyMember; canRemove: boolean; onRemove: (member: PartyMember) => void }) {
+  const act = usePartyStore((s) => s.act);
   return (
     <li className="person">
       <span className="person__dot" aria-hidden>
@@ -117,10 +119,16 @@ const Person = memo(function Person({ member, canRemove, onRemove }: { member: P
       </span>
       <span className="person__name">{member.name}</span>
       {member.host && <span className="person__tag">Host</span>}
+      {member.muted && <span className="person__tag person__tag--quiet">Muted</span>}
       {canRemove && !member.host && (
-        <button type="button" className="miniBtn miniBtn--danger" onClick={() => onRemove(member)} aria-label={`Remove ${member.name} from the party`}>
-          <BasicIcon icon="Cancel01Icon" size={13} />
-        </button>
+        <>
+          <button type="button" className="miniBtn" onClick={() => void act((id) => muteMember(id, member.id, !member.muted))} aria-label={member.muted ? `Let ${member.name} chat again` : `Mute ${member.name} in the chat`} title={member.muted ? "Let them chat again" : "Mute in the chat"}>
+            {member.muted ? "Unmute" : "Mute"}
+          </button>
+          <button type="button" className="miniBtn miniBtn--danger" onClick={() => onRemove(member)} aria-label={`Remove ${member.name} from the party`}>
+            <BasicIcon icon="Cancel01Icon" size={13} />
+          </button>
+        </>
       )}
     </li>
   );
@@ -299,6 +307,7 @@ function PartyRoom() {
         </div>
         <div className="party__side">
           <People />
+          <ChatBox />
           <LineUp />
         </div>
       </div>
