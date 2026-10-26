@@ -74,5 +74,5 @@ test("every guide section says what it is and why it exists, and the scorecard i
 
 test("the headline number is what the roadmap says today", () => {
   const { percent } = computeProgress();
-  assert.ok(percent >= 40 && percent <= 55, `unexpected ${percent}%`);
+  assert.ok(percent >= 40 && percent <= 70, `unexpected ${percent}%`);
 });

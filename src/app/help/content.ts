@@ -78,6 +78,36 @@ export const GUIDE: GuideSection[] = [
     ],
   },
   {
+    id: "focus",
+    icon: "AlarmClockIcon",
+    title: "Focus",
+    href: "/focus",
+    open: "Open Focus",
+    what: "An hourglass you turn over to start a focus session, with short and long breaks, a stopwatch, a kitchen timer, world clocks and a look back at how you have been doing.",
+    why: "Work goes better in short, honest bursts. The hourglass makes starting feel like a small ritual, and the timer keeps going when you move around the hub.",
+    tips: ["Pick a task from your planner to focus on; finished sessions are saved to your account and counted in your streak.", "The same timer runs in the Pomodoro widget and the hourglass in the Room."],
+  },
+  {
+    id: "notes",
+    icon: "StickyNoteIcon",
+    title: "Notes",
+    href: "/notes",
+    open: "Open your notebook",
+    what: "A leather notebook with an index down the side and a ruled page to write on, in the paper colour you choose. Pin the ones you need, search them all, and download everything.",
+    why: "A sticky note is for a thought; a notebook is for the longer things. It saves as you type and never lets two tabs overwrite each other.",
+    tips: ["Write mode is plain text; Read mode shows headings, bullets, bold and tick-boxes you can tick.", "Your sticky note can be brought in as the first page."],
+  },
+  {
+    id: "radio",
+    icon: "Radio01Icon",
+    title: "Radio and listening parties",
+    href: "/radio",
+    open: "Open the radio",
+    what: "The same radio as on My day, big enough for YouTube, with a sleep timer and the stations you played lately. Start a party and friends who are signed in can join with an invite code to hear the same thing.",
+    why: "Music is better together. You choose what plays; guests suggest stations and videos, you approve them, and everyone can send little emoji reactions.",
+    tips: ["Start a party, then press Copy invite link and send it. Guests press Join.", "Stations play at the same moment for everyone. YouTube videos follow the host to within a few seconds, so it is together rather than to the frame.", "Remove anyone from the party for good; end it any time. A party also ends by itself after hours of nobody being there.", "Staying in the party while on another tab keeps the music going, but it only follows the host while the Radio tab is open."],
+  },
+  {
     id: "dictionary",
     icon: "BookOpen01Icon",
     title: "Dictionary",
@@ -125,11 +155,12 @@ export const ROADMAP: RoadmapItem[] = [
   { id: "planner", title: "Planner tab", status: "done", progress: 1, weight: 4, text: "Lists, due dates, repeats, steps, tags, natural-language quick add, undo, calendar and streaks." },
   { id: "room", title: "My day: the Room view", status: "done", progress: 1, weight: 4, text: "A second way to see your day: a pixel-art room with a window onto the real sky, a TV forecast, curtains, and objects that open your widgets. A simple version for phones." },
   { id: "radio", title: "Radio", status: "done", progress: 1, weight: 2, text: "Internet stations and YouTube playlists, with favourites saved to your account." },
+  { id: "pomodoro", title: "Focus tab", status: "done", progress: 1, weight: 2, text: "An hourglass for focus sessions, plus stopwatch, kitchen timer, world clocks and your history. It also appears in the Room." },
+  { id: "notes", title: "Notes tab", status: "done", progress: 1, weight: 2, text: "A notebook for longer notes: autosave, search, pins, paper colours and a safe reading view." },
+  { id: "party", title: "Radio tab and listening parties", status: "done", progress: 1, weight: 3, text: "A bigger radio with a sleep timer, and parties: invite friends, listen together, suggest songs and send reactions." },
   { id: "security", title: "Security hardening and tests", status: "done", progress: 1, weight: 2, text: "Every route checks who you are; limits on abuse; an automated test suite. A full review was done on the review date." },
   { id: "help", title: "Help and roadmap", status: "done", progress: 1, weight: 1, text: "This page: a guide to every part of the hub, and the plan ahead." },
   { id: "dictionary", title: "Dictionary in the hub", status: "building", progress: 0.6, weight: 3, text: "Works, but the owner has to switch it on, and the page needs a friendly sign-in prompt." },
-  { id: "pomodoro", title: "Pomodoro tab", status: "next", progress: 0, weight: 2, text: "A tab that deepens the Pomodoro widget, with an hourglass you turn over to start a focus session. It also appears in the Room." },
-  { id: "notes", title: "Notes tab", status: "next", progress: 0, weight: 2, text: "A tab that deepens the sticky note: a proper place for longer notes." },
   { id: "notifications", title: "Notifications inbox and webhooks", status: "next", progress: 0, weight: 3, text: "One quiet inbox that other tools can post into. Opt-in, never noisy." },
   { id: "connect", title: "GitHub and email glances", status: "next", progress: 0, weight: 4, text: "See what needs you without opening them. A glance and a jump, not a copy." },
   { id: "jira", title: "Jira tab (read-only)", status: "next", progress: 0, weight: 3, text: "Pick a board and see it here. You reconnect about once a month." },
@@ -148,7 +179,6 @@ export interface Phase {
 // What is left, in the order we would do it. Ranges are honest guesses: external services (Jira, Notion, GitHub) are where surprises live.
 export const PHASES: Phase[] = [
   { name: "Finish what is built", items: ["dictionary"], weeks: [1, 2], note: "Switch the dictionary on, run the two database fixes, check everything on a real phone." },
-  { name: "More tabs", items: ["pomodoro", "notes"], weeks: [1.5, 3], note: "Each tab deepens one widget and gets its own real-world object, like the Planner does for the to-do list." },
   { name: "Notifications inbox", items: ["notifications"], weeks: [1.5, 3], note: "The foundation the integrations will post into." },
   { name: "Connect the outside", items: ["connect"], weeks: [3, 5], note: "GitHub and email, kept as light glances." },
   { name: "Jira tab", items: ["jira"], weeks: [2, 3], note: "Read-only, one board at a time." },
@@ -158,15 +188,16 @@ export const PHASES: Phase[] = [
 ];
 
 export const SCORECARD: { name: string; score: number; note: string }[] = [
-  { name: "Everyday usefulness", score: 8, note: "You can live in it today: board, planner, weather, radio, notes." },
+  { name: "Everyday usefulness", score: 8, note: "You can live in it today: board, planner, focus, notes, radio, weather." },
   { name: "Look and feel", score: 8.5, note: "One consistent cozy style, two themes, and three layouts that adapt to the screen." },
   { name: "Reliability", score: 7, note: "Several data bugs were found and fixed this week. More testing against the real database would help." },
   { name: "Security", score: 8, note: "Designed carefully and reviewed; one real hole (the dictionary routes) was found and closed." },
   { name: "Phones", score: 6.5, note: "Simple layouts exist, but they need more time on real devices." },
-  { name: "Completeness against the plan", score: 4.5, note: "About half of everything we have discussed is built." },
+  { name: "Completeness against the plan", score: 5.5, note: "A little over half of everything we have discussed is built." },
 ];
 
 export const HOUSEKEEPING = [
+  "Run db/upgrade-tabs.sql in Supabase (Focus, Notes and listening parties need their tables) and redeploy the backend from the dev branch.",
   "Run db/repair-widget-json.sql in Supabase and redeploy the backend (fixes widget data that was saved the wrong way).",
   "Set ADMIN_USER_IDS on the backend, and ENABLE_FOLIA=1 once you want the dictionary live.",
   "Rotate the weather key (it was once visible in the browser) and keep it only on the backend.",
