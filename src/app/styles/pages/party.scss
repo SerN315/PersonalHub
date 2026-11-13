@@ -167,3 +167,16 @@
 .partyNow__captionRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; .partyNow__caption { flex: 1; min-width: 0; } }
 .upNext--inline { position: static; max-height: 240px; animation: none; box-shadow: inset 0 0 0 2px var(--brass); }
 .upNext__list button:disabled { cursor: default; }
+
+// ---- YouTube search and popular music ----------------------------------------------------------------------------------------------
+.addSong__tabs { flex-wrap: wrap; }
+.addSong__kinds { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; .chip { padding: 4px 12px; border: 0; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; &[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); } } }
+.addSong__left { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.addSong__region { display: flex; align-items: center; gap: 8px; font-weight: 700; select { padding: 6px 10px; border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent); border-radius: var(--r-pill); background: var(--surface); color: var(--ink); font: inherit; } }
+form.addSong__search { gap: 8px; label { flex: 1; min-width: 0; display: block; } }
+.ytResults { display: grid; gap: 4px; margin: 0; padding: 0 2px 0 0; list-style: none; max-height: 340px; overflow-y: auto; scrollbar-width: thin;
+  li { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; &:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); } }
+  img, &__blank { flex: none; width: 80px; height: 45px; border-radius: 6px; object-fit: cover; background: color-mix(in srgb, var(--ink) 12%, transparent); }
+  .addSong__name { white-space: normal; }
+  &__title { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; } }
+@media (max-width: 480px) { .ytResults li { flex-wrap: wrap; } .ytResults .addSong__acts { margin-left: 90px; } }
