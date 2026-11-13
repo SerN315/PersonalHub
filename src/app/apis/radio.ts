@@ -52,6 +52,25 @@ export async function getVideoNames(ids: string[], signal?: AbortSignal): Promis
   return data.videos;
 }
 
+// ---- searching YouTube (only for the people the owner allows) --------------------------------------------------------------
+
+export interface YouTubeResult {
+  kind: "video" | "playlist";
+  id: string;
+  title: string;
+  author: string | null;
+  thumb: string | null; // always YouTube's own picture host, or nothing
+}
+
+// May this person search? (The owner chooses who in Settings, Admin.)
+export const getSearchAccess = (signal?: AbortSignal) => api<{ search: boolean }>("/api/radio/youtube/access", { signal }).then((r) => r.search);
+
+export const searchYouTube = (q: string, kind: "video" | "playlist", signal?: AbortSignal) =>
+  api<{ results: YouTubeResult[]; remaining?: number }>(`/api/radio/youtube/search?q=${encodeURIComponent(q)}&kind=${kind}`, { signal });
+
+// What is popular in music in a country (cheap, so open to everyone).
+export const getTrending = (region: string, signal?: AbortSignal) => api<{ results: YouTubeResult[] }>(`/api/radio/youtube/trending?region=${encodeURIComponent(region)}`, { signal });
+
 // The title the station is playing right now (null when the station does not announce one).
 export async function getNowPlaying(stationId: string, signal?: AbortSignal): Promise<string | null> {
   const data = await api<{ title: string | null }>(`/api/radio/now-playing?station=${encodeURIComponent(stationId)}`, { signal });

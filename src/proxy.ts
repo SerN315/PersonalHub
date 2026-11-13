@@ -19,7 +19,7 @@ function contentSecurityPolicy(nonce: string) {
     // (React style props, react-grid-layout positions) are allowed separately and can't run script.
     `style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`}`,
     "style-src-attr 'unsafe-inline'",
-    `img-src 'self' blob: data: ${imageOrigins.join(" ")}`,
+    `img-src 'self' blob: data: https://i.ytimg.com ${imageOrigins.join(" ")}`, // i.ytimg.com: the little pictures in YouTube search results
     "font-src 'self'",
     "connect-src 'self'", // the browser only ever talks to this site; /api is proxied to the backend
     "media-src 'self' https: blob:", // radio streams come from thousands of different stations (https only; audio cannot run code)

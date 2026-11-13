@@ -1,12 +1,17 @@
 "use client";
 import { memo, useEffect, useState, type ReactNode } from "react";
 import BasicIcon from "../../ultis/icons";
-import { getYouTubeName, searchStations, type Station } from "@/app/apis/radio";
+import { getYouTubeName, searchStations, type Station, type YouTubeResult } from "@/app/apis/radio";
 import { playNow, suggestSong, type Pick } from "@/app/apis/party";
 import { parseYouTubeLink, titleWithAuthor } from "@/app/utils/radio/radioData";
 import { usePartyStore } from "@/app/utils/party/store";
+import { SearchYouTube, TrendingYouTube } from "./YouTubeBrowse";
+import { useSearchAccess } from "./useSearchAccess";
 
 // Choosing music for the party. The host plays things straight away or lines them up; everyone else suggests, and the host decides.
+// There are several ways to find a song and ONE is shown at a time: a station, a pasted link, what is popular, and (only for the people the
+// owner allows, because it uses the day's limited allowance) a YouTube search.
+type Way = "station" | "link" | "trending" | "search";
 
 function StationSearch({ render }: { render: (station: Station) => ReactNode }) {
   const [text, setText] = useState("");
@@ -58,7 +63,9 @@ function StationSearch({ render }: { render: (station: Station) => ReactNode }) 
 
 function AddSong({ host }: { host: boolean }) {
   const act = usePartyStore((s) => s.act);
-  const [tab, setTab] = useState<"station" | "youtube">("station");
+  const canSearch = useSearchAccess();
+  const [chosen, setChosen] = useState<Way>("station");
+  const tab: Way = chosen === "search" && !canSearch ? "station" : chosen; // if the owner takes search away, the page moves on by itself
   const [link, setLink] = useState("");
   const [title, setTitle] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
@@ -74,6 +81,25 @@ function AddSong({ host }: { host: boolean }) {
     const done = await act((id) => (how === "now" ? playNow(id, pick) : suggestSong(id, pick)));
     if (done) note(how === "now" ? `Playing ${station.name}` : host ? `Added ${station.name}` : `Suggested ${station.name}`);
   };
+
+  // a result of a YouTube search or the popular list: the title is already known, so nothing more is looked up
+  const sendResult = async (result: YouTubeResult, how: "now" | "line") => {
+    const pick: Pick = { kind: result.kind, ref: result.id, title: titleWithAuthor(result.title, result.author).slice(0, 120) };
+    const done = await act((id) => (how === "now" ? playNow(id, pick) : suggestSong(id, pick)));
+    if (done) note(how === "now" ? `Playing ${result.title}` : host ? `Added ${result.title}` : `Suggested ${result.title}`);
+  };
+  const resultActions = (result: YouTubeResult) => (
+    <span className="addSong__acts">
+      {host && (
+        <button type="button" className="miniBtn miniBtn--go" onClick={() => void sendResult(result, "now")} aria-label={`Play ${result.title} now`}>
+          <BasicIcon icon="PlayIcon" size={13} /> Play
+        </button>
+      )}
+      <button type="button" className="miniBtn" onClick={() => void sendResult(result, "line")} aria-label={`${host ? "Add" : "Suggest"} ${result.title}`}>
+        <BasicIcon icon="PlusSignIcon" size={13} /> {host ? "Add" : "Suggest"}
+      </button>
+    </span>
+  );
 
   const submitLink = async (how: "now" | "line") => {
     const parsed = parseYouTubeLink(link);
@@ -95,16 +121,26 @@ function AddSong({ host }: { host: boolean }) {
   return (
     <section className="partyBox addSong" aria-label={host ? "Choose music" : "Suggest a song"}>
       <h3>{host ? "Choose the music" : "Suggest a song"}</h3>
-      <div className="addSong__tabs" role="group" aria-label="What to pick">
-        <button type="button" className="chip" aria-pressed={tab === "station"} onClick={() => setTab("station")}>
+      <div className="addSong__tabs" role="group" aria-label="Ways to find a song">
+        <button type="button" className="chip" aria-pressed={tab === "station"} onClick={() => setChosen("station")}>
           <BasicIcon icon="Radio01Icon" size={14} /> Station
         </button>
-        <button type="button" className="chip" aria-pressed={tab === "youtube"} onClick={() => setTab("youtube")}>
-          <BasicIcon icon="YoutubeIcon" size={14} /> YouTube
+        <button type="button" className="chip" aria-pressed={tab === "link"} onClick={() => setChosen("link")}>
+          <BasicIcon icon="Link01Icon" size={14} /> Paste link
         </button>
+        <button type="button" className="chip" aria-pressed={tab === "trending"} onClick={() => setChosen("trending")}>
+          <BasicIcon icon="StarIcon" size={14} /> Popular
+        </button>
+        {canSearch && (
+          <button type="button" className="chip" aria-pressed={tab === "search"} onClick={() => setChosen("search")}>
+            <BasicIcon icon="Search01Icon" size={14} /> Search
+          </button>
+        )}
       </div>
 
-      {tab === "station" ? (
+      {tab === "trending" && <TrendingYouTube render={resultActions} />}
+      {tab === "search" && <SearchYouTube render={resultActions} />}
+      {tab === "station" && (
         <StationSearch
           render={(station) => (
             <span className="addSong__acts">
@@ -119,7 +155,8 @@ function AddSong({ host }: { host: boolean }) {
             </span>
           )}
         />
-      ) : (
+      )}
+      {tab === "link" && (
         <form
           className="addSong__link"
           onSubmit={(event) => {

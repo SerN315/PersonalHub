@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "@/app/styles/settings/settings.scss";
 import BasicIcon from "@/app/components/ultis/icons";
 import Modal from "@/app/components/ui/Modal";
 import ProfileSettings from "./ProfileSettings";
 import AppearanceSettings from "./AppearanceSettings";
 import SecuritySettings from "./SecuritySettings";
+import AdminSettings from "./AdminSettings";
+import { getAdminSettings } from "@/app/apis/admin";
 import type { SettingsModalProps, SettingsTab } from "@/app/types/settings";
 import type { IconName } from "@/app/components/ultis/icons";
 
@@ -15,10 +17,23 @@ const TABS: { key: SettingsTab; label: string; blurb: string; icon: IconName }[]
   { key: "Appearance", label: "Appearance", blurb: "Make it feel like yours", icon: "PaintBoardIcon" },
   { key: "Security", label: "Security", blurb: "Password and sign-in", icon: "LockPasswordIcon" },
 ];
+const ADMIN_TAB: (typeof TABS)[number] = { key: "Admin", label: "Admin", blurb: "The owner's switches", icon: "Settings02Icon" };
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab = "Profile", onClose }) => {
   // Opening from a different entry point (profile vs. appearance) lands on that tab; afterwards it is the person's to move.
   const [chosen, setChosen] = useState<{ tab: SettingsTab; opened: SettingsTab } | null>(null);
+  const [isOwner, setIsOwner] = useState(false); // the Admin tab only exists for the owner: the server says no to everyone else
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    getAdminSettings()
+      .then(() => !cancelled && setIsOwner(true))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+  const tabs = isOwner ? [...TABS, ADMIN_TAB] : TABS;
   const activeTab = chosen && chosen.opened === initialTab ? chosen.tab : initialTab;
   const select = (tab: SettingsTab) => setChosen({ tab, opened: initialTab });
 
@@ -26,8 +41,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
     if (!["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"].includes(event.key)) return;
     event.preventDefault();
     const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
-    const index = TABS.findIndex((t) => t.key === activeTab);
-    const next = TABS[(index + step + TABS.length) % TABS.length].key;
+    const index = tabs.findIndex((t) => t.key === activeTab);
+    const next = tabs[(index + step + tabs.length) % tabs.length].key;
     select(next);
     document.getElementById(`settings-tab-${next}`)?.focus();
   };
@@ -43,7 +58,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
             </button>
           </div>
           <div className="settings__tabs" role="tablist" aria-orientation="vertical" onKeyDown={onTabKeyDown}>
-            {TABS.map((tab) => (
+            {tabs.map((tab) => (
               <button
                 key={tab.key}
                 id={`settings-tab-${tab.key}`}
@@ -69,6 +84,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
           {activeTab === "Profile" && <ProfileSettings />}
           {activeTab === "Appearance" && <AppearanceSettings />}
           {activeTab === "Security" && <SecuritySettings onSignedOut={onClose} />}
+          {activeTab === "Admin" && isOwner && <AdminSettings />}
         </section>
       </div>
     </Modal>
