@@ -420,10 +420,11 @@
 }
 .upNext {
   position: absolute;
-  top: calc(100% + 4px);
+  // opens UPWARD, over the video window: the display sits near the bottom of the radio, so a list hanging down would run out of the cabinet
+  bottom: calc(100% + 4px);
   left: 0;
   right: 0;
-  max-height: min(300px, 55cqh);
+  max-height: clamp(140px, 42cqh, 300px);
   display: flex;
   flex-direction: column;
   gap: 4px;

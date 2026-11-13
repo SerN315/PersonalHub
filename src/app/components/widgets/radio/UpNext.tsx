@@ -23,38 +23,37 @@ function UpNext({ ids, index, onPlay, onClose, readOnly = false, inline = false 
   const [shown, setShown] = useState(STEP); // how many, counting from the one playing
   const [, refresh] = useState(0);
   const [failed, setFailed] = useState(false);
-  const current = useRef<HTMLLIElement>(null);
   const asking = useRef(new Set<string>());
+  const alive = useRef(false); // false once the list is closed: only then is there nothing to redraw
   useEscape(onClose);
 
   const upcoming = ids.slice(index, index + shown);
   const wanted = upcoming.join(",");
 
   useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const missing = wanted.split(",").filter((id) => id && !names.has(id) && !asking.current.has(id));
     if (missing.length === 0) return;
     for (const id of missing) asking.current.add(id);
-    let cancelled = false;
     for (let i = 0; i < missing.length; i += STEP) {
       const chunk = missing.slice(i, i + STEP);
       getVideoNames(chunk)
         .then((found) => {
           for (const id of chunk) names.set(id, found[id] ?? null);
-          if (!cancelled) refresh((n) => n + 1);
+          if (alive.current) refresh((n) => n + 1); // the names are kept either way; this just draws them
         })
         .catch(() => {
           for (const id of chunk) asking.current.delete(id);
-          if (!cancelled) setFailed(true);
+          if (alive.current) setFailed(true);
         });
     }
-    return () => {
-      cancelled = true;
-    };
   }, [wanted]);
-
-  useEffect(() => {
-    current.current?.scrollIntoView({ block: "nearest" });
-  }, [index]);
 
   const label = (id: string, i: number) => {
     const found = names.get(id);
@@ -69,7 +68,7 @@ function UpNext({ ids, index, onPlay, onClose, readOnly = false, inline = false 
           const i = index + offset;
           const isNow = offset === 0;
           return (
-            <li key={`${id}-${i}`} ref={isNow ? current : undefined} className={isNow ? "is-now" : ""}>
+            <li key={`${id}-${i}`} className={isNow ? "is-now" : ""}>
               <button type="button" disabled={readOnly} onClick={() => onPlay(i)} aria-current={isNow ? "true" : undefined}>
                 <span className="upNext__n">{isNow ? "▶" : i + 1}</span>
                 <span className="upNext__t">{label(id, i)}</span>
