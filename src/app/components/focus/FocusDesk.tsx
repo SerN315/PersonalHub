@@ -27,17 +27,17 @@ function Settings() {
     </label>
   );
   return (
-    <details className="settings">
+    <details className="timerSettings">
       <summary><BasicIcon icon="Settings02Icon" size={16} /> Timer settings</summary>
-      <div className="settings__grid">
+      <div className="timerSettings__grid">
         {num("focus", "Focus (minutes)", 1, 120)}
         {num("short", "Short break", 1, 60)}
         {num("long", "Long break", 1, 90)}
         {num("longEvery", "Long break after", 2, 8)}
       </div>
-      <label className="settings__check"><input type="checkbox" checked={settings.autoStart} onChange={(e) => setSettings({ autoStart: e.target.checked })} /> Start the next one by itself</label>
-      <label className="settings__check"><input type="checkbox" checked={settings.sound} onChange={(e) => setSettings({ sound: e.target.checked })} /> Play a soft chime</label>
-      <label className="settings__check">
+      <label className="timerSettings__check"><input type="checkbox" checked={settings.autoStart} onChange={(e) => setSettings({ autoStart: e.target.checked })} /> Start the next one by itself</label>
+      <label className="timerSettings__check"><input type="checkbox" checked={settings.sound} onChange={(e) => setSettings({ sound: e.target.checked })} /> Play a soft chime</label>
+      <label className="timerSettings__check">
         <input
           type="checkbox"
           checked={settings.notify}
@@ -51,7 +51,7 @@ function Settings() {
         />{" "}
         Tell me with a notification when a session ends
       </label>
-      <p className="settings__fine">Notifications only appear while this page is open in your browser. A change to a length applies to the next session.</p>
+      <p className="timerSettings__fine">Notifications only appear while this page is open in your browser. A change to a length applies to the next session.</p>
     </details>
   );
 }
