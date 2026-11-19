@@ -81,7 +81,7 @@ textarea.input { resize: vertical; min-height: 88px; }
   flex: none;
   width: 46px;
   height: 26px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--ink) 38%, var(--surface)); /* the off switch has to be visible against the page (3:1) */
   border-radius: var(--r-pill);
   background: var(--surface-2);
   cursor: pointer;

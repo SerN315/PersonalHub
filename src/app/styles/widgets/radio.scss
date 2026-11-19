@@ -236,7 +236,7 @@
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
-  font: 800 clamp(9px, 2.8cqmin, 12px) var(--font-body);
+  font: 800 clamp(10px, 2.8cqmin, 12px) var(--font-body);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink);
@@ -396,7 +396,7 @@
   .radio__keys .pkey:not(.pkey--star) svg { display: none; } // the star key IS its icon, so it always keeps it
 }
 @container (max-width: 360px) {
-  .pkey { font-size: 9px; letter-spacing: 0.04em; }
+  .pkey { font-size: 10px; letter-spacing: 0.04em; }
   .pkey:not(.pkey--star) svg { display: none; }
 }
 

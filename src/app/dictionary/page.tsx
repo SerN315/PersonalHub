@@ -474,6 +474,7 @@ export default function DictionaryPage() {
           <div className="dictionary-panel__wordInput">
             <Input
               type="text"
+              aria-label="Words to add"
               placeholder="Type words and press Enter or comma"
               value={wordInput}
               onChange={(event) => setWordInput(event.target.value)}

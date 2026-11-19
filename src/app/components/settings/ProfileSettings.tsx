@@ -98,7 +98,7 @@ export default function ProfileSettings() {
             <BasicIcon icon="Camera01Icon" size={16} />
           </span>
         </button>
-        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={onPickImage} tabIndex={-1} />
+        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose a profile picture" className="sr-only" onChange={onPickImage} tabIndex={-1} />
         <div>
           <strong>{uploading ? "Uploading…" : "Profile picture"}</strong>
           <p className="muted">JPEG, PNG or WebP, up to 2 MB.</p>

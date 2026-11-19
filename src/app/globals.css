@@ -16,7 +16,7 @@
   --surface: #fffaf2;
   --surface-2: #f8efe0;
   --ink: #3a2e27;
-  --ink-soft: #7b6b5e;
+  --ink-soft: #6f5f52; /* 5:1 or better on every light surface */
   --line: #e4d6c1;
   --shadow-color: 90 60 30;
   --danger: #b84a3f;
@@ -33,7 +33,7 @@
   --c-paper: #fffaf2;
 
   --accent: var(--c-clay);
-  --accent-ink: #fffaf2;
+  --accent-ink: #1d1713; /* dark text on the accent colour: 4.8:1 on clay, 5 to 8.6:1 on the others (cream text was 3.5:1) */
   --accent-soft: color-mix(in srgb, var(--accent) 16%, var(--surface));
   --accent-line: color-mix(in srgb, var(--accent) 45%, var(--line));
 
