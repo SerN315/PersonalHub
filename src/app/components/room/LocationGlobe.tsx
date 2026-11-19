@@ -2,6 +2,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useSkyStore, type Place } from "@/app/utils/weather/skyStore";
 import { useEscape } from "../widgets/radio/useEscape";
+import { Button, Input } from "@/app/components/ui";
 
 const CITIES: Place[] = [
   { name: "Ho Chi Minh City", lat: 10.82, lon: 106.63 },
@@ -46,12 +47,12 @@ export function PlacePanel({ className, onPick, onClose }: { className: string; 
   return (
     <div className={className} role="dialog" aria-label="Choose a place">
       <p className="globe__note">Just for this tab. Your real location is untouched.</p>
-      <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a city, or type 10.8, 106.7" maxLength={40} aria-label="Search a city or type coordinates" onKeyDown={(e) => e.key === "Enter" && (typed ? onPick(typed) : shown.length === 1 && onPick(shown[0]))} />
+      <Input variant="bare" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search a city, or type 10.8, 106.7" maxLength={40} aria-label="Search a city or type coordinates" onKeyDown={(e) => e.key === "Enter" && (typed ? onPick(typed) : shown.length === 1 && onPick(shown[0]))} />
       <ul>
-        <li><button type="button" onClick={() => onPick(null)} className={place ? "" : "is-on"}>My location</button></li>
-        {typed && <li><button type="button" onClick={() => onPick(typed)}>Go to {typed.name}</button></li>}
+        <li><Button variant="bare" onClick={() => onPick(null)} className={place ? "" : "is-on"}>My location</Button></li>
+        {typed && <li><Button variant="bare" onClick={() => onPick(typed)}>Go to {typed.name}</Button></li>}
         {shown.map((city) => (
-          <li key={city.name}><button type="button" onClick={() => onPick(city)} className={place?.name === city.name ? "is-on" : ""}>{city.name}</button></li>
+          <li key={city.name}><Button variant="bare" onClick={() => onPick(city)} className={place?.name === city.name ? "is-on" : ""}>{city.name}</Button></li>
         ))}
         {!typed && shown.length === 0 && <li className="globe__none">No match. Try coordinates like 10.8, 106.7.</li>}
       </ul>
@@ -81,10 +82,10 @@ function LocationGlobe() {
 
   return (
     <div className="globe" ref={root}>
-      <button type="button" className={`prop ${place ? "is-away" : ""}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="dialog" aria-label={place ? `Showing the sky over ${place.name}. Change place` : "Look at the sky somewhere else"}>
+      <Button variant="bare" className={`prop ${place ? "is-away" : ""}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="dialog" aria-label={place ? `Showing the sky over ${place.name}. Change place` : "Look at the sky somewhere else"}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/room/globe.png" alt="" draggable={false} />
-      </button>
+      </Button>
       {open && <PlacePanel className="globe__panel" onPick={pick} onClose={() => setOpen(false)} />}
     </div>
   );

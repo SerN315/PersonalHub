@@ -3,6 +3,7 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import BaseWidget from "./BaseWidget";
 import "../../styles/widgets/stickyNotes.scss";
 import WidgetProps from "@/app/types/widget";
+import { Textarea } from "@/app/components/ui";
 
 const SAVE_DELAY_MS = 700;
 const MAX_LENGTH = 4000;
@@ -45,7 +46,8 @@ function StickyNotesWidget({ data, onData, ...props }: WidgetProps) {
   return (
     <BaseWidget title="Sticky note" {...props}>
       <div className="sticky">
-        <textarea
+        <Textarea
+          variant="bare"
           className="sticky__text"
           value={note}
           maxLength={MAX_LENGTH}
@@ -53,8 +55,7 @@ function StickyNotesWidget({ data, onData, ...props }: WidgetProps) {
           onBlur={flush}
           placeholder="Jot something down…"
           aria-label="Sticky note"
-          spellCheck
-        />
+          spellCheck />
         <div className="sticky__fold" aria-hidden />
       </div>
     </BaseWidget>

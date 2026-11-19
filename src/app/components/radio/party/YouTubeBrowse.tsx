@@ -4,6 +4,7 @@ import BasicIcon from "../../ultis/icons";
 import { ApiError } from "@/app/apis/http";
 import { getTrending, searchYouTube, type YouTubeResult } from "@/app/apis/radio";
 import { REGIONS, regionFromLocale } from "@/app/utils/radio/region";
+import { Chip, Input, MiniButton, Select } from "@/app/components/ui";
 
 // Finding songs on YouTube without a link: search it (only for the people the owner allows, because each search uses a hundredth of the day's
 // allowance) or see what is popular in music in a country (cheap, for everyone). Results show YouTube's own little pictures.
@@ -58,19 +59,19 @@ export const SearchYouTube = memo(function SearchYouTube({ render }: { render: (
         <BasicIcon icon="Search01Icon" size={16} />
         <label>
           <span className="sr-only">Search YouTube</span>
-          <input type="search" value={text} maxLength={80} placeholder="Search YouTube, then press Enter" onChange={(e) => setText(e.target.value)} />
+          <Input variant="bare" type="search" value={text} maxLength={80} placeholder="Search YouTube, then press Enter" onChange={(e) => setText(e.target.value)} />
         </label>
-        <button type="submit" className="miniBtn miniBtn--go" disabled={state.status === "loading"}>
+        <MiniButton tone="go" type="submit"  disabled={state.status === "loading"}>
           Search
-        </button>
+        </MiniButton>
       </form>
       <div className="addSong__kinds" role="group" aria-label="Look for">
-        <button type="button" className="chip" aria-pressed={kind === "video"} onClick={() => choose("video")}>
+        <Chip  aria-pressed={kind === "video"} onClick={() => choose("video")}>
           Songs
-        </button>
-        <button type="button" className="chip" aria-pressed={kind === "playlist"} onClick={() => choose("playlist")}>
+        </Chip>
+        <Chip  aria-pressed={kind === "playlist"} onClick={() => choose("playlist")}>
           Playlists
-        </button>
+        </Chip>
         {state.remaining !== undefined && <small className="addSong__left">{state.remaining > 0 ? `${state.remaining} searches left today` : "No searches left today"}</small>}
       </div>
       {state.status === "loading" && <p className="addSong__note">Searching…</p>}
@@ -103,13 +104,13 @@ export const TrendingYouTube = memo(function TrendingYouTube({ render }: { rende
     <div className="addSong__stations">
       <label className="addSong__region">
         <span>Popular music in</span>
-        <select value={region} onChange={(e) => setRegion(e.target.value)}>
+        <Select variant="bare" value={region} onChange={(e) => setRegion(e.target.value)}>
           {REGIONS.map(([code, name]) => (
             <option key={code} value={code}>
               {name}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       {loading && <p className="addSong__note">Loading…</p>}
       {!loading && state.status === "error" && (

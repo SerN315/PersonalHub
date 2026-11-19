@@ -3,6 +3,24 @@
 /* Tailwind's dark: variant follows the chosen mode (Settings > Appearance), not just the operating system. */
 @custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
+/* Tailwind reads the same design tokens as the rest of the app (the shadcn/ui way: semantic names, never raw colours), so `bg-accent`,
+   `text-ink` or `rounded-ctl` follow the person's chosen mode, accent and rounding. `inline` keeps them live variables. */
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+  --radius-ctl: var(--r-ctl);
+  --radius-card: var(--r-card);
+}
+
 /* ==========================================================================
    PersonalHub design tokens.
    Everything visual reads these variables. A person's choices (mode, accent, backdrop, font, radius) are

@@ -6,13 +6,14 @@ import { timeAgo } from "@/app/utils/notifications/alert";
 import { clearAll, readAll, removeOne, setPanel, useNotifications } from "@/app/utils/notifications/store";
 import { SOURCE_ICON, SOURCE_NAME } from "./sourceIcon";
 import { useOpenNotification } from "./useOpenNotification";
+import { Button } from "@/app/components/ui";
 
 // The inbox that opens from the bell: newest first, unread ones marked, each can be opened or deleted.
 
 const Row = memo(function Row({ item, now, open }: { item: NotificationItem; now: number; open: (item: NotificationItem) => void }) {
   return (
     <li className={`inboxRow is-${item.source} ${item.read ? "" : "is-unread"}`}>
-      <button type="button" className="inboxRow__main" onClick={() => open(item)}>
+      <Button variant="bare" className="inboxRow__main" onClick={() => open(item)}>
         <span className="inboxRow__icon" aria-hidden>
           <BasicIcon icon={SOURCE_ICON[item.source]} size={18} />
         </span>
@@ -24,10 +25,10 @@ const Row = memo(function Row({ item, now, open }: { item: NotificationItem; now
             {!item.read && <span className="sr-only"> (unread)</span>}
           </small>
         </span>
-      </button>
-      <button type="button" className="inboxRow__remove" onClick={() => void removeOne(item.id)} aria-label={`Delete ${item.title}`}>
+      </Button>
+      <Button variant="bare" className="inboxRow__remove" onClick={() => void removeOne(item.id)} aria-label={`Delete ${item.title}`}>
         <BasicIcon icon="Delete02Icon" size={15} />
-      </button>
+      </Button>
     </li>
   );
 });
@@ -76,12 +77,12 @@ function OpenPanel({ onSettings }: { onSettings: () => void }) {
       <header className="inbox__head">
         <h2>Notifications</h2>
         <div>
-          <button type="button" className="inbox__link" onClick={() => void readAll()} disabled={unread === 0}>
+          <Button variant="bare" className="inbox__link" onClick={() => void readAll()} disabled={unread === 0}>
             Mark all read
-          </button>
-          <button type="button" className="inbox__link" onClick={() => void clearAll()} disabled={items.length === 0}>
+          </Button>
+          <Button variant="bare" className="inbox__link" onClick={() => void clearAll()} disabled={items.length === 0}>
             Clear
-          </button>
+          </Button>
         </div>
       </header>
       {items.length === 0 ? (
@@ -97,9 +98,9 @@ function OpenPanel({ onSettings }: { onSettings: () => void }) {
         </ul>
       )}
       <footer className="inbox__foot">
-        <button type="button" className="inbox__link" onClick={onSettings}>
+        <Button variant="bare" className="inbox__link" onClick={onSettings}>
           Choose what shows up here
-        </button>
+        </Button>
       </footer>
     </section>
   );

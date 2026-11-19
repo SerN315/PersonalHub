@@ -13,6 +13,7 @@ import { useRadioStore } from "@/app/utils/radio/engine";
 import { useYouTube, youtube, type YouTubeSource } from "@/app/utils/radio/youtubeEngine";
 import { dialNumber, indexFor, isVideo, playlistName, positionFor, titleWithAuthor, sanitizeFavorites, sanitizePlaylists, sanitizeStation, stepIndex, toggleFavorite, type Playlist } from "@/app/utils/radio/radioData";
 import "../../../styles/widgets/radio.scss";
+import { Button } from "@/app/components/ui";
 
 type Source = "radio" | "youtube";
 
@@ -289,9 +290,9 @@ function RadioWidget(props: WidgetProps) {
             <Marquee text={line2} className={`radio__line2 ${status === "error" && source === "radio" ? "is-error" : ""}`} />
           </div>
           {source === "youtube" && activePlaylist && !isVideo(activePlaylist) && yt.count > 1 && (
-            <button type="button" className="radio__more" aria-expanded={upNextOpen} onClick={() => setUpNextOpen((open) => !open)} aria-label={upNextOpen ? "Hide the songs coming up" : "Show the songs coming up"} title="Up next">
+            <Button variant="bare" className="radio__more" aria-expanded={upNextOpen} onClick={() => setUpNextOpen((open) => !open)} aria-label={upNextOpen ? "Hide the songs coming up" : "Show the songs coming up"} title="Up next">
               <BasicIcon icon="ArrowDown01Icon" size={16} />
-            </button>
+            </Button>
           )}
         </div>
         {upNextOpen && source === "youtube" && yt.count > 1 && <UpNext ids={yt.ids} index={yt.index} onPlay={(i) => youtube.playAt(i)} onClose={() => setUpNextOpen(false)} />}
@@ -304,33 +305,33 @@ function RadioWidget(props: WidgetProps) {
         <div className="radio__controls">
           <Knob label="Volume" value={volume} onChange={(v) => engine().setVolume(v)} valueText={`${Math.round(volume * 100)} percent`} />
           <div className="transport">
-            <button type="button" className="key key--round" onClick={previousRadio} aria-label={source === "radio" ? "Previous station" : "Previous track"}>
+            <Button variant="bare" className="key key--round" onClick={previousRadio} aria-label={source === "radio" ? "Previous station" : "Previous track"}>
               <BasicIcon icon="PreviousIcon" size={18} />
-            </button>
-            <button type="button" className="key key--play" onClick={onPlayPause} aria-label={playing ? "Pause" : "Play"}>
+            </Button>
+            <Button variant="bare" className="key key--play" onClick={onPlayPause} aria-label={playing ? "Pause" : "Play"}>
               <BasicIcon icon={playing ? "PauseIcon" : "PlayIcon"} size={24} />
-            </button>
-            <button type="button" className="key key--round" onClick={nextRadio} aria-label={source === "radio" ? "Next station" : "Next track"}>
+            </Button>
+            <Button variant="bare" className="key key--round" onClick={nextRadio} aria-label={source === "radio" ? "Next station" : "Next track"}>
               <BasicIcon icon="NextIcon" size={18} />
-            </button>
+            </Button>
           </div>
           <Knob label={source === "radio" ? "Tuning" : "Track"} value={tuningValue} onChange={turnTuning} step={source === "radio" && presets.length > 1 ? 1 / (presets.length - 1) : 0.1} snaps={source === "radio" && presets.length > 1 ? presets.length : undefined} valueText={tuningText} />
         </div>
 
         <div className="radio__keys" role="group" aria-label="Source and guide">
-          <button type="button" className="pkey" aria-pressed={source === "radio"} onClick={() => chooseSource("radio")}>
+          <Button variant="bare" className="pkey" aria-pressed={source === "radio"} onClick={() => chooseSource("radio")}>
             <BasicIcon icon="Radio01Icon" size={14} /> Radio
-          </button>
-          <button type="button" className="pkey" aria-pressed={source === "youtube"} onClick={() => chooseSource("youtube")}>
+          </Button>
+          <Button variant="bare" className="pkey" aria-pressed={source === "youtube"} onClick={() => chooseSource("youtube")}>
             <BasicIcon icon="YoutubeIcon" size={14} /> YouTube
-          </button>
-          <button type="button" className="pkey" aria-pressed={panelOpen} onClick={() => setPanelOpen((open) => !open)}>
+          </Button>
+          <Button variant="bare" className="pkey" aria-pressed={panelOpen} onClick={() => setPanelOpen((open) => !open)}>
             <BasicIcon icon={source === "radio" ? "ListViewIcon" : "PlayListIcon"} size={14} /> {source === "radio" ? "Stations" : "Playlists"}
-          </button>
+          </Button>
           {source === "radio" && (
-            <button type="button" className="pkey pkey--star" aria-pressed={isFavorite} disabled={!station} onClick={() => station && setFavorites((list) => toggleFavorite(list, station))} aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}>
+            <Button variant="bare" className="pkey pkey--star" aria-pressed={isFavorite} disabled={!station} onClick={() => station && setFavorites((list) => toggleFavorite(list, station))} aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}>
               <BasicIcon icon="StarIcon" size={14} />
-            </button>
+            </Button>
           )}
         </div>
 

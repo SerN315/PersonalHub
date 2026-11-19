@@ -12,6 +12,8 @@
   "dependencies": {
     "@hugeicons/core-free-icons": "^1.2.1",
     "@hugeicons/react": "^1.1.10",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "exceljs": "^4.4.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
@@ -21,6 +23,7 @@
     "react-grid-layout": "^1.5.4",
     "react-resizable": "^3.2.0",
     "sass": "^1.104.0",
+    "tailwind-merge": "^3.7.0",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

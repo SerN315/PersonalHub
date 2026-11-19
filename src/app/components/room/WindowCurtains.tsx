@@ -1,6 +1,7 @@
 "use client";
 import { memo, useCallback, useSyncExternalStore } from "react";
 import { useSkyStore } from "@/app/utils/weather/skyStore";
+import { Button } from "@/app/components/ui";
 
 // Curtains for the window: lavender drapes pulled back with a gold tie, hung from a brass rod. They sway in a slow breeze (faster when
 // the real wind outside is stronger). Press one to draw a sheer veil across the window and close the day out; press again to open
@@ -64,16 +65,16 @@ function WindowCurtainsBase() {
       <div className="curtainVeil" aria-hidden />
       <div className="curtainRod" aria-hidden />
       <div className="curtain curtain--left">
-        <button type="button" className="curtain__btn" onClick={toggle} aria-pressed={drawn} aria-label={label}>
+        <Button variant="bare" className="curtain__btn" onClick={toggle} aria-pressed={drawn} aria-label={label}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/room/curtain.png" alt="" draggable={false} />
-        </button>
+        </Button>
       </div>
       <div className="curtain curtain--right" aria-hidden>
-        <button type="button" className="curtain__btn" onClick={toggle} tabIndex={-1} aria-hidden>
+        <Button variant="bare" className="curtain__btn" onClick={toggle} tabIndex={-1} aria-hidden>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/room/curtain.png" alt="" draggable={false} />
-        </button>
+        </Button>
       </div>
     </div>
   );

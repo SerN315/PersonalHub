@@ -6,6 +6,7 @@ import BasicIcon from "@/app/components/ultis/icons";
 import { useRadioStore } from "@/app/utils/radio/engine";
 import { useYouTube, youtube } from "@/app/utils/radio/youtubeEngine";
 import { useUserStore } from "@/app/utils/store/userStore";
+import { Button } from "@/app/components/ui";
 
 // A small "now playing" bar for every page, so the music can be paused, skipped or closed without going back to the Radio. It stays out of
 // the way: it only appears while something is playing (or paused), and not at all on a page that already shows a radio.
@@ -44,21 +45,21 @@ function MiniPlayer() {
       </Link>
       <div className="miniPlayer__keys">
         {video && (
-          <button type="button" onClick={youtube.previous} aria-label="Previous track" disabled={info.count < 2}>
+          <Button variant="bare" onClick={youtube.previous} aria-label="Previous track" disabled={info.count < 2}>
             <BasicIcon icon="PreviousIcon" size={16} />
-          </button>
+          </Button>
         )}
-        <button type="button" className="miniPlayer__play" onClick={toggle} aria-label={playing ? "Pause" : "Play"}>
+        <Button variant="bare" className="miniPlayer__play" onClick={toggle} aria-label={playing ? "Pause" : "Play"}>
           <BasicIcon icon={playing ? "PauseIcon" : "PlayIcon"} size={18} />
-        </button>
+        </Button>
         {video && (
-          <button type="button" onClick={youtube.next} aria-label="Next track" disabled={info.count < 2}>
+          <Button variant="bare" onClick={youtube.next} aria-label="Next track" disabled={info.count < 2}>
             <BasicIcon icon="NextIcon" size={16} />
-          </button>
+          </Button>
         )}
-        <button type="button" onClick={close} aria-label="Close the player">
+        <Button variant="bare" onClick={close} aria-label="Close the player">
           <BasicIcon icon="Cancel01Icon" size={15} />
-        </button>
+        </Button>
       </div>
     </section>
   );

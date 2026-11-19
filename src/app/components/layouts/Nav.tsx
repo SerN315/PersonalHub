@@ -12,6 +12,7 @@ import { logoutUser } from "@/app/apis/settings";
 import type { IconName } from "../ultis/icons";
 import { WIDGETS } from "@/app/widgets/registry";
 import type { SettingsTab } from "@/app/types/settings";
+import { Button } from "@/app/components/ui";
 
 // Widgets that have a full page of their own (the Planner) add their link here from the registry.
 const LINKS: { href: string; label: string; icon: IconName }[] = [
@@ -50,7 +51,7 @@ export const Nav: React.FC = () => {
             <span className="nav__brandName">PersonalHub</span>
           </Link>
 
-          <button type="button" className="nav__user" onClick={() => setSettingsTab("Profile")} aria-label="Open your profile settings">
+          <Button variant="bare" className="nav__user" onClick={() => setSettingsTab("Profile")} aria-label="Open your profile settings">
             <span
               className="nav__avatar"
               style={{ backgroundImage: `url(${user?.avatar_url || "/Blank-Avatar.webp"})` }}
@@ -60,7 +61,7 @@ export const Nav: React.FC = () => {
               <span className="nav__userName">{displayName}</span>
               <span className="nav__userMail">{user?.email || "Not signed in"}</span>
             </span>
-          </button>
+          </Button>
 
           <ul className="nav__links">
             {LINKS.map((link) => {
@@ -79,23 +80,23 @@ export const Nav: React.FC = () => {
 
         <div className="nav__bottom">
           {user && <NotificationBell />}
-          <button type="button" className="nav__link" id="settingButton" onClick={() => setSettingsTab("Appearance")}>
+          <Button variant="bare" className="nav__link" id="settingButton" onClick={() => setSettingsTab("Appearance")}>
             <BasicIcon icon="PaintBoardIcon" size={20} />
             <span>Make it yours</span>
-          </button>
+          </Button>
           <Link href="/help" className={`nav__link ${pathname === "/help" ? "is-active" : ""}`} aria-current={pathname === "/help" ? "page" : undefined}>
             <BasicIcon icon="HelpCircleIcon" size={20} />
             <span>Help</span>
           </Link>
-          <button type="button" className="nav__link" id="settingsAccountButton" onClick={() => setSettingsTab("Profile")}>
+          <Button variant="bare" className="nav__link" id="settingsAccountButton" onClick={() => setSettingsTab("Profile")}>
             <BasicIcon icon="Settings02Icon" size={20} />
             <span>Settings</span>
-          </button>
+          </Button>
           {user && (
-            <button type="button" className="nav__link" id="logoutButton" onClick={signOut}>
+            <Button variant="bare" className="nav__link" id="logoutButton" onClick={signOut}>
               <BasicIcon icon="Logout01Icon" size={20} />
               <span>Sign out</span>
-            </button>
+            </Button>
           )}
         </div>
       </nav>

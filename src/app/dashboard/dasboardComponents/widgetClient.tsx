@@ -7,7 +7,6 @@ import "react-resizable/css/styles.css";
 import UnknownWidget from "@/app/components/widgets/UnknownWidget";
 import { WIDGETS, COLS, clampSize, getWidgetDefinition, resizeLimits } from "@/app/widgets/registry";
 import BasicIcon from "@/app/components/ultis/icons";
-import BaseButton from "@/app/components/ui/BaseButton";
 import DayHeader from "./DayHeader";
 import ViewSwitch from "@/app/components/room/ViewSwitch";
 import { useEditMode } from "@/app/contexts/editWidgetContext";
@@ -16,6 +15,7 @@ import { Widget, WidgetLayout, WidgetState } from "@/app/types/widgets";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { useContainerWidth } from "@/app/utils/useContainerWidth";
 import { TINTS, Tint } from "@/app/utils/preferences";
+import { Button } from "@/app/components/ui";
 
 const ROW_HEIGHT = 100;
 const STACK_BELOW = 720; // narrower than this the widgets stack in one column instead of a grid
@@ -222,7 +222,7 @@ export default function WidgetClient() {
           <BasicIcon icon="LockPasswordIcon" size={40} strokeWidth={1.2} />
           <h2>Sign in to see your day</h2>
           <p>Your widgets are waiting for you.</p>
-          <BaseButton onClick={() => (window.location.href = "/auth/login")}>Sign in</BaseButton>
+          <Button onClick={() => (window.location.href = "/auth/login")}>Sign in</Button>
         </div>
       </div>
     );
@@ -232,8 +232,8 @@ export default function WidgetClient() {
     <div className="dashboard">
       <DayHeader>
         <ViewSwitch />
-        <BaseButton
-          variant={editMode ? "primary" : "ghost"}
+        <Button
+          variant={editMode ? "default" : "outline"}
           size="sm"
           aria-pressed={editMode}
           onClick={() => setEditMode(!editMode)}
@@ -241,19 +241,19 @@ export default function WidgetClient() {
         >
           <BasicIcon icon={editMode ? "Tick02Icon" : "Edit02Icon"} size={16} />
           {editMode ? "Done" : "Arrange"}
-        </BaseButton>
+        </Button>
 
         <div className="addMenu" ref={menuRef}>
-          <BaseButton size="sm" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} disabled={available.length === 0}>
+          <Button size="sm" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} disabled={available.length === 0}>
             <BasicIcon icon="PlusSignIcon" size={16} />
             Add widget
-          </BaseButton>
+          </Button>
           {menuOpen && (
             <div className="addMenu__panel" role="menu">
               {available.map((option) => (
-                <button
+                <Button
+                  variant="bare"
                   key={option.type}
-                  type="button"
                   role="menuitem"
                   className="addMenu__item"
                   onClick={() => {
@@ -268,7 +268,7 @@ export default function WidgetClient() {
                     <strong>{option.name}</strong>
                     <span>{option.blurb}</span>
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -292,7 +292,7 @@ export default function WidgetClient() {
             <BasicIcon icon="Plant01Icon" size={44} strokeWidth={1.2} />
             <h2>A blank page, just for you</h2>
             <p>Add a clock, a to-do list, a sticky note… whatever makes today feel good.</p>
-            {available.length > 0 && <BaseButton onClick={() => setMenuOpen(true)}>Add your first widget</BaseButton>}
+            {available.length > 0 && <Button onClick={() => setMenuOpen(true)}>Add your first widget</Button>}
           </div>
         )}
 

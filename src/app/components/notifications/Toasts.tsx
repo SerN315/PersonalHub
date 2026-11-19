@@ -4,6 +4,7 @@ import BasicIcon from "@/app/components/ultis/icons";
 import { dismissToast, useNotifications, type Toast } from "@/app/utils/notifications/store";
 import { SOURCE_ICON, SOURCE_NAME } from "./sourceIcon";
 import { useOpenNotification } from "./useOpenNotification";
+import { Button } from "@/app/components/ui";
 
 // The cards that slide in while you are looking at the page. Each one counts down on its own (a thin line shrinks; pointing at it or
 // tabbing into it pauses the count) and leaves by itself, but never leaves the bell: closing a card does not delete the notification.
@@ -17,7 +18,7 @@ const ToastCard = memo(function ToastCard({ toast, open }: { toast: Toast; open:
   };
   return (
     <li className={`toast is-${item.source}`}>
-      <button type="button" className="toast__main" onClick={go}>
+      <Button variant="bare" className="toast__main" onClick={go}>
         <span className="toast__icon" aria-hidden>
           <BasicIcon icon={SOURCE_ICON[item.source]} size={20} />
         </span>
@@ -26,10 +27,10 @@ const ToastCard = memo(function ToastCard({ toast, open }: { toast: Toast; open:
           <strong className="toast__title">{item.title}</strong>
           {item.body && <span className="toast__body">{item.body}</span>}
         </span>
-      </button>
-      <button type="button" className="toast__close" onClick={() => dismissToast(toast.key)} aria-label="Dismiss">
+      </Button>
+      <Button variant="bare" className="toast__close" onClick={() => dismissToast(toast.key)} aria-label="Dismiss">
         <BasicIcon icon="Cancel01Icon" size={14} />
-      </button>
+      </Button>
       <span className="toast__bar" aria-hidden onAnimationEnd={() => dismissToast(toast.key)} />
     </li>
   );

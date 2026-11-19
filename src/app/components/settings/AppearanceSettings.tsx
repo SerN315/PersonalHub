@@ -1,12 +1,11 @@
 "use client";
 
 import React from "react";
-import BaseButton from "@/app/components/ui/BaseButton";
-import BaseInput from "@/app/components/ui/BaseInput";
 import BasicIcon from "@/app/components/ultis/icons";
 import { Segmented, Swatches, Switch } from "@/app/components/ui/Choice";
 import { usePreferencesStore } from "@/app/utils/store/preferencesStore";
 import type { Accent, Backdrop, FontChoice, Mode, Radius } from "@/app/utils/preferences";
+import { Button, Field } from "@/app/components/ui";
 
 const MODE_OPTIONS = [
   { value: "system", label: "System", icon: <BasicIcon icon="ComputerIcon" size={16} /> },
@@ -79,9 +78,9 @@ export default function AppearanceSettings() {
       <Setting title="Background" hint="What sits behind your widgets.">
         <div className="tiles" role="radiogroup" aria-label="Background">
           {BACKDROP_OPTIONS.map((option) => (
-            <button
+            <Button
+              variant="bare"
               key={option.value}
-              type="button"
               role="radio"
               aria-checked={prefs.backdrop === option.value}
               className="tile"
@@ -89,7 +88,7 @@ export default function AppearanceSettings() {
             >
               <span className="tile__preview" data-backdrop-preview={option.value} />
               <span className="tile__label">{option.label}</span>
-            </button>
+            </Button>
           ))}
         </div>
       </Setting>
@@ -106,7 +105,7 @@ export default function AppearanceSettings() {
         <div className="greetingControl">
           <Switch label="Show the daily greeting" checked={prefs.greeting} onChange={(greeting) => update({ greeting })} />
           {prefs.greeting && (
-            <BaseInput
+            <Field
               aria-label="Name used in the greeting"
               placeholder="What should we call you?"
               maxLength={24}
@@ -118,9 +117,9 @@ export default function AppearanceSettings() {
       </Setting>
 
       <div className="settingsActions">
-        <BaseButton variant="ghost" size="sm" onClick={reset}>
+        <Button variant="outline" size="sm" onClick={reset}>
           Back to the default look
-        </BaseButton>
+        </Button>
       </div>
     </div>
   );

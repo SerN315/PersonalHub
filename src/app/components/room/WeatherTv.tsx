@@ -4,6 +4,7 @@ import BasicIcon from "../ultis/icons";
 import { useSkyStore, type Sky } from "@/app/utils/weather/skyStore";
 import { getWeatherIconName } from "@/app/utils/weatherMappings";
 import type { IconName } from "../ultis/icons";
+import { Button } from "@/app/components/ui";
 
 const CHANNELS = ["NOW", "HOURS", "DAYS"] as const;
 const icon = (code?: number, isDay?: number) => getWeatherIconName(code, isDay) as IconName;
@@ -118,7 +119,7 @@ function WeatherTv() {
                 <div className="tv__nosignal">
                   <b>NO SIGNAL</b>
                   <span>{status === "denied" ? "Allow location access to tune in." : status === "error" ? "The sky is out of reach right now." : "Tuning in..."}</span>
-                  {(status === "error" || status === "denied") && <button type="button" onClick={retry}>TRY AGAIN</button>}
+                  {(status === "error" || status === "denied") && <Button variant="bare" onClick={retry}>TRY AGAIN</Button>}
                 </div>
               ) : channel === 0 ? (
                 <Now sky={sky} />
@@ -135,9 +136,9 @@ function WeatherTv() {
         <span className="tv__glass" aria-hidden />
       </div>
 
-      <button type="button" className={`tv__dial ${on ? "is-lit" : ""}`} style={DIAL} onClick={() => setOn(!on)} aria-pressed={on} aria-label={on ? "Turn the TV off" : "Turn the TV on"} />
+      <Button variant="bare" className={`tv__dial ${on ? "is-lit" : ""}`} style={DIAL} onClick={() => setOn(!on)} aria-pressed={on} aria-label={on ? "Turn the TV off" : "Turn the TV on"} />
       {BUTTONS.map((box, i) => (
-        <button key={i} type="button" className={`tv__btn ${on && channel === i ? "is-lit" : ""}`} style={box} onClick={() => tune(i)} aria-pressed={on && channel === i} aria-label={`Channel ${i + 1}: ${CHANNELS[i].toLowerCase()}`} />
+        <Button variant="bare" key={i} className={`tv__btn ${on && channel === i ? "is-lit" : ""}`} style={box} onClick={() => tune(i)} aria-pressed={on && channel === i} aria-label={`Channel ${i + 1}: ${CHANNELS[i].toLowerCase()}`} />
       ))}
     </div>
   );

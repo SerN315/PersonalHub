@@ -4,6 +4,7 @@ import "@/app/styles/ultis/widgetWrapper.scss";
 import { useEditMode } from "@/app/contexts/editWidgetContext";
 import BasicIcon from "./icons";
 import { TINTS, Tint } from "@/app/utils/preferences";
+import { Button } from "@/app/components/ui";
 
 type WidgetWrapperProps = {
   id: string;
@@ -28,24 +29,23 @@ export default function WidgetWrapper({ id, title, tint = "paper", tintable = tr
           {tintable && onTint && (
             <div className="widgetCard__tints" role="radiogroup" aria-label={`${title} colour`}>
               {TINTS.map((option) => (
-                <button
+                <Button
+                  variant="bare"
                   key={option}
-                  type="button"
                   role="radio"
                   aria-checked={tint === option}
                   aria-label={option}
                   title={option}
                   className="widgetCard__tint"
                   data-tint={option}
-                  onClick={() => onTint(id, option)}
-                />
+                  onClick={() => onTint(id, option)} />
               ))}
             </div>
           )}
           {onClose && (
-            <button type="button" className="widgetCard__remove" onClick={() => onClose(id)} aria-label={`Remove ${title}`} title="Remove">
+            <Button variant="bare" className="widgetCard__remove" onClick={() => onClose(id)} aria-label={`Remove ${title}`} title="Remove">
               <BasicIcon icon="Delete02Icon" size={16} />
-            </button>
+            </Button>
           )}
         </div>
       )}

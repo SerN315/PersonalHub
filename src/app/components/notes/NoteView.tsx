@@ -1,6 +1,7 @@
 "use client";
 import { memo, useMemo } from "react";
 import { parse, type Block, type Inline } from "@/app/utils/notes/markdown";
+import { Checkbox } from "@/app/components/ui";
 
 // Turns a note's text into elements. It only ever builds elements from the parsed data (never from HTML), so whatever is written in a note
 // shows as text. Links open in a new tab and cannot reach back into this page.
@@ -47,7 +48,7 @@ function BlockView({ block, onToggle }: { block: Block; onToggle?: (line: number
           {block.items.map((item) => (
             <li key={item.line} className={item.checked ? "is-done" : ""}>
               <label>
-                <input type="checkbox" checked={!!item.checked} onChange={() => onToggle?.(item.line)} disabled={!onToggle} />
+                <Checkbox  checked={!!item.checked} onChange={() => onToggle?.(item.line)} disabled={!onToggle} />
                 <span><Inlines nodes={item.c} /></span>
               </label>
             </li>

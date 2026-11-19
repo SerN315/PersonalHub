@@ -5,6 +5,7 @@ import { createLocalStore } from "@/app/utils/localStore";
 import { MAX_CLOCKS, ZONES, cleanZones, differenceLabel, timeIn, type Zone } from "@/app/utils/focus/clocks";
 import { formatClock } from "@/app/utils/focus/timer";
 import { playChime } from "@/app/utils/focus/engine";
+import { Button, DeskButton, Input, Select } from "@/app/components/ui";
 
 // The "time desk" beside the hourglass: world clocks, a stopwatch and a kitchen timer. Small things you reach for without a whole tab.
 
@@ -38,7 +39,7 @@ function WorldClocksBase() {
               <span className="worldClocks__sun" aria-hidden>{t.daytime ? "☀" : "☾"}</span>
               <span className="worldClocks__name">{zone.name}<small>{differenceLabel(zone.tz, date)}</small></span>
               <span className="worldClocks__time">{t.time}<small>{t.weekday}</small></span>
-              <button type="button" className="desk__x" onClick={() => clocks.set(zones.filter((z) => z.tz !== zone.tz))} aria-label={`Remove ${zone.name}`}><BasicIcon icon="Cancel01Icon" size={14} /></button>
+              <Button variant="bare" className="desk__x" onClick={() => clocks.set(zones.filter((z) => z.tz !== zone.tz))} aria-label={`Remove ${zone.name}`}><BasicIcon icon="Cancel01Icon" size={14} /></Button>
             </li>
           );
         })}
@@ -46,10 +47,10 @@ function WorldClocksBase() {
       {zones.length < MAX_CLOCKS && (
         <label className="desk__add">
           <span className="sr-only">Add a city</span>
-          <select value="" onChange={(e) => { const zone = ZONES.find((z) => z.tz === e.target.value); if (zone) clocks.set([...zones, zone]); }}>
+          <Select variant="bare" value="" onChange={(e) => { const zone = ZONES.find((z) => z.tz === e.target.value); if (zone) clocks.set([...zones, zone]); }}>
             <option value="">+ Add a city</option>
             {free.map((zone) => <option key={zone.tz} value={zone.tz}>{zone.name}</option>)}
-          </select>
+          </Select>
         </label>
       )}
     </section>
@@ -71,9 +72,9 @@ function StopwatchBase() {
       <h3 id="stopwatch-title"><BasicIcon icon="AlarmClockIcon" size={16} /> Stopwatch</h3>
       <p className="stopwatch__time" role="timer" aria-live="off">{show(elapsed)}</p>
       <div className="desk__row">
-        <button type="button" className="desk__btn is-primary" onClick={() => (running ? (setBefore(elapsed), setStartedAt(null)) : setStartedAt(Date.now()))}>{running ? "Stop" : elapsed > 0 ? "Resume" : "Start"}</button>
-        <button type="button" className="desk__btn" disabled={!running} onClick={() => setLaps([elapsed, ...laps].slice(0, 20))}>Lap</button>
-        <button type="button" className="desk__btn" disabled={elapsed === 0} onClick={() => (setStartedAt(null), setBefore(0), setLaps([]))}>Reset</button>
+        <DeskButton tone="primary"  onClick={() => (running ? (setBefore(elapsed), setStartedAt(null)) : setStartedAt(Date.now()))}>{running ? "Stop" : elapsed > 0 ? "Resume" : "Start"}</DeskButton>
+        <DeskButton  disabled={!running} onClick={() => setLaps([elapsed, ...laps].slice(0, 20))}>Lap</DeskButton>
+        <DeskButton  disabled={elapsed === 0} onClick={() => (setStartedAt(null), setBefore(0), setLaps([]))}>Reset</DeskButton>
       </div>
       {laps.length > 0 && (
         <ol className="stopwatch__laps" reversed>
@@ -120,13 +121,13 @@ function KitchenTimerBase() {
       <p className={`kitchen__time ${ringing ? "is-ringing" : ""}`} role="timer" aria-live="off">{ringing ? "Ding!" : formatClock(endsAt === null ? 0 : left)}</p>
       {endsAt !== null && <span className="kitchen__bar" aria-hidden><i style={{ width: `${total ? (left / total) * 100 : 0}%` }} /></span>}
       <div className="desk__row">
-        {PRESETS.map((m) => <button key={m} type="button" className="desk__btn" onClick={() => begin(m)}>{m} min</button>)}
+        {PRESETS.map((m) => <DeskButton key={m}  onClick={() => begin(m)}>{m} min</DeskButton>)}
       </div>
       <form className="desk__row" onSubmit={(e) => { e.preventDefault(); begin(Number(custom)); setCustom(""); }}>
         <label className="sr-only" htmlFor="kitchen-custom">Minutes</label>
-        <input id="kitchen-custom" type="number" min={1} max={600} inputMode="numeric" value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Minutes" />
-        <button type="submit" className="desk__btn" disabled={!custom}>Set</button>
-        {(endsAt !== null || ringing) && <button type="button" className="desk__btn" onClick={() => (setEndsAt(null), setRinging(false))}>Clear</button>}
+        <Input variant="bare" id="kitchen-custom" type="number" min={1} max={600} inputMode="numeric" value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Minutes" />
+        <DeskButton type="submit"  disabled={!custom}>Set</DeskButton>
+        {(endsAt !== null || ringing) && <DeskButton  onClick={() => (setEndsAt(null), setRinging(false))}>Clear</DeskButton>}
       </form>
     </section>
   );

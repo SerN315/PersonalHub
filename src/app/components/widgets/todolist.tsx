@@ -11,6 +11,7 @@ import { useTodoStore } from "@/app/utils/todo/store";
 import { selectTasks, subtasksByParent, NO_FILTERS, type Scope } from "@/app/utils/todo/views";
 import "../../styles/pages/planner.scss";
 import "../../styles/widgets/todolist.scss";
+import { Select } from "@/app/components/ui";
 
 // The desk-top glance at the planner: a small spiral notepad of what is due today (or one list). The same live copy of the
 // tasks as the Planner page, so ticking here ticks there. Which page it shows is remembered in the widget's own data.
@@ -53,11 +54,11 @@ function TodoListWidget(props: WidgetProps) {
         <header className="notepad__head">
           <label className="notepad__view">
             <span className="sr-only">Show</span>
-            <select value={listExists ? view : "today"} onChange={(e) => onData?.(id, { view: e.target.value })}>
+            <Select variant="bare" value={listExists ? view : "today"} onChange={(e) => onData?.(id, { view: e.target.value })}>
               <option value="today">Today</option>
               <option value="all">All open</option>
               {lists.map((l) => <option key={l.id} value={`list:${l.id}`}>{l.name}</option>)}
-            </select>
+            </Select>
           </label>
           <span className="notepad__count">{shown.length}</span>
         </header>

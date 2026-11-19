@@ -9,6 +9,7 @@ import { MODES, formatClock, sandLeft, type Mode } from "@/app/utils/focus/timer
 import { useTodoStore } from "@/app/utils/todo/store";
 import { NO_FILTERS, selectTasks } from "@/app/utils/todo/views";
 import "@/app/styles/pages/focus.scss";
+import { Button, Checkbox, DeskButton, Input, Select } from "@/app/components/ui";
 
 const NAMES: Record<Mode, string> = { focus: "Focus", short: "Short break", long: "Long break" };
 
@@ -23,7 +24,7 @@ function Settings() {
   const num = (key: "focus" | "short" | "long" | "longEvery", label: string, min: number, max: number) => (
     <label key={key}>
       {label}
-      <input type="number" min={min} max={max} value={settings[key]} onChange={(e) => setSettings({ [key]: Number(e.target.value) })} />
+      <Input variant="bare" type="number" min={min} max={max} value={settings[key]} onChange={(e) => setSettings({ [key]: Number(e.target.value) })} />
     </label>
   );
   return (
@@ -35,11 +36,11 @@ function Settings() {
         {num("long", "Long break", 1, 90)}
         {num("longEvery", "Long break after", 2, 8)}
       </div>
-      <label className="timerSettings__check"><input type="checkbox" checked={settings.autoStart} onChange={(e) => setSettings({ autoStart: e.target.checked })} /> Start the next one by itself</label>
-      <label className="timerSettings__check"><input type="checkbox" checked={settings.sound} onChange={(e) => setSettings({ sound: e.target.checked })} /> Play a soft chime</label>
+      <label className="timerSettings__check"><Checkbox  checked={settings.autoStart} onChange={(e) => setSettings({ autoStart: e.target.checked })} /> Start the next one by itself</label>
+      <label className="timerSettings__check"><Checkbox  checked={settings.sound} onChange={(e) => setSettings({ sound: e.target.checked })} /> Play a soft chime</label>
       <label className="timerSettings__check">
-        <input
-          type="checkbox"
+        <Checkbox
+
           checked={settings.notify}
           disabled={asking}
           onChange={async (e) => {
@@ -47,8 +48,7 @@ function Settings() {
             setAsking(true);
             setSettings({ notify: (await askToNotify()) === "granted" });
             setAsking(false);
-          }}
-        />{" "}
+          }} />{" "}
         Tell me with a notification when a session ends
       </label>
       <p className="timerSettings__fine">Notifications only appear while this page is open in your browser. A change to a length applies to the next session.</p>
@@ -120,13 +120,13 @@ export default function FocusDesk() {
         <section className="desk" aria-label="Timer">
           <div className="desk__modes" role="radiogroup" aria-label="Session type">
             {MODES.map((m) => (
-              <button key={m} type="button" role="radio" aria-checked={mode === m} disabled={running && mode !== m} onClick={() => choose(m)}>{NAMES[m]}</button>
+              <Button variant="bare" key={m} role="radio" aria-checked={mode === m} disabled={running && mode !== m} onClick={() => choose(m)}>{NAMES[m]}</Button>
             ))}
           </div>
 
-          <button type="button" className="desk__glass" onClick={press} aria-label={running ? "Pause the timer" : status === "paused" ? "Resume the timer" : "Turn the hourglass over and start"}>
+          <Button variant="bare" className="desk__glass" onClick={press} aria-label={running ? "Pause the timer" : status === "paused" ? "Resume the timer" : "Turn the hourglass over and start"}>
             <Hourglass sand={sand} running={running} turning={turning} />
-          </button>
+          </Button>
 
           <p className="desk__time" role="timer" aria-live="off">{formatClock(remaining)}</p>
           <p className="desk__round" aria-label={`${finished} of ${longEvery} focus sessions finished in this round`}>
@@ -134,20 +134,20 @@ export default function FocusDesk() {
           </p>
 
           <div className="desk__controls">
-            <button type="button" className="desk__btn is-primary" onClick={press}>
+            <DeskButton tone="primary"  onClick={press}>
               <BasicIcon icon={running ? "PauseIcon" : "PlayIcon"} size={18} /> {running ? "Pause" : status === "paused" ? "Resume" : "Start"}
-            </button>
-            <button type="button" className="desk__btn" onClick={reset} disabled={status === "idle"}><BasicIcon icon="RefreshIcon" size={16} /> Reset</button>
-            <button type="button" className="desk__btn" onClick={skip}><BasicIcon icon="NextIcon" size={16} /> Skip</button>
+            </DeskButton>
+            <DeskButton  onClick={reset} disabled={status === "idle"}><BasicIcon icon="RefreshIcon" size={16} /> Reset</DeskButton>
+            <DeskButton  onClick={skip}><BasicIcon icon="NextIcon" size={16} /> Skip</DeskButton>
           </div>
 
           <label className="desk__task">
             Working on
-            <select value={task?.id ?? ""} onChange={(e) => { const found = open.find((t) => t.id === e.target.value); setTask(found ? { id: found.id, label: found.text.slice(0, 120) } : null); }} disabled={running && mode === "focus"}>
+            <Select variant="bare" value={task?.id ?? ""} onChange={(e) => { const found = open.find((t) => t.id === e.target.value); setTask(found ? { id: found.id, label: found.text.slice(0, 120) } : null); }} disabled={running && mode === "focus"}>
               <option value="">Nothing in particular</option>
               {task && !open.some((t) => t.id === task.id) && <option value={task.id}>{task.label}</option>}
               {open.map((t) => <option key={t.id} value={t.id}>{t.text.length > 60 ? `${t.text.slice(0, 57)}...` : t.text}</option>)}
-            </select>
+            </Select>
           </label>
 
           <Settings />

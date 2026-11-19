@@ -5,6 +5,7 @@ import BasicIcon from "../ultis/icons";
 import AddIdea from "./AddIdea";
 import { GUIDE, HOUSEKEEPING, PHASES, REVIEWED_ON, ROADMAP, SCORECARD, computeProgress, monthsLabel, remainingWeeks, type Status } from "@/app/help/content";
 import "@/app/styles/pages/help.scss";
+import { Button } from "@/app/components/ui";
 
 const STATUS: Record<Status, { label: string; plain: string }> = {
   done: { label: "Done", plain: "Built and working" },
@@ -177,9 +178,9 @@ export default function HelpPage() {
 
       <div className="tabs" role="tablist" aria-label="Help sections" onKeyDown={onKey}>
         {TABS.map((t) => (
-          <button key={t.id} id={`${base}-${t.id}`} type="button" role="tab" aria-selected={tab === t.id} aria-controls={`${base}-panel`} tabIndex={tab === t.id ? 0 : -1} className={tab === t.id ? "is-on" : ""} onClick={() => setTab(t.id)}>
+          <Button variant="bare" key={t.id} id={`${base}-${t.id}`} role="tab" aria-selected={tab === t.id} aria-controls={`${base}-panel`} tabIndex={tab === t.id ? 0 : -1} className={tab === t.id ? "is-on" : ""} onClick={() => setTab(t.id)}>
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 

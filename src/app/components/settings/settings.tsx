@@ -12,6 +12,7 @@ import NotificationSettings from "./NotificationSettings";
 import { getAdminSettings } from "@/app/apis/admin";
 import type { SettingsModalProps, SettingsTab } from "@/app/types/settings";
 import type { IconName } from "@/app/components/ultis/icons";
+import { Button, IconButton } from "@/app/components/ui";
 
 const TABS: { key: SettingsTab; label: string; blurb: string; icon: IconName }[] = [
   { key: "Profile", label: "Profile", blurb: "Who you are", icon: "UserIcon" },
@@ -55,16 +56,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
         <aside className="settings__side">
           <div className="settings__title">
             <h2 aria-hidden>Settings</h2>
-            <button type="button" className="iconBtn settings__close" onClick={onClose} aria-label="Close settings">
+            <IconButton className="settings__close" onClick={onClose} aria-label="Close settings">
               <BasicIcon icon="Cancel01Icon" size={20} />
-            </button>
+            </IconButton>
           </div>
           <div className="settings__tabs" role="tablist" aria-orientation="vertical" onKeyDown={onTabKeyDown}>
             {tabs.map((tab) => (
-              <button
+              <Button
+                variant="bare"
                 key={tab.key}
                 id={`settings-tab-${tab.key}`}
-                type="button"
                 role="tab"
                 aria-selected={activeTab === tab.key}
                 aria-controls="settings-panel"
@@ -77,7 +78,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
                   <span className="settings__tabLabel">{tab.label}</span>
                   <span className="settings__tabBlurb">{tab.blurb}</span>
                 </span>
-              </button>
+              </Button>
             ))}
           </div>
         </aside>

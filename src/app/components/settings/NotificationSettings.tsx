@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import BaseButton from "@/app/components/ui/BaseButton";
 import { getNotificationSettings, makeWebhook, removeWebhook, saveSources, type NotificationSettings as Settings } from "@/app/apis/notifications";
 import type { Permission } from "@/app/utils/notifications/alert";
 import { notificationPrefs } from "@/app/utils/notifications/prefs";
 import { playCue } from "@/app/utils/notifications/sound";
 import { sendOwn } from "@/app/utils/notifications/store";
+import { Button, Checkbox, Input } from "@/app/components/ui";
 
 // Two separate things live here. WHICH news may reach you is kept on your account (nothing is sent until you switch it on). HOW it shows up
 // (a card, a chime, a message from your computer) is kept in this browser, because a phone and a laptop may want different things.
@@ -132,7 +132,7 @@ export default function NotificationSettings() {
             </legend>
             {SOURCES.map((source) => (
               <label key={source.key} className="notifyOption">
-                <input type="checkbox" checked={settings.sources[source.key]} onChange={(e) => void toggleSource(source.key, e.target.checked)} />
+                <Checkbox  checked={settings.sources[source.key]} onChange={(e) => void toggleSource(source.key, e.target.checked)} />
                 <span>
                   <strong>{source.label}</strong>
                   <small>{source.text}</small>
@@ -146,21 +146,21 @@ export default function NotificationSettings() {
               <h4>How it shows up on this device</h4>
             </legend>
             <label className="notifyOption">
-              <input type="checkbox" checked={prefs.popup} onChange={(e) => notificationPrefs.set({ ...prefs, popup: e.target.checked })} />
+              <Checkbox  checked={prefs.popup} onChange={(e) => notificationPrefs.set({ ...prefs, popup: e.target.checked })} />
               <span>
                 <strong>A card on the page</strong>
                 <small>Slides in while you are looking at PersonalHub, and leaves by itself after a few seconds.</small>
               </span>
             </label>
             <label className="notifyOption">
-              <input type="checkbox" checked={prefs.sound} onChange={(e) => notificationPrefs.set({ ...prefs, sound: e.target.checked })} />
+              <Checkbox  checked={prefs.sound} onChange={(e) => notificationPrefs.set({ ...prefs, sound: e.target.checked })} />
               <span>
                 <strong>A soft chime</strong>
                 <small>Plays once the page has been touched (browsers do not allow sound before that).</small>
               </span>
             </label>
             <label className="notifyOption">
-              <input type="checkbox" checked={prefs.desktop && permission === "granted"} disabled={permission === "denied" || permission === "unsupported"} onChange={(e) => void toggleDesktop(e.target.checked)} />
+              <Checkbox  checked={prefs.desktop && permission === "granted"} disabled={permission === "denied" || permission === "unsupported"} onChange={(e) => void toggleDesktop(e.target.checked)} />
               <span>
                 <strong>A message from your computer when the page is in the background</strong>
                 <small>
@@ -173,12 +173,12 @@ export default function NotificationSettings() {
               </span>
             </label>
             <div className="notifyRow">
-              <BaseButton variant="soft" size="sm" onClick={() => void test()}>
+              <Button variant="secondary" size="sm" onClick={() => void test()}>
                 Send me a test
-              </BaseButton>
-              <BaseButton variant="ghost" size="sm" onClick={playCue}>
+              </Button>
+              <Button variant="outline" size="sm" onClick={playCue}>
                 Play the chime
-              </BaseButton>
+              </Button>
             </div>
           </fieldset>
 
@@ -190,23 +190,23 @@ export default function NotificationSettings() {
             {secret && (
               <div className="hookBox">
                 <p className="muted">Copy it now. For your safety it is not shown again.</p>
-                <input readOnly value={secret} aria-label="Your private link" onFocus={(e) => e.currentTarget.select()} />
+                <Input variant="bare" readOnly value={secret} aria-label="Your private link" onFocus={(e) => e.currentTarget.select()} />
                 <div className="notifyRow">
-                  <BaseButton size="sm" onClick={() => void copy()}>
+                  <Button size="sm" onClick={() => void copy()}>
                     Copy link
-                  </BaseButton>
+                  </Button>
                 </div>
                 <pre>{`curl -X POST "${secret}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"title":"Build passed","body":"main is green","from":"CI"}'`}</pre>
               </div>
             )}
             <div className="notifyRow">
-              <BaseButton variant={settings.webhook.enabled ? "soft" : "primary"} size="sm" disabled={busy} onClick={() => void createLink()}>
+              <Button variant={settings.webhook.enabled ? "secondary" : "default"} size="sm" disabled={busy} onClick={() => void createLink()}>
                 {settings.webhook.enabled ? "Make a new link (the old one stops working)" : "Make a private link"}
-              </BaseButton>
+              </Button>
               {settings.webhook.enabled && (
-                <BaseButton variant="danger" size="sm" disabled={busy} onClick={() => void removeLink()}>
+                <Button variant="destructive" size="sm" disabled={busy} onClick={() => void removeLink()}>
                   Remove it
-                </BaseButton>
+                </Button>
               )}
             </div>
           </div>

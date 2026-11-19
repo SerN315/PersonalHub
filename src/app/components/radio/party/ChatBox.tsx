@@ -4,6 +4,7 @@ import BasicIcon from "../../ultis/icons";
 import { deleteChat } from "@/app/apis/party";
 import { usePartyStore } from "@/app/utils/party/store";
 import type { ChatMessage } from "@/app/utils/party/chat";
+import { Button, Input, MiniButton } from "@/app/components/ui";
 
 // The party's chat: a short memory (the last sixty things said), plain text only, kept on the server for as long as the party runs.
 // A message is drawn once and never redrawn; a new one only adds a line at the bottom.
@@ -19,9 +20,9 @@ const Line = memo(function Line({ message, canDelete }: { message: ChatMessage; 
       </span>
       <span className="chatLine__text">{message.text}</span>
       {canDelete && (
-        <button type="button" className="chatLine__del" onClick={() => void act((id) => deleteChat(id, message.n))} aria-label={`Remove ${message.name}'s message`} title="Remove this message">
+        <Button variant="bare" className="chatLine__del" onClick={() => void act((id) => deleteChat(id, message.n))} aria-label={`Remove ${message.name}'s message`} title="Remove this message">
           <BasicIcon icon="Cancel01Icon" size={12} />
-        </button>
+        </Button>
       )}
     </li>
   );
@@ -67,11 +68,11 @@ function ChatBox() {
       <form className="chat__form" onSubmit={send}>
         <label>
           <span className="sr-only">Message</span>
-          <input type="text" value={text} maxLength={200} placeholder="Say something" autoComplete="off" onChange={(e) => setText(e.target.value)} />
+          <Input variant="bare" type="text" value={text} maxLength={200} placeholder="Say something" autoComplete="off" onChange={(e) => setText(e.target.value)} />
         </label>
-        <button type="submit" className="miniBtn miniBtn--go" disabled={sending || !text.trim()}>
+        <MiniButton tone="go" type="submit"  disabled={sending || !text.trim()}>
           Send
-        </button>
+        </MiniButton>
       </form>
     </section>
   );

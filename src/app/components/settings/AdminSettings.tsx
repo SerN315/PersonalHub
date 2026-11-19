@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getAdminSettings, setSearchAccess, type AdminSettings as Settings, type SearchAccess } from "@/app/apis/admin";
+import { Input } from "@/app/components/ui";
 
 // The owner's switches. Only reached by people the server names as owner (the tab does not even appear for anyone else).
 
@@ -60,7 +61,7 @@ export default function AdminSettings() {
             <p className="muted">Searching YouTube uses a small daily allowance (each search costs a hundredth of it). Choose who gets the Search choice when adding songs to a party.</p>
             {CHOICES.map((choice) => (
               <label key={choice.value} className={`adminChoice__option ${settings.searchAccess === choice.value ? "is-on" : ""}`}>
-                <input type="radio" name="searchAccess" value={choice.value} checked={settings.searchAccess === choice.value} onChange={() => void choose(choice.value)} />
+                <Input variant="bare" type="radio" name="searchAccess" value={choice.value} checked={settings.searchAccess === choice.value} onChange={() => void choose(choice.value)} />
                 <span>
                   <strong>{choice.label}</strong>
                   <small>{choice.text}</small>

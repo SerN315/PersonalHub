@@ -6,6 +6,7 @@ import WidgetProps from "@/app/types/widget";
 import "../../styles/widgets/pomodoro.scss";
 import { formatClock, MODES, type Mode } from "@/app/utils/focus/timer";
 import { selectRemaining, useFocusBoot, useFocusStore } from "@/app/utils/focus/engine";
+import { Button } from "@/app/components/ui";
 
 const LABELS: Record<Mode, { label: string; more?: string }> = {
   focus: { label: "Focus" },
@@ -37,10 +38,10 @@ function PomodoroWidget(props: WidgetProps) {
       <div className="pomo">
         <div className="pomo__modes" role="radiogroup" aria-label="Timer mode">
           {MODES.map((m) => (
-            <button key={m} type="button" role="radio" aria-checked={mode === m} disabled={running && mode !== m} className="pomo__mode" onClick={() => choose(m)}>
+            <Button variant="bare" key={m} role="radio" aria-checked={mode === m} disabled={running && mode !== m} className="pomo__mode" onClick={() => choose(m)}>
               {LABELS[m].label}
               {LABELS[m].more && <span className="pomo__more">{LABELS[m].more}</span>}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -56,12 +57,12 @@ function PomodoroWidget(props: WidgetProps) {
         </div>
 
         <div className="pomo__controls">
-          <button type="button" className="pomo__play" onClick={running ? pause : start} aria-label={running ? "Pause" : "Start"}>
+          <Button variant="bare" className="pomo__play" onClick={running ? pause : start} aria-label={running ? "Pause" : "Start"}>
             <BasicIcon icon={running ? "PauseIcon" : "PlayIcon"} size={22} />
-          </button>
-          <button type="button" className="pomo__reset" onClick={reset} aria-label="Reset timer">
+          </Button>
+          <Button variant="bare" className="pomo__reset" onClick={reset} aria-label="Reset timer">
             <BasicIcon icon="RefreshIcon" size={18} />
-          </button>
+          </Button>
         </div>
       </div>
     </BaseWidget>

@@ -7,6 +7,7 @@ import "../../styles/widgets/weather.scss";
 import WidgetProps from "@/app/types/widget";
 import { getWeatherIconName } from "@/app/utils/weatherMappings";
 import type { IconName } from "@/app/components/ultis/icons";
+import { Button } from "@/app/components/ui";
 
 const icon = (code?: number, isDay?: number) => getWeatherIconName(code, isDay) as IconName;
 
@@ -71,9 +72,9 @@ function WeatherWidget(props: WidgetProps) {
 
             {sky.hours.length > 0 && (
               <div className="sky__hours">
-                <button type="button" className="sky__arrow" onClick={() => page(-1)} disabled={edges.start} aria-label="Earlier hours">
+                <Button variant="bare" className="sky__arrow" onClick={() => page(-1)} disabled={edges.start} aria-label="Earlier hours">
                   <BasicIcon icon="ArrowLeft01Icon" size={16} />
-                </button>
+                </Button>
                 <div className="sky__strip" ref={stripRef} onScroll={measureEdges}>
                   {sky.hours.map((hour) => (
                     <div className="sky__hour" key={hour.time}>
@@ -83,9 +84,9 @@ function WeatherWidget(props: WidgetProps) {
                     </div>
                   ))}
                 </div>
-                <button type="button" className="sky__arrow" onClick={() => page(1)} disabled={edges.end} aria-label="Later hours">
+                <Button variant="bare" className="sky__arrow" onClick={() => page(1)} disabled={edges.end} aria-label="Later hours">
                   <BasicIcon icon="ArrowRight01Icon" size={16} />
-                </button>
+                </Button>
               </div>
             )}
           </>

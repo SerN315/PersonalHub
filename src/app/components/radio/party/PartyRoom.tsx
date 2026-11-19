@@ -11,6 +11,7 @@ import { EMOJIS, approveItem, kickMember, muteMember, playItem, removeItem, skip
 import { usePartyStore } from "@/app/utils/party/store";
 import { useRadioStore } from "@/app/utils/radio/engine";
 import "@/app/styles/pages/party.scss";
+import { Button, MiniButton } from "@/app/components/ui";
 
 const labelOf = (item: { title: string | null; name: string | null; kind: string }) => item.title || item.name || (item.kind === "playlist" ? "YouTube playlist" : "YouTube video");
 
@@ -41,18 +42,18 @@ function NowPlaying() {
             <small>{listening ? (engineStatus === "loading" ? "Tuning…" : engineTitle || "On air") : engineStatus === "error" ? "This station is not reachable right now." : "Not playing on this device"}</small>
           </div>
           {!listening && (
-            <button type="button" className="miniBtn miniBtn--go" onClick={() => useRadioStore.getState().tune(station)}>
+            <MiniButton tone="go"  onClick={() => useRadioStore.getState().tune(station)}>
               <BasicIcon icon="HeadphonesIcon" size={14} /> Listen along
-            </button>
+            </MiniButton>
           )}
         </div>
       )}
       {now && now.kind !== "station" && <PartyVideo key={now.kind} song={now} serverMs={serverMs} host={isHost} partyId={partyId} />}
       {isHost && (now || hasQueued) && (
         <div className="partyNow__host">
-          <button type="button" className="miniBtn" onClick={() => void act((id) => skipSong(id))}>
+          <MiniButton  onClick={() => void act((id) => skipSong(id))}>
             <BasicIcon icon="NextIcon" size={13} /> {now ? "Next" : "Start the line-up"}
-          </button>
+          </MiniButton>
         </div>
       )}
     </section>
@@ -76,9 +77,9 @@ function PartyVideo({ song, serverMs, host, partyId }: { song: PartySong; server
           {!host && song.kind !== "station" && <small> · follows the host (within a few seconds)</small>}
         </p>
         {many && (
-          <button type="button" className="miniBtn" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+          <MiniButton  aria-expanded={open} onClick={() => setOpen((v) => !v)}>
             <BasicIcon icon="ArrowDown01Icon" size={13} /> {open ? "Hide songs" : `Songs (${tracks.ids.length})`}
-          </button>
+          </MiniButton>
         )}
       </div>
       {many && open && <UpNext inline readOnly={!host} ids={tracks.ids} index={tracks.index} onPlay={(i) => handle.current?.playAt(i)} onClose={() => setOpen(false)} />}
@@ -110,9 +111,9 @@ function Reactions() {
     <section className="partyBox partyReact" aria-label="Reactions">
       <div className="partyReact__bar" role="group" aria-label="Send a reaction">
         {EMOJIS.map((emoji) => (
-          <button key={emoji} type="button" className="partyReact__btn" onClick={() => press(emoji)} aria-label={`React with ${emoji}`}>
+          <Button variant="bare" key={emoji} className="partyReact__btn" onClick={() => press(emoji)} aria-label={`React with ${emoji}`}>
             {emoji}
-          </button>
+          </Button>
         ))}
       </div>
       <div className="partyReact__sky" aria-hidden>
@@ -140,12 +141,12 @@ const Person = memo(function Person({ member, canRemove, onRemove }: { member: P
       {member.muted && <span className="person__tag person__tag--quiet">Muted</span>}
       {canRemove && !member.host && (
         <>
-          <button type="button" className="miniBtn" onClick={() => void act((id) => muteMember(id, member.id, !member.muted))} aria-label={member.muted ? `Let ${member.name} chat again` : `Mute ${member.name} in the chat`} title={member.muted ? "Let them chat again" : "Mute in the chat"}>
+          <MiniButton  onClick={() => void act((id) => muteMember(id, member.id, !member.muted))} aria-label={member.muted ? `Let ${member.name} chat again` : `Mute ${member.name} in the chat`} title={member.muted ? "Let them chat again" : "Mute in the chat"}>
             {member.muted ? "Unmute" : "Mute"}
-          </button>
-          <button type="button" className="miniBtn miniBtn--danger" onClick={() => onRemove(member)} aria-label={`Remove ${member.name} from the party`}>
+          </MiniButton>
+          <MiniButton tone="danger"  onClick={() => onRemove(member)} aria-label={`Remove ${member.name} from the party`}>
             <BasicIcon icon="Cancel01Icon" size={13} />
-          </button>
+          </MiniButton>
         </>
       )}
     </li>
@@ -169,12 +170,12 @@ function People() {
         <div className="partyAsk" role="alertdialog" aria-label={`Remove ${asking.name}?`}>
           <p>Remove {asking.name}? They will not be able to come back with the code.</p>
           <span>
-            <button type="button" className="miniBtn miniBtn--danger" onClick={() => void act((id) => kickMember(id, asking.id)).then(() => setAsking(null))}>
+            <MiniButton tone="danger"  onClick={() => void act((id) => kickMember(id, asking.id)).then(() => setAsking(null))}>
               Remove
-            </button>
-            <button type="button" className="miniBtn" onClick={() => setAsking(null)}>
+            </MiniButton>
+            <MiniButton  onClick={() => setAsking(null)}>
               Keep
-            </button>
+            </MiniButton>
           </span>
         </div>
       )}
@@ -198,24 +199,24 @@ const Row = memo(function Row({ item, isHost }: { item: QueueItem; isHost: boole
       </span>
       <span className="lineup__acts">
         {item.kind === "playlist" && (
-          <button type="button" className="miniBtn" aria-expanded={open} onClick={() => setOpen((v) => !v)} aria-label={open ? `Hide the songs in ${labelOf(item)}` : `Show the songs in ${labelOf(item)}`} title="Songs">
+          <MiniButton  aria-expanded={open} onClick={() => setOpen((v) => !v)} aria-label={open ? `Hide the songs in ${labelOf(item)}` : `Show the songs in ${labelOf(item)}`} title="Songs">
             <BasicIcon icon="ArrowDown01Icon" size={13} />
-          </button>
+          </MiniButton>
         )}
         {isHost && item.status === "pending" && (
-          <button type="button" className="miniBtn miniBtn--go" onClick={() => void act((id) => approveItem(id, item.id))} aria-label={`Approve ${labelOf(item)}`}>
+          <MiniButton tone="go"  onClick={() => void act((id) => approveItem(id, item.id))} aria-label={`Approve ${labelOf(item)}`}>
             <BasicIcon icon="Tick02Icon" size={13} />
-          </button>
+          </MiniButton>
         )}
         {isHost && (
-          <button type="button" className="miniBtn" onClick={() => void act((id) => playItem(id, item.id))} aria-label={`Play ${labelOf(item)} now`}>
+          <MiniButton  onClick={() => void act((id) => playItem(id, item.id))} aria-label={`Play ${labelOf(item)} now`}>
             <BasicIcon icon="PlayIcon" size={13} />
-          </button>
+          </MiniButton>
         )}
         {(isHost || (item.mine && item.status === "pending")) && (
-          <button type="button" className="miniBtn miniBtn--danger" onClick={() => void act((id) => removeItem(id, item.id))} aria-label={isHost ? `Remove ${labelOf(item)}` : "Take back my suggestion"}>
+          <MiniButton tone="danger"  onClick={() => void act((id) => removeItem(id, item.id))} aria-label={isHost ? `Remove ${labelOf(item)}` : "Take back my suggestion"}>
             <BasicIcon icon="Cancel01Icon" size={13} />
-          </button>
+          </MiniButton>
         )}
       </span>
       {item.kind === "playlist" && open && (
@@ -258,12 +259,12 @@ function Invite({ code }: { code: string }) {
       <span className="invite__code" aria-label={`Invite code ${code.split("").join(" ")}`}>
         {code.slice(0, 4)}-{code.slice(4)}
       </span>
-      <button type="button" className="miniBtn" onClick={() => void copy("link")}>
+      <MiniButton  onClick={() => void copy("link")}>
         <BasicIcon icon="Link01Icon" size={13} /> {copied === "link" ? "Copied" : "Copy invite link"}
-      </button>
-      <button type="button" className="miniBtn" onClick={() => void copy("code")}>
+      </MiniButton>
+      <MiniButton  onClick={() => void copy("code")}>
         {copied === "code" ? "Copied" : "Copy code"}
-      </button>
+      </MiniButton>
     </div>
   );
 }
@@ -285,13 +286,13 @@ function Header() {
       </div>
       {isHost && code && <Invite code={code} />}
       {isHost ? (
-        <button type="button" className={`miniBtn miniBtn--danger ${sure ? "is-armed" : ""}`} onClick={() => (sure ? void end() : setSure(true))} onBlur={() => setSure(false)}>
+        <Button variant="bare" className={`miniBtn miniBtn--danger ${sure ? "is-armed" : ""}`} onClick={() => (sure ? void end() : setSure(true))} onBlur={() => setSure(false)}>
           {sure ? "Press again to end for everyone" : "End party"}
-        </button>
+        </Button>
       ) : (
-        <button type="button" className="miniBtn" onClick={() => void leave()}>
+        <MiniButton  onClick={() => void leave()}>
           Leave party
-        </button>
+        </MiniButton>
       )}
     </header>
   );
@@ -309,9 +310,9 @@ function Notice() {
   return (
     <p className="partyNotice" role="alert">
       {message}
-      <button type="button" onClick={clear} aria-label="Dismiss">
+      <Button variant="bare" onClick={clear} aria-label="Dismiss">
         <BasicIcon icon="Cancel01Icon" size={14} />
-      </button>
+      </Button>
     </p>
   );
 }

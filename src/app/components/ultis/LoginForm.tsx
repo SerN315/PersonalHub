@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import BaseInput from "@/app/components/ui/BaseInput";
-import BaseButton from "@/app/components/ui/BaseButton";
+import { Button, Checkbox, Field } from "@/app/components/ui";
 
 interface LoginFormProps {
   toggleForm: () => void;
@@ -53,10 +52,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
       <p className="authCard__subtitle">Let&apos;s make today a good one.</p>
 
       <form id="login-form" className="authCard__form" onSubmit={handleSubmit} noValidate>
-        <BaseInput label="Email" type="email" autoComplete="email" placeholder="you@example.com" value={email} error={errors.email} onChange={(e) => setEmail(e.target.value)} />
-        <BaseInput label="Password" type="password" autoComplete="current-password" placeholder="Your password" value={password} error={errors.password} onChange={(e) => setPassword(e.target.value)} />
+        <Field label="Email" type="email" autoComplete="email" placeholder="you@example.com" value={email} error={errors.email} onChange={(e) => setEmail(e.target.value)} />
+        <Field label="Password" type="password" autoComplete="current-password" placeholder="Your password" value={password} error={errors.password} onChange={(e) => setPassword(e.target.value)} />
         <label className="authCard__remember">
-          <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+          <Checkbox  checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
           Keep me signed in on this device
         </label>
         {errors.general && (
@@ -64,16 +63,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ toggleForm }) => {
             {errors.general}
           </p>
         )}
-        <BaseButton type="submit" form="login-form" full disabled={busy}>
+        <Button type="submit" form="login-form" full disabled={busy}>
           {busy ? "Signing in…" : "Sign in"}
-        </BaseButton>
+        </Button>
       </form>
 
       <p className="authCard__switch">
         New here?{" "}
-        <button type="button" className="authCard__link registerLink" onClick={toggleForm}>
+        <Button variant="bare" className="authCard__link registerLink" onClick={toggleForm}>
           Create an account
-        </button>
+        </Button>
       </p>
     </div>
   );

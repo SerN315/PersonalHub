@@ -1,14 +1,15 @@
 "use client";
 import BasicIcon from "@/app/components/ultis/icons";
 import { setPanel, useNotifications } from "@/app/utils/notifications/store";
+import { Button } from "@/app/components/ui";
 
 // The bell in the sidebar (and the bottom bar on a phone). The number is what you have not looked at yet.
 export default function NotificationBell() {
   const unread = useNotifications((state) => state.unread);
   const open = useNotifications((state) => state.panelOpen);
   return (
-    <button
-      type="button"
+    <Button
+      variant="bare"
       className={`nav__link nav__bell ${open ? "is-active" : ""}`}
       data-notification-bell
       aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
@@ -25,6 +26,6 @@ export default function NotificationBell() {
         )}
       </span>
       <span>Notifications</span>
-    </button>
+    </Button>
   );
 }
