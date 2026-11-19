@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BasicIcon from "../ultis/icons";
 import { SettingsModal } from "../settings/settings";
+import NotificationBell from "../notifications/NotificationBell";
+import NotificationPanel from "../notifications/NotificationPanel";
+import { setPanel } from "@/app/utils/notifications/store";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { logoutUser } from "@/app/apis/settings";
 import type { IconName } from "../ultis/icons";
@@ -75,6 +78,7 @@ export const Nav: React.FC = () => {
         </div>
 
         <div className="nav__bottom">
+          {user && <NotificationBell />}
           <button type="button" className="nav__link" id="settingButton" onClick={() => setSettingsTab("Appearance")}>
             <BasicIcon icon="PaintBoardIcon" size={20} />
             <span>Make it yours</span>
@@ -96,6 +100,14 @@ export const Nav: React.FC = () => {
         </div>
       </nav>
 
+      {user && (
+        <NotificationPanel
+          onSettings={() => {
+            setPanel(false);
+            setSettingsTab("Notifications");
+          }}
+        />
+      )}
       <SettingsModal open={settingsTab !== null} initialTab={settingsTab ?? "Profile"} onClose={() => setSettingsTab(null)} />
     </>
   );

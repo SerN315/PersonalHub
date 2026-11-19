@@ -8,6 +8,7 @@ import ProfileSettings from "./ProfileSettings";
 import AppearanceSettings from "./AppearanceSettings";
 import SecuritySettings from "./SecuritySettings";
 import AdminSettings from "./AdminSettings";
+import NotificationSettings from "./NotificationSettings";
 import { getAdminSettings } from "@/app/apis/admin";
 import type { SettingsModalProps, SettingsTab } from "@/app/types/settings";
 import type { IconName } from "@/app/components/ultis/icons";
@@ -16,6 +17,7 @@ const TABS: { key: SettingsTab; label: string; blurb: string; icon: IconName }[]
   { key: "Profile", label: "Profile", blurb: "Who you are", icon: "UserIcon" },
   { key: "Appearance", label: "Appearance", blurb: "Make it feel like yours", icon: "PaintBoardIcon" },
   { key: "Security", label: "Security", blurb: "Password and sign-in", icon: "LockPasswordIcon" },
+  { key: "Notifications", label: "Notifications", blurb: "What reaches you, and how", icon: "Notification02Icon" },
 ];
 const ADMIN_TAB: (typeof TABS)[number] = { key: "Admin", label: "Admin", blurb: "The owner's switches", icon: "Settings02Icon" };
 
@@ -84,6 +86,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
           {activeTab === "Profile" && <ProfileSettings />}
           {activeTab === "Appearance" && <AppearanceSettings />}
           {activeTab === "Security" && <SecuritySettings onSignedOut={onClose} />}
+          {activeTab === "Notifications" && <NotificationSettings />}
           {activeTab === "Admin" && isOwner && <AdminSettings />}
         </section>
       </div>

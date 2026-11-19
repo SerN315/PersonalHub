@@ -1,4 +1,4 @@
-export type SettingsTab = "Profile" | "Appearance" | "Security" | "Admin";
+export type SettingsTab = "Profile" | "Appearance" | "Security" | "Notifications" | "Admin";
 
 export interface SettingsModalProps {
   open: boolean;
