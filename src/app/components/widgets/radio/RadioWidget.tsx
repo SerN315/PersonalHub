@@ -6,10 +6,11 @@ import Knob from "./Knob";
 import StationPanel from "./StationPanel";
 import PlaylistPanel from "./PlaylistPanel";
 import UpNext from "./UpNext";
-import YouTubePlayer, { type YouTubeHandle, type YouTubeInfo } from "./YouTubePlayer";
+import YouTubeSlot from "./YouTubeSlot";
 import WidgetProps from "@/app/types/widget";
 import { searchStations, type Station } from "@/app/apis/radio";
 import { useRadioStore } from "@/app/utils/radio/engine";
+import { useYouTube, youtube, type YouTubeSource } from "@/app/utils/radio/youtubeEngine";
 import { dialNumber, indexFor, isVideo, playlistName, positionFor, titleWithAuthor, sanitizeFavorites, sanitizePlaylists, sanitizeStation, stepIndex, toggleFavorite, type Playlist } from "@/app/utils/radio/radioData";
 import "../../../styles/widgets/radio.scss";
 
@@ -19,7 +20,7 @@ const SAVE_DELAY_MS = 800;
 const TURN_DELAY_MS = 350; // turning the knob scrubs past stations; only the one it rests on is opened
 // YouTube's player rules need it to be at least 200 x 200 and visible, so it only appears when the radio has the room.
 const YOUTUBE_MIN = { width: 330, height: 430 };
-const YT_IDLE: YouTubeInfo = { status: "idle", title: null, author: null, index: 0, count: 0, ids: [], error: null };
+const sourceOf = (playlist: Playlist): YouTubeSource => ({ kind: isVideo(playlist) ? "video" : "playlist", id: playlist.id });
 
 // Long text scrolls past like a real tuner's display, but only when it does not fit.
 function Marquee({ text, className }: { text: string; className?: string }) {
@@ -84,10 +85,8 @@ function RadioWidget(props: WidgetProps) {
   const [results, setResults] = useState<Station[]>([]); // what the guide last showed; the knob walks through it when there are no favorites
   const [panelOpen, setPanelOpen] = useState(false);
   const [upNextOpen, setUpNextOpen] = useState(false); // the drop-down list of the songs coming up
-  const [yt, setYt] = useState<YouTubeInfo>(YT_IDLE);
+  const yt = useYouTube((s) => s.info); // YouTube plays in the app's one player, so it carries on when this widget leaves the screen
   const [turning, setTurning] = useState<number | null>(null); // the knob's position while it is being turned
-  const ytRef = useRef<YouTubeHandle>(null);
-  const [ytAutoplay, setYtAutoplay] = useState(false); // true only when a person just asked for a playlist
   const turnTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [cabinetRef, size] = useElementSize<HTMLDivElement>();
 
@@ -96,7 +95,15 @@ function RadioWidget(props: WidgetProps) {
     const { station: playing, status: current, select, setVolume } = engine();
     if (current === "idle" && !playing) setVolume(initial.volume);
     if (initial.lastStation && !playing) select(initial.lastStation);
+    const saved = initial.source === "youtube" ? initial.playlists.find((p) => p.id === initial.activePlaylist) : undefined;
+    if (saved) youtube.load(sourceOf(saved), { autoplay: false }); // the same one again does nothing, so coming back never restarts the song
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // while this radio is on screen its own controls are enough, so the little player bar in the corner stays away
+  useEffect(() => {
+    youtube.addView(1);
+    return () => youtube.addView(-1);
   }, []);
 
   // ---- save changes to the account, a moment after they stop -------------------------------------------------------
@@ -168,7 +175,7 @@ function RadioWidget(props: WidgetProps) {
         const index = indexFor(position, list.length);
         if (index >= 0 && list[index].id !== engine().station?.id) tuneTo(list[index]);
       } else if (yt.count > 0) {
-        ytRef.current?.playAt(indexFor(position, yt.count));
+        youtube.playAt(indexFor(position, yt.count));
       }
       setTurning(null);
     }, TURN_DELAY_MS);
@@ -183,23 +190,26 @@ function RadioWidget(props: WidgetProps) {
     if (next === source) return;
     setPanelOpen(false);
     setUpNextOpen(false);
-    if (next === "youtube") engine().pause();
+    if (next === "youtube") {
+      engine().pause();
+      if (activePlaylist) youtube.load(sourceOf(activePlaylist), { autoplay: false });
+    } else youtube.stop();
     setSource(next);
-    setYtAutoplay(false);
   };
 
   const playPlaylist = (playlist: Playlist) => {
-    setYtAutoplay(true);
+    engine().pause();
+    youtube.load(sourceOf(playlist), { autoplay: true });
     setActivePlaylistId(playlist.id);
     setPanelOpen(false);
     setUpNextOpen(false);
-    if (source !== "youtube") chooseSource("youtube");
+    setSource("youtube");
   };
 
   const onPlayPause = async () => {
     if (source === "youtube") {
       if (!activePlaylist) return setPanelOpen(true);
-      return yt.status === "playing" ? ytRef.current?.pause() : ytRef.current?.play();
+      return yt.status === "playing" ? youtube.pause() : youtube.play();
     }
     if (station) return engine().toggle();
     const list = await ensureResults();
@@ -224,13 +234,13 @@ function RadioWidget(props: WidgetProps) {
     // a single song is named by its own title; a playlist by its name, with the song that is playing underneath
     line1 = isVideo(activePlaylist) && !activePlaylist.label && song ? song : playlistName(activePlaylist);
     const idle = yt.status === "paused" ? "Paused" : "Press play";
-    line2 = !canYouTube ? "Make the radio bigger to play" : yt.error ?? (yt.status === "loading" ? "Loading…" : isVideo(activePlaylist) ? (yt.status === "playing" ? "Playing" : idle) : song || idle);
+    line2 = yt.error ?? (yt.status === "loading" ? "Loading…" : isVideo(activePlaylist) ? (yt.status === "playing" ? "Playing" : idle) : song || idle);
   }
 
   const tuningValue = turning ?? (source === "radio" ? radioPosition : positionFor(yt.index, yt.count));
   const tuningText = source === "radio" ? (station?.name ?? "No station") : `Track ${yt.index + 1} of ${yt.count || "?"}`;
-  const nextRadio = () => (source === "radio" ? stepStation(1) : ytRef.current?.next());
-  const previousRadio = () => (source === "radio" ? stepStation(-1) : ytRef.current?.previous());
+  const nextRadio = () => (source === "radio" ? stepStation(1) : youtube.next());
+  const previousRadio = () => (source === "radio" ? stepStation(-1) : youtube.previous());
 
   return (
     <BaseWidget title="Radio" {...props} tintable={false}>
@@ -260,13 +270,13 @@ function RadioWidget(props: WidgetProps) {
             </div>
           ) : activePlaylist && canYouTube ? (
             <div className="ytWindow">
-              <YouTubePlayer ref={ytRef} playlistId={activePlaylist.id} kind={isVideo(activePlaylist) ? "video" : "playlist"} volume={volume} autoplay={ytAutoplay} onInfo={setYt} />
+              <YouTubeSlot />
             </div>
           ) : (
             <div className="ytNotice">
               <BasicIcon icon="YoutubeIcon" size={26} strokeWidth={1.3} />
-              <p>{activePlaylist ? "YouTube needs room to show its player." : "Play YouTube and YouTube Music playlists."}</p>
-              <small>{activePlaylist ? "Make this radio bigger (about 5 wide and 4 tall) in Arrange mode." : "Open the guide to add one."}</small>
+              <p>{activePlaylist ? "The player is in the corner of the page." : "Play YouTube and YouTube Music playlists."}</p>
+              <small>{activePlaylist ? "Make this radio bigger (about 5 wide and 4 tall) in Arrange mode to see it here." : "Open the guide to add one."}</small>
             </div>
           )}
         </div>
@@ -284,7 +294,7 @@ function RadioWidget(props: WidgetProps) {
             </button>
           )}
         </div>
-        {upNextOpen && source === "youtube" && yt.count > 1 && <UpNext ids={yt.ids} index={yt.index} onPlay={(i) => ytRef.current?.playAt(i)} onClose={() => setUpNextOpen(false)} />}
+        {upNextOpen && source === "youtube" && yt.count > 1 && <UpNext ids={yt.ids} index={yt.index} onPlay={(i) => youtube.playAt(i)} onClose={() => setUpNextOpen(false)} />}
         </div>
 
         <div className="radio__grille" aria-hidden>
@@ -345,7 +355,10 @@ function RadioWidget(props: WidgetProps) {
             onUpdate={(id, patch) => setPlaylists((list) => list.map((p) => (p.id === id && !p.title && patch.title ? { ...p, title: patch.title, ...(patch.author ? { author: patch.author } : {}) } : p)))}
             onRemove={(id) => {
               setPlaylists((list) => list.filter((p) => p.id !== id));
-              if (activePlaylistId === id) setActivePlaylistId(null);
+              if (activePlaylistId === id) {
+                setActivePlaylistId(null);
+                youtube.stop();
+              }
             }}
             onClose={() => setPanelOpen(false)}
           />
