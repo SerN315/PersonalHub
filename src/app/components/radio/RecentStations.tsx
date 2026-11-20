@@ -3,6 +3,7 @@ import { memo, useEffect } from "react";
 import BasicIcon from "../ultis/icons";
 import { useRadioStore } from "@/app/utils/radio/engine";
 import { recentStore, withRecent } from "@/app/utils/radio/recent";
+import { Button } from "@/app/components/ui";
 
 // Remembers what you tuned to (in this browser) and lets you go back to it.
 function RecentStations() {
@@ -24,10 +25,10 @@ function RecentStations() {
         <ul className="recent">
           {recent.map((s) => (
             <li key={s.id}>
-              <button type="button" onClick={() => useRadioStore.getState().tune(s)} aria-current={playing?.id === s.id ? "true" : undefined}>
+              <Button variant="bare" onClick={() => useRadioStore.getState().tune(s)} aria-current={playing?.id === s.id ? "true" : undefined}>
                 <span>{s.name}</span>
                 <small>{[s.country, s.tags[0]].filter(Boolean).join(" · ")}</small>
-              </button>
+              </Button>
             </li>
           ))}
         </ul>

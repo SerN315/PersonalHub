@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { create } from "zustand";
 import { ApiError } from "@/app/apis/http";
 import { saveSession, type SessionToSave } from "@/app/apis/focus";
+import { sendOwn } from "@/app/utils/notifications/store";
 import { DEFAULT_SETTINGS, cleanSettings, nextMode, remainingSeconds, secondsFor, worthSaving, type Mode, type Settings } from "./timer";
 
 // The Focus timer's engine. It lives OUTSIDE React on purpose (like the radio): the countdown belongs to the page, not to a widget, so the
@@ -311,6 +312,8 @@ function complete(late: boolean) {
   if (first && !late) {
     if (before.settings.sound) chime();
     if (before.settings.notify) notify(before.mode === "focus" ? "Focus session done" : "Break over", before.mode === "focus" ? "Nicely done. Time to rest your eyes." : "Ready for the next one when you are.");
+    // also kept in the inbox, quietly (the chime and message above already told you), if the person switched "Focus sessions" on there
+    void sendOwn({ source: "focus", title: before.mode === "focus" ? "Focus session done" : "Break over", body: before.mode === "focus" ? "Nicely done. Time to rest your eyes." : "Ready for the next one when you are." }, { tell: false }).catch(() => {});
   }
   if (before.settings.autoStart && !late) useFocusStore.getState().start();
 }

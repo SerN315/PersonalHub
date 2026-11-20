@@ -26,7 +26,7 @@ export const GUIDE: GuideSection[] = [
     title: "What PersonalHub is for",
     what: "A calm place to start your day: a few small things you glance at, and quick jumps to the tools you use.",
     why: "It is not trying to replace Jira, Notion or your calendar. Those do their jobs better than any copy could. This is the cozy desk you sit at before and between them: light enough to keep open all day, and quiet unless you ask it something.",
-    tips: ["My day is home. Tabs such as the Planner go deeper into one widget, so the menu stays short.", "Everything here is yours alone: your widgets, tasks, notes and settings belong to your account.", "Nothing nags you. Notifications, when they arrive, will be opt-in."],
+    tips: ["My day is home. Tabs such as the Planner go deeper into one widget, so the menu stays short.", "Everything here is yours alone: your widgets, tasks, notes and settings belong to your account.", "Nothing nags you. Notifications are opt-in: nothing reaches your inbox until you switch it on."],
   },
   {
     id: "my-day",
@@ -108,6 +108,14 @@ export const GUIDE: GuideSection[] = [
     tips: ["Start a party, then press Copy invite link and send it. Guests press Join.", "Stations play at the same moment for everyone. YouTube videos follow the host to within a few seconds, so it is together rather than to the frame.", "Songs can be added four ways, one shown at a time: a station, a pasted link, what is popular in music in your country, and (if the owner allows it) a YouTube search. Search uses a small daily allowance, so the owner chooses who gets it in Settings, Admin.", "Whole playlists can wait in the line-up too. Press the arrow on one to see its songs (listing songs of a playlist that is not playing needs the optional YouTube key on the backend; the playlist plays either way).", "There is a short chat in the room: the last sixty messages, plain text, gone when the party ends. The host can remove a message or mute someone.", "Remove anyone from the party for good; end it any time. A party also ends by itself after hours of nobody being there.", "Staying in the party while on another tab keeps the music going, but it only follows the host while the Radio tab is open."],
   },
   {
+    id: "notifications",
+    icon: "Notification02Icon",
+    title: "Notifications",
+    what: "A bell in the menu with a quiet inbox behind it. When something happens you asked to hear about, a card slides in with a soft chime. If you are in another window, your computer shows its own message instead.",
+    why: "So you can look away and still not miss the few things that matter, without a stream of pings. Nothing reaches you until you switch it on, and you choose how loud it is.",
+    tips: ["Open Settings > Notifications. Switch on what you want: someone suggesting a song at your party, or a focus session ending.", "The card shows while you are looking at the page. The message from your computer needs the browser's permission and only appears while PersonalHub is open in a tab.", "Press Send me a test to see and hear exactly what you have chosen. How it shows up is kept on each device; what reaches you is kept on your account.", "Make a private link to let other tools post here (a script, an automation, a build). Anyone with the link can post to you, so keep it private; you can replace or remove it any time.", "The number in the browser tab's title is what you have not looked at yet. Notifications older than 30 days, or beyond the newest 100, are cleared by themselves."],
+  },
+  {
     id: "dictionary",
     icon: "BookOpen01Icon",
     title: "Dictionary",
@@ -158,11 +166,11 @@ export const ROADMAP: RoadmapItem[] = [
   { id: "pomodoro", title: "Focus tab", status: "done", progress: 1, weight: 2, text: "An hourglass for focus sessions, plus stopwatch, kitchen timer, world clocks and your history. It also appears in the Room." },
   { id: "notes", title: "Notes tab", status: "done", progress: 1, weight: 2, text: "A notebook for longer notes: autosave, search, pins, paper colours and a safe reading view." },
   { id: "party", title: "Radio tab and listening parties", status: "done", progress: 1, weight: 3, text: "A bigger radio with a sleep timer, and parties: invite friends, listen together, suggest songs and send reactions." },
+  { id: "notifications", title: "Notifications inbox and private link", status: "done", progress: 1, weight: 3, text: "A bell with a quiet inbox, a card and a soft chime while you look, your computer's own message while you do not, and a private link other tools can post into. Real push when the page is closed waits for the apps." },
   { id: "security", title: "Security hardening and tests", status: "done", progress: 1, weight: 2, text: "Every route checks who you are; limits on abuse; an automated test suite. A full review was done on the review date." },
   { id: "help", title: "Help and roadmap", status: "done", progress: 1, weight: 1, text: "This page: a guide to every part of the hub, and the plan ahead." },
   { id: "dictionary", title: "Dictionary in the hub", status: "building", progress: 0.6, weight: 3, text: "Works, but the owner has to switch it on, and the page needs a friendly sign-in prompt." },
-  { id: "notifications", title: "Notifications inbox and webhooks", status: "next", progress: 0, weight: 3, text: "One quiet inbox that other tools can post into. Opt-in, never noisy." },
-  { id: "connect", title: "GitHub and email glances", status: "next", progress: 0, weight: 4, text: "See what needs you without opening them. A glance and a jump, not a copy." },
+    { id: "connect", title: "GitHub and email glances", status: "next", progress: 0, weight: 4, text: "See what needs you without opening them. A glance and a jump, not a copy." },
   { id: "jira", title: "Jira tab (read-only)", status: "next", progress: 0, weight: 3, text: "Pick a board and see it here. You reconnect about once a month." },
   { id: "notion", title: "Notion, with writing", status: "later", progress: 0, weight: 4, text: "Write to your Notion from here. Planned after Jira, because it is the trickiest connection." },
   { id: "pet", title: "A digital pet", status: "later", progress: 0, weight: 2, text: "A small companion that lives on your board and notices your streaks." },
@@ -179,7 +187,6 @@ export interface Phase {
 // What is left, in the order we would do it. Ranges are honest guesses: external services (Jira, Notion, GitHub) are where surprises live.
 export const PHASES: Phase[] = [
   { name: "Finish what is built", items: ["dictionary"], weeks: [1, 2], note: "Switch the dictionary on, run the two database fixes, check everything on a real phone." },
-  { name: "Notifications inbox", items: ["notifications"], weeks: [1.5, 3], note: "The foundation the integrations will post into." },
   { name: "Connect the outside", items: ["connect"], weeks: [3, 5], note: "GitHub and email, kept as light glances." },
   { name: "Jira tab", items: ["jira"], weeks: [2, 3], note: "Read-only, one board at a time." },
   { name: "Notion with writing", items: ["notion"], weeks: [3, 5], note: "Needs the most care: it can change your real documents." },

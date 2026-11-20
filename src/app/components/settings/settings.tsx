@@ -8,14 +8,17 @@ import ProfileSettings from "./ProfileSettings";
 import AppearanceSettings from "./AppearanceSettings";
 import SecuritySettings from "./SecuritySettings";
 import AdminSettings from "./AdminSettings";
+import NotificationSettings from "./NotificationSettings";
 import { getAdminSettings } from "@/app/apis/admin";
 import type { SettingsModalProps, SettingsTab } from "@/app/types/settings";
 import type { IconName } from "@/app/components/ultis/icons";
+import { Button, IconButton } from "@/app/components/ui";
 
 const TABS: { key: SettingsTab; label: string; blurb: string; icon: IconName }[] = [
   { key: "Profile", label: "Profile", blurb: "Who you are", icon: "UserIcon" },
   { key: "Appearance", label: "Appearance", blurb: "Make it feel like yours", icon: "PaintBoardIcon" },
   { key: "Security", label: "Security", blurb: "Password and sign-in", icon: "LockPasswordIcon" },
+  { key: "Notifications", label: "Notifications", blurb: "What reaches you, and how", icon: "Notification02Icon" },
 ];
 const ADMIN_TAB: (typeof TABS)[number] = { key: "Admin", label: "Admin", blurb: "The owner's switches", icon: "Settings02Icon" };
 
@@ -53,16 +56,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
         <aside className="settings__side">
           <div className="settings__title">
             <h2 aria-hidden>Settings</h2>
-            <button type="button" className="iconBtn settings__close" onClick={onClose} aria-label="Close settings">
+            <IconButton className="settings__close" onClick={onClose} aria-label="Close settings">
               <BasicIcon icon="Cancel01Icon" size={20} />
-            </button>
+            </IconButton>
           </div>
           <div className="settings__tabs" role="tablist" aria-orientation="vertical" onKeyDown={onTabKeyDown}>
             {tabs.map((tab) => (
-              <button
+              <Button
+                variant="bare"
                 key={tab.key}
                 id={`settings-tab-${tab.key}`}
-                type="button"
                 role="tab"
                 aria-selected={activeTab === tab.key}
                 aria-controls="settings-panel"
@@ -75,7 +78,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
                   <span className="settings__tabLabel">{tab.label}</span>
                   <span className="settings__tabBlurb">{tab.blurb}</span>
                 </span>
-              </button>
+              </Button>
             ))}
           </div>
         </aside>
@@ -84,6 +87,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, initialTab =
           {activeTab === "Profile" && <ProfileSettings />}
           {activeTab === "Appearance" && <AppearanceSettings />}
           {activeTab === "Security" && <SecuritySettings onSignedOut={onClose} />}
+          {activeTab === "Notifications" && <NotificationSettings />}
           {activeTab === "Admin" && isOwner && <AdminSettings />}
         </section>
       </div>

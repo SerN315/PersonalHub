@@ -1,79 +1,6 @@
 // Shared controls. Colours come from the CSS variables in globals.css, never from literals.
 
-// ---- Button -----------------------------------------------------------------
-.btn {
-  --btn-bg: var(--accent);
-  --btn-ink: var(--accent-ink);
-  --btn-line: transparent;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 18px;
-  border: 1px solid var(--btn-line);
-  border-radius: var(--r-ctl);
-  background: var(--btn-bg);
-  color: var(--btn-ink);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.15s var(--ease), filter 0.15s, background 0.15s, box-shadow 0.15s;
-
-  &:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 6px 14px -6px rgb(var(--shadow-color) / 0.4); }
-  &:active:not(:disabled) { transform: translateY(0); filter: brightness(0.97); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  &--soft { --btn-bg: var(--accent-soft); --btn-ink: var(--ink); --btn-line: var(--accent-line); }
-  &--ghost { --btn-bg: transparent; --btn-ink: var(--ink); --btn-line: var(--line); &:hover:not(:disabled) { background: var(--surface-2); box-shadow: none; filter: none; } }
-  &--danger { --btn-bg: transparent; --btn-ink: var(--danger); --btn-line: color-mix(in srgb, var(--danger) 45%, transparent); &:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 12%, transparent); box-shadow: none; filter: none; } }
-  &--sm { min-height: 32px; padding: 0 12px; font-size: 13px; }
-  &--full { width: 100%; }
-}
-
-.iconBtn {
-  display: inline-grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: var(--r-ctl);
-  background: transparent;
-  color: var(--ink-soft);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  &:hover { background: var(--surface-2); color: var(--ink); }
-}
-
-// ---- Field + input ---------------------------------------------------------
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  &__label { font-size: 13px; font-weight: 700; color: var(--ink); }
-  &__hint { font-size: 12px; color: var(--ink-soft); }
-  &__error { font-size: 12px; color: var(--danger); font-weight: 600; }
-}
-
-.input {
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-ctl);
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  transition: border-color 0.15s, box-shadow 0.15s;
-
-  &::placeholder { color: color-mix(in srgb, var(--ink-soft) 70%, transparent); }
-  &:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
-  &:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
-  &[aria-invalid="true"] { border-color: var(--danger); }
-  &:disabled { opacity: 0.6; }
-}
-textarea.input { resize: vertical; min-height: 88px; }
+// Buttons and form fields are no longer styled here: they are the Button and Input components in components/ui (Tailwind, on the same tokens).
 
 // ---- Switch ------------------------------------------------------------------
 .switch {
@@ -81,7 +8,7 @@ textarea.input { resize: vertical; min-height: 88px; }
   flex: none;
   width: 46px;
   height: 26px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--ink) 38%, var(--surface)); /* the off switch has to be visible against the page (3:1) */
   border-radius: var(--r-pill);
   background: var(--surface-2);
   cursor: pointer;

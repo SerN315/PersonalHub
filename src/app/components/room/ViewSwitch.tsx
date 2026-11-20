@@ -4,6 +4,7 @@ import BasicIcon from "../ultis/icons";
 import { setMyDayView, useMyDayView, type MyDayView } from "@/app/utils/myDayView";
 import { preloadMyDay } from "@/app/dashboard/MyDay";
 import "@/app/styles/ui/viewSwitch.scss";
+import { Button } from "@/app/components/ui";
 
 const OPTIONS: { view: MyDayView; label: string; icon: "DashboardSquare01Icon" | "Home03Icon" }[] = [
   { view: "board", label: "Board", icon: "DashboardSquare01Icon" },
@@ -16,9 +17,9 @@ function ViewSwitch({ floating = false }: { floating?: boolean }) {
   return (
     <div className={`viewSwitch ${floating ? "viewSwitch--floating" : ""}`} role="group" aria-label="View">
       {OPTIONS.map((option) => (
-        <button
+        <Button
+          variant="bare"
           key={option.view}
-          type="button"
           aria-pressed={current === option.view}
           className={current === option.view ? "is-on" : ""}
           onClick={() => setMyDayView(option.view)}
@@ -27,7 +28,7 @@ function ViewSwitch({ floating = false }: { floating?: boolean }) {
         >
           <BasicIcon icon={option.icon} size={16} />
           <span>{option.label}</span>
-        </button>
+        </Button>
       ))}
     </div>
   );

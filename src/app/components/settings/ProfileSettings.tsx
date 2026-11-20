@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import BaseInput from "@/app/components/ui/BaseInput";
-import BaseButton from "@/app/components/ui/BaseButton";
 import BasicIcon from "@/app/components/ultis/icons";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { updateUser, uploadProfileImage } from "@/app/apis/settings";
 import type { Profile } from "@/app/apis/settings";
+import { Button, Field, Input } from "@/app/components/ui";
 
 type Status = { kind: "ok" | "error"; text: string } | null;
 
@@ -35,7 +34,7 @@ export default function ProfileSettings() {
       <div className="settingsEmpty">
         <h3>You are not signed in</h3>
         <p>Sign in to keep your profile and your look on every device.</p>
-        <BaseButton onClick={() => (window.location.href = "/auth/login")}>Sign in</BaseButton>
+        <Button onClick={() => (window.location.href = "/auth/login")}>Sign in</Button>
       </div>
     );
   }
@@ -92,13 +91,13 @@ export default function ProfileSettings() {
       </header>
 
       <div className="avatarRow">
-        <button type="button" className="avatarPicker" onClick={() => fileRef.current?.click()} disabled={uploading} aria-label="Change profile picture">
+        <Button variant="bare" className="avatarPicker" onClick={() => fileRef.current?.click()} disabled={uploading} aria-label="Change profile picture">
           <span className="avatarPicker__img" style={{ backgroundImage: `url(${user.avatar_url || "/Blank-Avatar.webp"})` }} />
           <span className="avatarPicker__badge">
             <BasicIcon icon="Camera01Icon" size={16} />
           </span>
-        </button>
-        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={onPickImage} tabIndex={-1} />
+        </Button>
+        <Input variant="bare" ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose a profile picture" className="sr-only" onChange={onPickImage} tabIndex={-1} />
         <div>
           <strong>{uploading ? "Uploading…" : "Profile picture"}</strong>
           <p className="muted">JPEG, PNG or WebP, up to 2 MB.</p>
@@ -106,10 +105,10 @@ export default function ProfileSettings() {
       </div>
 
       <div className="settingsGrid">
-        <BaseInput label="Name" placeholder="Optional" value={form.name} maxLength={80} autoComplete="name" onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        <BaseInput label="Username" value={form.username} maxLength={32} autoComplete="username" onChange={(e) => setForm({ ...form, username: e.target.value })} />
+        <Field label="Name" placeholder="Optional" value={form.name} maxLength={80} autoComplete="name" onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <Field label="Username" value={form.username} maxLength={32} autoComplete="username" onChange={(e) => setForm({ ...form, username: e.target.value })} />
         <div className="settingsGrid__wide">
-          <BaseInput
+          <Field
             label="Email"
             type="email"
             value={form.email}
@@ -124,9 +123,9 @@ export default function ProfileSettings() {
         <p className={`settingsStatus ${status?.kind ?? ""}`} role="status" aria-live="polite">
           {status?.text}
         </p>
-        <BaseButton type="submit" disabled={!dirty || saving}>
+        <Button type="submit" disabled={!dirty || saving}>
           {saving ? "Saving…" : "Save changes"}
-        </BaseButton>
+        </Button>
       </div>
     </form>
   );

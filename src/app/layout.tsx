@@ -7,6 +7,9 @@ import { Nav } from "@/app/components/layouts/Nav";
 import { EditModeProvider } from "@/app/contexts/editWidgetContext";
 import PreferencesRegistry from "./contexts/PreferencesRegistry";
 import UserRegistry from "./contexts/UserRegistry";
+import NotificationHost from "./components/notifications/NotificationHost";
+import PlayerLayer from "./components/radio/PlayerLayer";
+import MiniPlayer from "./components/radio/MiniPlayer";
 import { EARLY_PAINT_SCRIPT } from "./utils/preferences";
 
 // Self-hosted by Next at build time. A face is only downloaded once something uses it, so the two
@@ -46,6 +49,9 @@ export default async function RootLayout({
             <Nav />
             <main className="appShell__main">
               <UserRegistry>{children}</UserRegistry>
+              <NotificationHost />
+              <PlayerLayer />
+              <MiniPlayer />
             </main>
           </div>
         </EditModeProvider>

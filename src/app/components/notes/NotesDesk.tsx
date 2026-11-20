@@ -8,16 +8,17 @@ import { asRecord } from "@/app/utils/widgetData";
 import { countWords, toggleTask } from "@/app/utils/notes/markdown";
 import { saveBeforeLeaving, useNotesStore } from "@/app/utils/notes/store";
 import "@/app/styles/pages/notes.scss";
+import { Button, Input, Textarea } from "@/app/components/ui";
 
 const when = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
 function IndexItem({ note, active, onOpen }: { note: NoteSummary; active: boolean; onOpen: (id: string) => void }) {
   return (
     <li>
-      <button type="button" className={`index__item ${active ? "is-active" : ""}`} data-paper={note.color} onClick={() => onOpen(note.id)} aria-current={active ? "true" : undefined}>
+      <Button variant="bare" className={`index__item ${active ? "is-active" : ""}`} data-paper={note.color} onClick={() => onOpen(note.id)} aria-current={active ? "true" : undefined}>
         <span className="index__title">{note.pinned && <BasicIcon icon="StarIcon" size={12} />} {note.title || "Untitled"}</span>
         <span className="index__preview">{note.preview || "Empty page"}</span>
-      </button>
+      </Button>
     </li>
   );
 }
@@ -121,16 +122,16 @@ export default function NotesDesk() {
             <label className="index__search">
               <BasicIcon icon="Search01Icon" size={15} />
               <span className="sr-only">Search notes</span>
-              <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Search" maxLength={60} />
+              <Input variant="bare" value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Search" maxLength={60} />
             </label>
-            <button type="button" className="index__new" onClick={() => void create()}><BasicIcon icon="PlusSignIcon" size={16} /> New note</button>
+            <Button variant="bare" className="index__new" onClick={() => void create()}><BasicIcon icon="PlusSignIcon" size={16} /> New note</Button>
           </div>
           {sticky && !brought && (
-            <button type="button" className="index__sticky" onClick={() => { setBrought(true); void create({ title: "From my sticky note", body: sticky }); }}>
+            <Button variant="bare" className="index__sticky" onClick={() => { setBrought(true); void create({ title: "From my sticky note", body: sticky }); }}>
               <BasicIcon icon="StickyNoteIcon" size={15} /> Bring in my sticky note
-            </button>
+            </Button>
           )}
-          {status === "error" && <p className="index__note">Could not load your notes. <button type="button" onClick={() => void load()}>Try again</button></p>}
+          {status === "error" && <p className="index__note">Could not load your notes. <Button variant="bare" onClick={() => void load()}>Try again</Button></p>}
           <ul className="index__list">
             {items.map((note) => <IndexItem key={note.id} note={note} active={note.id === active?.id} onOpen={(id) => void open(id)} />)}
           </ul>
@@ -145,41 +146,41 @@ export default function NotesDesk() {
             <div className="page__empty">
               <BasicIcon icon="StickyNoteIcon" size={34} strokeWidth={1.2} />
               <p>Pick a note from the index, or start a new page.</p>
-              <button type="button" className="index__new" onClick={() => void create()}><BasicIcon icon="PlusSignIcon" size={16} /> New note</button>
+              <Button variant="bare" className="index__new" onClick={() => void create()}><BasicIcon icon="PlusSignIcon" size={16} /> New note</Button>
             </div>
           ) : (
             <>
               {active.pinned && <span className="page__ribbon" aria-hidden />}
               <div className="page__tools">
-                <button type="button" className="page__back" onClick={() => void leave()}><BasicIcon icon="ArrowLeft01Icon" size={16} /> All notes</button>
+                <Button variant="bare" className="page__back" onClick={() => void leave()}><BasicIcon icon="ArrowLeft01Icon" size={16} /> All notes</Button>
                 <div className="page__mode" role="group" aria-label="View">
-                  <button type="button" aria-pressed={!reading} onClick={() => { setReading(false); }}>Write</button>
-                  <button type="button" aria-pressed={reading} onClick={() => setReading(true)}>Read</button>
+                  <Button variant="bare" aria-pressed={!reading} onClick={() => { setReading(false); }}>Write</Button>
+                  <Button variant="bare" aria-pressed={reading} onClick={() => setReading(true)}>Read</Button>
                 </div>
                 <div className="page__colors" role="radiogroup" aria-label="Paper colour">
-                  {NOTE_COLORS.map((c) => <button key={c} type="button" role="radio" aria-checked={c === active.color} aria-label={c} data-paper={c} onClick={() => void setColor(c)} />)}
+                  {NOTE_COLORS.map((c) => <Button variant="bare" key={c} role="radio" aria-checked={c === active.color} aria-label={c} data-paper={c} onClick={() => void setColor(c)} />)}
                 </div>
-                <button type="button" className={`page__icon ${active.pinned ? "is-on" : ""}`} aria-pressed={active.pinned} onClick={() => void togglePin()} aria-label={active.pinned ? "Unpin this note" : "Pin this note"}><BasicIcon icon="StarIcon" size={17} /></button>
-                <button type="button" className={`page__icon page__icon--danger ${confirmDelete ? "is-armed" : ""}`} onClick={() => (confirmDelete ? (setConfirmDelete(false), void remove()) : setConfirmDelete(true))} onBlur={() => setConfirmDelete(false)} aria-label={confirmDelete ? "Press again to delete this note" : "Delete this note"}>
+                <Button variant="bare" className={`page__icon ${active.pinned ? "is-on" : ""}`} aria-pressed={active.pinned} onClick={() => void togglePin()} aria-label={active.pinned ? "Unpin this note" : "Pin this note"}><BasicIcon icon="StarIcon" size={17} /></Button>
+                <Button variant="bare" className={`page__icon page__icon--danger ${confirmDelete ? "is-armed" : ""}`} onClick={() => (confirmDelete ? (setConfirmDelete(false), void remove()) : setConfirmDelete(true))} onBlur={() => setConfirmDelete(false)} aria-label={confirmDelete ? "Press again to delete this note" : "Delete this note"}>
                   <BasicIcon icon="Delete02Icon" size={17} />{confirmDelete && <span>Delete?</span>}
-                </button>
+                </Button>
               </div>
 
               {conflict && (
                 <div className="page__conflict" role="alert">
                   <b>This note was changed somewhere else.</b> What you see here has not been saved.
                   <span>
-                    <button type="button" onClick={useTheirs}>Show the newer version</button>
-                    <button type="button" onClick={() => void keepMine()}>Keep mine as a new note</button>
+                    <Button variant="bare" onClick={useTheirs}>Show the newer version</Button>
+                    <Button variant="bare" onClick={() => void keepMine()}>Keep mine as a new note</Button>
                   </span>
                 </div>
               )}
 
-              <input className="page__title" value={draft.title} onChange={(e) => edit({ title: e.target.value })} placeholder="Untitled" maxLength={120} aria-label="Title" />
+              <Input variant="bare" className="page__title" value={draft.title} onChange={(e) => edit({ title: e.target.value })} placeholder="Untitled" maxLength={120} aria-label="Title" />
               {reading ? (
                 <div className="page__read"><NoteView body={draft.body} onToggle={conflict ? undefined : onTick} /></div>
               ) : (
-                <textarea ref={bodyRef} className="page__body" value={draft.body} onChange={(e) => edit({ body: e.target.value })} placeholder={"Write here...\n\n# A heading\n- a bullet\n- [ ] a tick-box\n**bold**, *italic*, [a link](https://example.com)"} aria-label="Note" spellCheck />
+                <Textarea variant="bare" ref={bodyRef} className="page__body" value={draft.body} onChange={(e) => edit({ body: e.target.value })} placeholder={"Write here...\n\n# A heading\n- a bullet\n- [ ] a tick-box\n**bold**, *italic*, [a link](https://example.com)"} aria-label="Note" spellCheck />
               )}
 
               <footer className="page__foot">

@@ -3,6 +3,7 @@ import { memo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import BasicIcon from "../../ultis/icons";
 import { usePartyStore } from "@/app/utils/party/store";
+import { Button, Chip, Input, MiniButton } from "@/app/components/ui";
 
 // Start a party, or join one with its invite code (the invite link /radio?party=CODE fills the code in; you still press Join).
 function PartyStart() {
@@ -33,34 +34,34 @@ function PartyStart() {
       {status === "ended" && (
         <p className="deskCard__fine" role="status">
           {message ?? "The party has ended."}{" "}
-          <button type="button" className="linkBtn" onClick={dismiss}>
+          <Button variant="bare" className="linkBtn" onClick={dismiss}>
             OK
-          </button>
+          </Button>
         </p>
       )}
       <div className="deskCard__row" role="group" aria-label="Start or join">
-        <button type="button" className="chip" aria-pressed={mode === "start"} onClick={() => setMode("start")}>
+        <Chip  aria-pressed={mode === "start"} onClick={() => setMode("start")}>
           Start a party
-        </button>
-        <button type="button" className="chip" aria-pressed={mode === "join"} onClick={() => setMode("join")}>
+        </Chip>
+        <Chip  aria-pressed={mode === "join"} onClick={() => setMode("join")}>
           Join with a code
-        </button>
+        </Chip>
       </div>
       <form className="partyForm" onSubmit={submit}>
         {mode === "start" ? (
           <label>
             <span className="sr-only">Party name</span>
-            <input type="text" value={name} maxLength={40} placeholder="Name it (optional)" onChange={(e) => setName(e.target.value)} />
+            <Input variant="bare" type="text" value={name} maxLength={40} placeholder="Name it (optional)" onChange={(e) => setName(e.target.value)} />
           </label>
         ) : (
           <label>
             <span className="sr-only">Invite code</span>
-            <input type="text" value={code} maxLength={12} placeholder="Invite code" autoCapitalize="characters" autoComplete="off" spellCheck={false} onChange={(e) => setCode(e.target.value)} />
+            <Input variant="bare" type="text" value={code} maxLength={12} placeholder="Invite code" autoCapitalize="characters" autoComplete="off" spellCheck={false} onChange={(e) => setCode(e.target.value)} />
           </label>
         )}
-        <button type="submit" className="miniBtn miniBtn--go" disabled={busy || (mode === "join" && code.trim().length < 8)}>
+        <MiniButton tone="go" type="submit"  disabled={busy || (mode === "join" && code.trim().length < 8)}>
           {mode === "start" ? "Start" : "Join"}
-        </button>
+        </MiniButton>
       </form>
       {status !== "ended" && message && (
         <p className="addSong__note is-error" role="alert">

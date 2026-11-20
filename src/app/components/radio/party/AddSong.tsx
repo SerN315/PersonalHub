@@ -7,6 +7,7 @@ import { parseYouTubeLink, titleWithAuthor } from "@/app/utils/radio/radioData";
 import { usePartyStore } from "@/app/utils/party/store";
 import { SearchYouTube, TrendingYouTube } from "./YouTubeBrowse";
 import { useSearchAccess } from "./useSearchAccess";
+import { Chip, Input, MiniButton } from "@/app/components/ui";
 
 // Choosing music for the party. The host plays things straight away or lines them up; everyone else suggests, and the host decides.
 // There are several ways to find a song and ONE is shown at a time: a station, a pasted link, what is popular, and (only for the people the
@@ -42,7 +43,7 @@ function StationSearch({ render }: { render: (station: Station) => ReactNode }) 
       <label className="addSong__search">
         <BasicIcon icon="Search01Icon" size={16} />
         <span className="sr-only">Search stations</span>
-        <input type="search" value={text} maxLength={60} placeholder="Find a station, genre or country" onChange={(e) => setText(e.target.value)} />
+        <Input variant="bare" type="search" value={text} maxLength={60} placeholder="Find a station, genre or country" onChange={(e) => setText(e.target.value)} />
       </label>
       {state === "error" && <p className="addSong__note">The station guide is not answering. Try again in a moment.</p>}
       {state === "ready" && found.length === 0 && <p className="addSong__note">No stations found.</p>}
@@ -91,13 +92,13 @@ function AddSong({ host }: { host: boolean }) {
   const resultActions = (result: YouTubeResult) => (
     <span className="addSong__acts">
       {host && (
-        <button type="button" className="miniBtn miniBtn--go" onClick={() => void sendResult(result, "now")} aria-label={`Play ${result.title} now`}>
+        <MiniButton tone="go"  onClick={() => void sendResult(result, "now")} aria-label={`Play ${result.title} now`}>
           <BasicIcon icon="PlayIcon" size={13} /> Play
-        </button>
+        </MiniButton>
       )}
-      <button type="button" className="miniBtn" onClick={() => void sendResult(result, "line")} aria-label={`${host ? "Add" : "Suggest"} ${result.title}`}>
+      <MiniButton  onClick={() => void sendResult(result, "line")} aria-label={`${host ? "Add" : "Suggest"} ${result.title}`}>
         <BasicIcon icon="PlusSignIcon" size={13} /> {host ? "Add" : "Suggest"}
-      </button>
+      </MiniButton>
     </span>
   );
 
@@ -122,19 +123,19 @@ function AddSong({ host }: { host: boolean }) {
     <section className="partyBox addSong" aria-label={host ? "Choose music" : "Suggest a song"}>
       <h3>{host ? "Choose the music" : "Suggest a song"}</h3>
       <div className="addSong__tabs" role="group" aria-label="Ways to find a song">
-        <button type="button" className="chip" aria-pressed={tab === "station"} onClick={() => setChosen("station")}>
+        <Chip  aria-pressed={tab === "station"} onClick={() => setChosen("station")}>
           <BasicIcon icon="Radio01Icon" size={14} /> Station
-        </button>
-        <button type="button" className="chip" aria-pressed={tab === "link"} onClick={() => setChosen("link")}>
+        </Chip>
+        <Chip  aria-pressed={tab === "link"} onClick={() => setChosen("link")}>
           <BasicIcon icon="Link01Icon" size={14} /> Paste link
-        </button>
-        <button type="button" className="chip" aria-pressed={tab === "trending"} onClick={() => setChosen("trending")}>
+        </Chip>
+        <Chip  aria-pressed={tab === "trending"} onClick={() => setChosen("trending")}>
           <BasicIcon icon="StarIcon" size={14} /> Popular
-        </button>
+        </Chip>
         {canSearch && (
-          <button type="button" className="chip" aria-pressed={tab === "search"} onClick={() => setChosen("search")}>
+          <Chip  aria-pressed={tab === "search"} onClick={() => setChosen("search")}>
             <BasicIcon icon="Search01Icon" size={14} /> Search
-          </button>
+          </Chip>
         )}
       </div>
 
@@ -145,13 +146,13 @@ function AddSong({ host }: { host: boolean }) {
           render={(station) => (
             <span className="addSong__acts">
               {host && (
-                <button type="button" className="miniBtn miniBtn--go" onClick={() => void sendStation(station, "now")}>
+                <MiniButton tone="go"  onClick={() => void sendStation(station, "now")}>
                   <BasicIcon icon="PlayIcon" size={13} /> Play
-                </button>
+                </MiniButton>
               )}
-              <button type="button" className="miniBtn" onClick={() => void sendStation(station, "line")}>
+              <MiniButton  onClick={() => void sendStation(station, "line")}>
                 <BasicIcon icon="PlusSignIcon" size={13} /> {host ? "Add" : "Suggest"}
-              </button>
+              </MiniButton>
             </span>
           )}
         />
@@ -166,21 +167,21 @@ function AddSong({ host }: { host: boolean }) {
         >
           <label>
             <span className="sr-only">YouTube link</span>
-            <input type="text" value={link} maxLength={300} placeholder="Paste a video or playlist link" onChange={(e) => setLink(e.target.value)} aria-invalid={problem ? true : undefined} />
+            <Input variant="bare" type="text" value={link} maxLength={300} placeholder="Paste a video or playlist link" onChange={(e) => setLink(e.target.value)} aria-invalid={problem ? true : undefined} />
           </label>
           <label>
             <span className="sr-only">Name (optional)</span>
-            <input type="text" value={title} maxLength={120} placeholder="Name it (optional, we use the title)" onChange={(e) => setTitle(e.target.value)} />
+            <Input variant="bare" type="text" value={title} maxLength={120} placeholder="Name it (optional, we use the title)" onChange={(e) => setTitle(e.target.value)} />
           </label>
           <span className="addSong__acts">
             {host && (
-              <button type="submit" className="miniBtn miniBtn--go">
+              <MiniButton tone="go" type="submit" >
                 <BasicIcon icon="PlayIcon" size={13} /> Play now
-              </button>
+              </MiniButton>
             )}
-            <button type="button" className="miniBtn" onClick={() => void submitLink("line")}>
+            <MiniButton  onClick={() => void submitLink("line")}>
               <BasicIcon icon="PlusSignIcon" size={13} /> {host ? "Add to line-up" : "Suggest"}
-            </button>
+            </MiniButton>
           </span>
           {problem && (
             <p className="addSong__note is-error" role="alert">

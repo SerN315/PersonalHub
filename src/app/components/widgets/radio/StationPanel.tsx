@@ -3,6 +3,7 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import BasicIcon from "@/app/components/ultis/icons";
 import { getNowPlaying, searchStations, type Station, type StationQuery } from "@/app/apis/radio";
 import { useEscape } from "./useEscape";
+import { Button, Chip, Input } from "@/app/components/ui";
 
 // The pull-out station guide: type to search, tap a topic, or pick from your favourites.
 
@@ -102,18 +103,18 @@ function StationPanel({ current, playing, currentTitle, favorites, onResults, on
         <label className="radioPanel__search">
           <BasicIcon icon="Search01Icon" size={18} />
           <span className="sr-only">Search stations</span>
-          <input ref={searchRef} type="search" value={text} maxLength={60} placeholder="Type a station, genre or country…" onChange={(event) => setText(event.target.value)} />
+          <Input variant="bare" ref={searchRef} type="search" value={text} maxLength={60} placeholder="Type a station, genre or country…" onChange={(event) => setText(event.target.value)} />
         </label>
-        <button type="button" className="radioPanel__close" onClick={onClose} aria-label="Close the station guide">
+        <Button variant="bare" className="radioPanel__close" onClick={onClose} aria-label="Close the station guide">
           <BasicIcon icon="Cancel01Icon" size={18} />
-        </button>
+        </Button>
       </div>
 
       <div className="radioPanel__chips" role="group" aria-label="Topics">
         {CHIPS.map((c) => (
-          <button key={c.key} type="button" className="chip" aria-pressed={chip === c.key} onClick={() => setChip(c.key)}>
+          <Chip key={c.key}  aria-pressed={chip === c.key} onClick={() => setChip(c.key)}>
             {c.key === "favorites" ? `★ ${c.label}${favorites.length ? ` (${favorites.length})` : ""}` : c.label}
-          </button>
+          </Chip>
         ))}
       </div>
 
@@ -129,7 +130,7 @@ function StationPanel({ current, playing, currentTitle, favorites, onResults, on
             const now = isCurrent ? currentTitle : peeks[station.id];
             return (
               <li key={station.id} className={`stationRow ${isCurrent ? "is-current" : ""}`}>
-                <button type="button" className="stationRow__main" onClick={() => onPlay(station)} aria-current={isCurrent ? "true" : undefined}>
+                <Button variant="bare" className="stationRow__main" onClick={() => onPlay(station)} aria-current={isCurrent ? "true" : undefined}>
                   <span className="stationRow__name">
                     {station.name}
                     {isCurrent && playing && (
@@ -148,15 +149,15 @@ function StationPanel({ current, playing, currentTitle, favorites, onResults, on
                     </span>
                   )}
                   {now === null && !isCurrent && station.id in peeks && <span className="stationRow__now is-quiet">No song info from this station</span>}
-                </button>
+                </Button>
                 {!isCurrent && (
-                  <button type="button" className="stationRow__icon" onClick={() => peek(station)} aria-label={`What is playing on ${station.name}`} title="What's on?">
+                  <Button variant="bare" className="stationRow__icon" onClick={() => peek(station)} aria-label={`What is playing on ${station.name}`} title="What's on?">
                     <BasicIcon icon="MusicNote01Icon" size={16} />
-                  </button>
+                  </Button>
                 )}
-                <button type="button" className="stationRow__icon stationRow__star" aria-pressed={isFavorite(station)} onClick={() => onToggleFavorite(station)} aria-label={isFavorite(station) ? `Remove ${station.name} from favorites` : `Add ${station.name} to favorites`} title="Favorite">
+                <Button variant="bare" className="stationRow__icon stationRow__star" aria-pressed={isFavorite(station)} onClick={() => onToggleFavorite(station)} aria-label={isFavorite(station) ? `Remove ${station.name} from favorites` : `Add ${station.name} to favorites`} title="Favorite">
                   <BasicIcon icon="StarIcon" size={16} />
-                </button>
+                </Button>
               </li>
             );
           })}

@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import "@/app/styles/ui/controls.scss";
+import { Button } from "./Button";
 
 interface Option<T extends string> {
   value: T;
@@ -40,7 +41,8 @@ export function Segmented<T extends string>(props: GroupProps<T>) {
   return (
     <div className="segmented" role="radiogroup" aria-label={label} onKeyDown={onKeyDown}>
       {options.map((option, index) => (
-        <button
+        <Button
+          variant="bare"
           key={option.value}
           ref={(el) => {
             refs.current[index] = el;
@@ -54,7 +56,7 @@ export function Segmented<T extends string>(props: GroupProps<T>) {
         >
           {option.icon}
           {option.label}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -66,7 +68,8 @@ export function Swatches<T extends string>(props: GroupProps<T>) {
   return (
     <div className="swatches" role="radiogroup" aria-label={label} onKeyDown={onKeyDown}>
       {options.map((option, index) => (
-        <button
+        <Button
+          variant="bare"
           key={option.value}
           ref={(el) => {
             refs.current[index] = el;
@@ -87,5 +90,5 @@ export function Swatches<T extends string>(props: GroupProps<T>) {
 }
 
 export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
-  return <button type="button" role="switch" aria-checked={checked} aria-label={label} className="switch" onClick={() => onChange(!checked)} />;
+  return <Button variant="bare" role="switch" aria-checked={checked} aria-label={label} className="switch" onClick={() => onChange(!checked)} />;
 }

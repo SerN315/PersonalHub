@@ -4,6 +4,7 @@ import BasicIcon from "../ultis/icons";
 import { useEscape } from "../widgets/radio/useEscape";
 import { useRoomWidget } from "./useRoomWidget";
 import { getWidgetDefinition } from "@/app/widgets/registry";
+import { Button } from "@/app/components/ui";
 
 interface Props {
   type: string; // the widget type this object stands for
@@ -27,9 +28,9 @@ function RoomWidgetPanel({ type, create, onClose }: Props) {
   return (
     <div className="roomPanel" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <div className={`roomPanel__window roomPanel__window--${type}`} role="dialog" aria-label={definition.name}>
-        <button type="button" className="roomPanel__close" onClick={onClose} aria-label={`Close ${definition.name}`}>
+        <Button variant="bare" className="roomPanel__close" onClick={onClose} aria-label={`Close ${definition.name}`}>
           <BasicIcon icon="Cancel01Icon" size={18} />
-        </button>
+        </Button>
         {widget.ready && <Component id={widget.id} data={widget.data} onData={widget.onData} tint={definition.tint} />}
       </div>
     </div>

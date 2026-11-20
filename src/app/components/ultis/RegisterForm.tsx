@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import BaseInput from "@/app/components/ui/BaseInput";
-import BaseButton from "@/app/components/ui/BaseButton";
+import { Button, Field } from "@/app/components/ui";
 
 interface RegisterFormProps {
   toggleForm: () => void;
@@ -61,10 +60,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
       <p className="authCard__subtitle">Create your account in a minute.</p>
 
       <form id="register-form" className="authCard__form" onSubmit={handleSubmit} noValidate>
-        <BaseInput label="Username" autoComplete="username" placeholder="What should we call you?" maxLength={32} value={userName} error={errors.username} onChange={(e) => setUserName(e.target.value)} />
-        <BaseInput label="Email" type="email" autoComplete="email" placeholder="you@example.com" value={email} error={errors.email} onChange={(e) => setEmail(e.target.value)} />
-        <BaseInput label="Password" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={password} error={errors.password} onChange={(e) => setPassword(e.target.value)} />
-        <BaseInput label="Confirm password" type="password" autoComplete="new-password" placeholder="Once more" value={confirm} error={errors.confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <Field label="Username" autoComplete="username" placeholder="What should we call you?" maxLength={32} value={userName} error={errors.username} onChange={(e) => setUserName(e.target.value)} />
+        <Field label="Email" type="email" autoComplete="email" placeholder="you@example.com" value={email} error={errors.email} onChange={(e) => setEmail(e.target.value)} />
+        <Field label="Password" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={password} error={errors.password} onChange={(e) => setPassword(e.target.value)} />
+        <Field label="Confirm password" type="password" autoComplete="new-password" placeholder="Once more" value={confirm} error={errors.confirm} onChange={(e) => setConfirm(e.target.value)} />
         {errors.general && (
           <p className="authCard__error" role="alert">
             {errors.general}
@@ -75,16 +74,16 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ toggleForm }) => {
             {notice}
           </p>
         )}
-        <BaseButton type="submit" form="register-form" full disabled={busy}>
+        <Button type="submit" form="register-form" full disabled={busy}>
           {busy ? "Creating…" : "Create account"}
-        </BaseButton>
+        </Button>
       </form>
 
       <p className="authCard__switch">
         Already have an account?{" "}
-        <button type="button" className="authCard__link registerLink" onClick={toggleForm}>
+        <Button variant="bare" className="authCard__link registerLink" onClick={toggleForm}>
           Sign in
-        </button>
+        </Button>
       </p>
     </div>
   );

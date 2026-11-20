@@ -3,6 +3,7 @@ import React, { memo, useEffect, useRef, useState } from "react";
 import { getVideoNames, type YouTubeName } from "@/app/apis/radio";
 import { titleWithAuthor } from "@/app/utils/radio/radioData";
 import { useEscape } from "./useEscape";
+import { Button } from "@/app/components/ui";
 
 // The drop-down under the radio's display: the song playing and the ones coming up, by name. The names come from YouTube (looked up a few at a
 // time, and remembered), because the player itself only tells us the ids. Pressing a song plays it.
@@ -69,19 +70,19 @@ function UpNext({ ids, index, onPlay, onClose, readOnly = false, inline = false 
           const isNow = offset === 0;
           return (
             <li key={`${id}-${i}`} className={isNow ? "is-now" : ""}>
-              <button type="button" disabled={readOnly} onClick={() => onPlay(i)} aria-current={isNow ? "true" : undefined}>
+              <Button variant="bare" disabled={readOnly} onClick={() => onPlay(i)} aria-current={isNow ? "true" : undefined}>
                 <span className="upNext__n">{isNow ? "▶" : i + 1}</span>
                 <span className="upNext__t">{label(id, i)}</span>
-              </button>
+              </Button>
             </li>
           );
         })}
       </ol>
       {failed && <p className="upNext__note">Some names could not be loaded. The songs still play.</p>}
       {left > 0 && (
-        <button type="button" className="upNext__more" onClick={() => setShown((n) => n + STEP)}>
+        <Button variant="bare" className="upNext__more" onClick={() => setShown((n) => n + STEP)}>
           Show {Math.min(STEP, left)} more ({left} left)
-        </button>
+        </Button>
       )}
     </div>
   );

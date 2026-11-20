@@ -1,4 +1,4 @@
-// The Focus tab: a wooden desk with a brass-and-wood hourglass, a pinned note of how it is going, and a small time desk beside it.
+// The Focus tab: a wooden desk with a glass-and-wood hourglass, a pinned note of how it is going, and a small time desk beside it.
 
 .focus {
   max-width: 1180px;
@@ -17,6 +17,7 @@
   --cream: #f6e7d6;
   --brass: #d1ab55;
   display: grid;
+  align-content: start; // when the desk is stretched to match the column beside it, the extra space goes below, not into a row
   justify-items: center;
   gap: 14px;
   padding: clamp(18px, 3vw, 30px);
@@ -97,7 +98,7 @@
 
 .desk .desk__btn { background: color-mix(in srgb, #000 22%, transparent); border-color: rgb(255 255 255 / 0.2); color: var(--cream); &.is-primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; } }
 
-.settings {
+.timerSettings {
   width: min(100%, 420px);
   border-radius: 12px;
   background: rgb(0 0 0 / 0.22);
@@ -113,19 +114,26 @@
   display: block;
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 8px 6px rgb(0 0 0 / 0.4));
-  .hg-wood { fill: #8a5a3a; }
-  .hg-wood-hi { fill: #b88358; }
-  .hg-wood-lo { fill: #4f301d; }
-  .hg-brass { fill: #d1ab55; }
-  .hg-glass { fill: rgb(200 232 245 / 0.16); stroke: #d3e8ef; stroke-width: 2; stroke-linejoin: miter; }
-  .hg-shine { fill: none; stroke: rgb(255 255 255 / 0.5); stroke-width: 2; }
-  .hg-sand { fill: #ecca74; }
-  .hg-stream { fill: #ecca74; animation: stream 0.5s steps(2) infinite; }
+  overflow: visible;
+  filter: drop-shadow(0 10px 10px rgb(0 0 0 / 0.35));
+  transition: filter 0.6s;
+  .hg-ground { fill: rgb(0 0 0 / 0.28); filter: blur(2px); }
+  .hg-sand-hi { stop-color: #f8dc8e; }
+  .hg-sand-lo { stop-color: #dba94a; }
+  .hg-wood-hi { stop-color: #c99466; }
+  .hg-wood-lo { stop-color: #6b4228; }
+  .hg-brass-hi { stop-color: #f0d078; }
+  .hg-brass-lo { stop-color: #a88232; }
+  .hg-cap-light { fill: rgb(255 255 255 / 0.32); }
+  .hg-shine { fill: none; stroke: rgb(255 255 255 / 0.7); stroke-width: 2.4; stroke-linecap: round; &--soft { stroke: rgb(255 255 255 / 0.28); stroke-width: 1.6; } }
+  .hg-stream { stroke: #f6d27a; stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 2.2 3.6; animation: sandFall 0.4s linear infinite; }
+  .hg-stream-glow { stroke: rgb(255 214 120 / 0.35); stroke-width: 4.5; stroke-linecap: round; }
+  &.is-running { filter: drop-shadow(0 10px 10px rgb(0 0 0 / 0.35)) drop-shadow(0 0 16px rgb(255 205 110 / 0.28)); } // a warm glow while it runs
   &.is-turning { animation: turnOver 0.95s cubic-bezier(0.45, 0.05, 0.3, 1); } // it starts upside down, with the sand at the bottom, and swings upright
 }
 @keyframes turnOver { from { transform: rotate(180deg); } to { transform: rotate(360deg); } }
 @keyframes stream { 50% { opacity: 0.55; } }
+@keyframes sandFall { to { stroke-dashoffset: -5.8; } }
 
 // ---- the cards beside it -------------------------------------------------------------------------------------------------
 .desk__card {
@@ -163,4 +171,4 @@
 @keyframes ring { 50% { transform: scale(1.06); } }
 
 @media (max-width: 900px) { .focus__grid { grid-template-columns: minmax(0, 1fr); } }
-@media (prefers-reduced-motion: reduce) { .hourglass.is-turning, .hourglass .hg-stream, .kitchen__time.is-ringing { animation: none; } .desk__glass { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .hourglass.is-turning, .hourglass .hg-stream, .hourglass, .kitchen__time.is-ringing { animation: none; } .desk__glass { transition: none; } }

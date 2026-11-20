@@ -22,7 +22,6 @@
     padding: 0 8px;
     h2 { margin: 0; font-size: 24px; }
   }
-  &__close { display: none; }
 
   &__tabs { display: flex; flex-direction: column; gap: 4px; }
   &__tab {
@@ -162,7 +161,6 @@
     height: calc(100vh - 32px);
 
     &__side { flex-direction: column; padding: 14px 12px 8px; border-right: 0; border-bottom: 1px solid var(--line); gap: 8px; }
-    &__close { display: inline-grid; }
     &__tabs { flex-direction: row; overflow-x: auto; }
     &__tab { flex: none; padding: 8px 12px; }
     &__tabBlurb { display: none; }

@@ -5,6 +5,7 @@ import { getYouTubeName, type YouTubeName } from "@/app/apis/radio";
 import { MAX_PLAYLISTS, isVideo, needsName, parsePlaylistId, parseYouTubeLink, playlistName, titleWithAuthor, type Playlist } from "@/app/utils/radio/radioData";
 import { historyStore, withHistory } from "@/app/utils/radio/youtubeHistory";
 import { useEscape } from "./useEscape";
+import { Button, Input } from "@/app/components/ui";
 
 // The YouTube side of the radio: paste a link to a playlist or a single song (YouTube or YouTube Music) and keep the ones you like.
 // Nothing needs naming: the title and channel are looked up. Typing a name still wins.
@@ -110,15 +111,15 @@ function PlaylistPanel({ playlists, activeId, onPlay, onAdd, onUpdate, onRemove,
     <div className="radioPanel">
       <div className="radioPanel__top">
         <h3 className="radioPanel__title">YouTube</h3>
-        <button type="button" className="radioPanel__close" onClick={onClose} aria-label="Close the YouTube guide">
+        <Button variant="bare" className="radioPanel__close" onClick={onClose} aria-label="Close the YouTube guide">
           <BasicIcon icon="Cancel01Icon" size={18} />
-        </button>
+        </Button>
       </div>
 
       <form className="radioPanel__form" onSubmit={submit}>
         <label>
           <span className="sr-only">Playlist or song link</span>
-          <input ref={linkRef} type="text" value={link} maxLength={300} placeholder="Paste a playlist or song link (YouTube or YouTube Music)" onChange={(event) => { setLink(event.target.value); setMessage(null); }} aria-invalid={message ? true : undefined} />
+          <Input variant="bare" ref={linkRef} type="text" value={link} maxLength={300} placeholder="Paste a playlist or song link (YouTube or YouTube Music)" onChange={(event) => { setLink(event.target.value); setMessage(null); }} aria-invalid={message ? true : undefined} />
         </label>
         {found && (
           <p className="radioPanel__found" role="status">
@@ -130,11 +131,11 @@ function PlaylistPanel({ playlists, activeId, onPlay, onAdd, onUpdate, onRemove,
         <div className="radioPanel__formRow">
           <label>
             <span className="sr-only">Name (optional)</span>
-            <input type="text" value={name} maxLength={40} placeholder={looked?.name?.title ? "Rename it (optional)" : "Name it (optional)"} onChange={(event) => setName(event.target.value)} />
+            <Input variant="bare" type="text" value={name} maxLength={40} placeholder={looked?.name?.title ? "Rename it (optional)" : "Name it (optional)"} onChange={(event) => setName(event.target.value)} />
           </label>
-          <button type="submit" className="radioPanel__go">
+          <Button variant="bare" type="submit" className="radioPanel__go">
             <BasicIcon icon="PlayIcon" size={16} /> Play
-          </button>
+          </Button>
         </div>
         {message && (
           <p className="radioPanel__error" role="alert">
@@ -148,13 +149,13 @@ function PlaylistPanel({ playlists, activeId, onPlay, onAdd, onUpdate, onRemove,
         <ul>
           {playlists.map((playlist) => (
             <li key={playlist.id} className={`stationRow ${activeId === playlist.id ? "is-current" : ""}`}>
-              <button type="button" className="stationRow__main" onClick={() => play(playlist)} aria-current={activeId === playlist.id ? "true" : undefined}>
+              <Button variant="bare" className="stationRow__main" onClick={() => play(playlist)} aria-current={activeId === playlist.id ? "true" : undefined}>
                 <span className="stationRow__name">{playlistName(playlist)}</span>
                 <span className="stationRow__meta">{isVideo(playlist) ? "YouTube song" : "YouTube playlist"}{playlist.label && playlist.title ? ` · ${titleWithAuthor(playlist.title, playlist.author)}` : ""}</span>
-              </button>
-              <button type="button" className="stationRow__icon" onClick={() => onRemove(playlist.id)} aria-label={`Remove ${playlistName(playlist)}`} title="Remove">
+              </Button>
+              <Button variant="bare" className="stationRow__icon" onClick={() => onRemove(playlist.id)} aria-label={`Remove ${playlistName(playlist)}`} title="Remove">
                 <BasicIcon icon="Cancel01Icon" size={16} />
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -162,20 +163,20 @@ function PlaylistPanel({ playlists, activeId, onPlay, onAdd, onUpdate, onRemove,
           <>
             <div className="radioPanel__sub">
               <h4>Recent</h4>
-              <button type="button" className="radioPanel__link" onClick={() => historyStore.set([])}>
+              <Button variant="bare" className="radioPanel__link" onClick={() => historyStore.set([])}>
                 Clear history
-              </button>
+              </Button>
             </div>
             <ul>
               {recent.map((item) => (
                 <li key={item.id} className={`stationRow ${activeId === item.id ? "is-current" : ""}`}>
-                  <button type="button" className="stationRow__main" onClick={() => play(item)}>
+                  <Button variant="bare" className="stationRow__main" onClick={() => play(item)}>
                     <span className="stationRow__name">{playlistName(item)}</span>
                     <span className="stationRow__meta">{isVideo(item) ? "YouTube song" : "YouTube playlist"} · played lately</span>
-                  </button>
-                  <button type="button" className="stationRow__icon" onClick={() => playlists.length < MAX_PLAYLISTS ? onAdd(item) : setMessage(`You can keep ${MAX_PLAYLISTS}. Remove one first.`)} aria-label={`Save ${playlistName(item)}`} title="Save to my list">
+                  </Button>
+                  <Button variant="bare" className="stationRow__icon" onClick={() => playlists.length < MAX_PLAYLISTS ? onAdd(item) : setMessage(`You can keep ${MAX_PLAYLISTS}. Remove one first.`)} aria-label={`Save ${playlistName(item)}`} title="Save to my list">
                     <BasicIcon icon="StarIcon" size={16} />
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>

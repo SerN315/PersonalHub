@@ -4,6 +4,7 @@ import { preloadWidget } from "@/app/widgets/registry";
 import { useRadioStore } from "@/app/utils/radio/engine";
 import { useFocusBoot, useFocusStore } from "@/app/utils/focus/engine";
 import type { RoomProp } from "./roomProps";
+import { Button } from "@/app/components/ui";
 
 // The things in the room that open a widget. Each is a real button holding its sprite (no text: the job is in the accessible
 // name) plus, where it helps, a live detail drawn over the picture. Pointing at one (or tabbing to it) starts fetching its widget,
@@ -28,11 +29,11 @@ function useNow(everyMs: number) {
 
 function Sprite({ prop, onOpen, className = "", children }: Props & { className?: string; children?: React.ReactNode }) {
   return (
-    <button type="button" className={`prop ${className}`} onClick={() => onOpen(prop)} onPointerEnter={warm(prop)} onFocus={warm(prop)} aria-label={prop.label} aria-haspopup="dialog">
+    <Button variant="bare" className={`prop ${className}`} onClick={() => onOpen(prop)} onPointerEnter={warm(prop)} onFocus={warm(prop)} aria-label={prop.label} aria-haspopup="dialog">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={prop.src} alt="" draggable={false} />
       {children}
-    </button>
+    </Button>
   );
 }
 

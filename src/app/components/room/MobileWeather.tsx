@@ -9,6 +9,7 @@ import { preloadWidget } from "@/app/widgets/registry";
 import ViewSwitch from "./ViewSwitch";
 import type { IconName } from "../ultis/icons";
 import "@/app/styles/pages/weatherMobile.scss";
+import { Button } from "@/app/components/ui";
 
 const TABS = ["Now", "Hours", "Days"] as const;
 type Tab = (typeof TABS)[number];
@@ -59,14 +60,14 @@ export default function MobileWeather({ onOpen }: { onOpen: (prop: RoomProp) => 
         ) : (
           <div className="wxm__note">
             <p>{status === "denied" ? "Allow location access to see the sky." : status === "error" ? "Can't see the sky right now." : "Looking outside..."}</p>
-            {(status === "denied" || status === "error") && <button type="button" onClick={retry}>Try again</button>}
+            {(status === "denied" || status === "error") && <Button variant="bare" onClick={retry}>Try again</Button>}
           </div>
         )}
       </section>
 
       <div className="wxm__tabs" role="tablist" aria-label="Forecast">
         {TABS.map((name) => (
-          <button key={name} type="button" role="tab" aria-selected={tab === name} className={tab === name ? "is-on" : ""} onClick={() => setTab(name)}>{name}</button>
+          <Button variant="bare" key={name} role="tab" aria-selected={tab === name} className={tab === name ? "is-on" : ""} onClick={() => setTab(name)}>{name}</Button>
         ))}
       </div>
 
@@ -98,15 +99,15 @@ export default function MobileWeather({ onOpen }: { onOpen: (prop: RoomProp) => 
 
       <nav className="wxm__props" aria-label="Your things">
         {PROPS.map((prop) => (
-          <button key={prop.widget} type="button" onClick={() => onOpen(prop)} onPointerDown={() => preloadWidget(prop.widget)} aria-label={prop.label} aria-haspopup="dialog">
+          <Button variant="bare" key={prop.widget} onClick={() => onOpen(prop)} onPointerDown={() => preloadWidget(prop.widget)} aria-label={prop.label} aria-haspopup="dialog">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={prop.src} alt="" draggable={false} />
-          </button>
+          </Button>
         ))}
-        <button type="button" className={place ? "is-away" : ""} onClick={() => setPicking(true)} aria-haspopup="dialog" aria-label={place ? `Showing the sky over ${place.name}. Change place` : "Look at the sky somewhere else"}>
+        <Button variant="bare" className={place ? "is-away" : ""} onClick={() => setPicking(true)} aria-haspopup="dialog" aria-label={place ? `Showing the sky over ${place.name}. Change place` : "Look at the sky somewhere else"}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/room/globe.png" alt="" draggable={false} />
-        </button>
+        </Button>
       </nav>
 
       {picking && (

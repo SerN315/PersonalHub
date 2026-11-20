@@ -1,7 +1,8 @@
 "use client";
 import { memo, useEffect, useState } from "react";
 import BasicIcon from "../ultis/icons";
-import { useRadioStore } from "@/app/utils/radio/engine";
+import { pauseAllMusic } from "@/app/utils/radio/youtubeEngine";
+import { Chip } from "@/app/components/ui";
 
 const currentTime = () => Date.now();
 const CHOICES = [15, 30, 60, 90];
@@ -21,7 +22,7 @@ function SleepTimer() {
     const tick = () => {
       const remaining = endsAt - currentTime();
       if (remaining <= 0) {
-        useRadioStore.getState().pause();
+        pauseAllMusic();
         setEndsAt(null);
         return;
       }
@@ -40,16 +41,16 @@ function SleepTimer() {
     <section className="deskCard" aria-label="Sleep timer">
       <h2><BasicIcon icon="Moon02Icon" size={16} /> Sleep timer</h2>
       {endsAt === null ? (
-        <div className="deskCard__row" role="group" aria-label="Switch the radio off in">
-          {CHOICES.map((m) => <button key={m} type="button" className="chip" onClick={() => start(m)}>{m} min</button>)}
+        <div className="deskCard__row" role="group" aria-label="Switch the music off in">
+          {CHOICES.map((m) => <Chip key={m}  onClick={() => start(m)}>{m} min</Chip>)}
         </div>
       ) : (
         <div className="deskCard__row">
           <span className="deskCard__big" role="timer">{clock(left)}</span>
-          <button type="button" className="chip" onClick={() => setEndsAt(null)}>Cancel</button>
+          <Chip  onClick={() => setEndsAt(null)}>Cancel</Chip>
         </div>
       )}
-      <p className="deskCard__fine">Switches the station off. YouTube playlists keep their own player.</p>
+      <p className="deskCard__fine">Switches the music off, a station or a YouTube song.</p>
     </section>
   );
 }

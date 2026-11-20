@@ -4,8 +4,6 @@ import { useMemo, useState } from "react";
 import ExcelJS from "exceljs";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import Input from "@/app/components/ui/BaseInput";
-import BaseButton from "@/app/components/ui/BaseButton";
 import {
   processDictionaryWords,
   DictionaryEngine,
@@ -13,6 +11,7 @@ import {
   MeaningLanguage,
 } from "@/app/apis/dictionary";
 import "@/app/styles/pages/dictionary.scss";
+import { Button, Field, Select } from "@/app/components/ui";
 
 const languageLabels: Record<MeaningLanguage, string> = {
   en: "English",
@@ -450,20 +449,20 @@ export default function DictionaryPage() {
             Process.
           </p>
           <div className="dictionary-engineToggle" role="group" aria-label="Dictionary engine">
-            <button
-              type="button"
+            <Button
+              variant="bare"
               className={`dictionary-engineToggle__button ${engine === "legacy" ? "is-active" : ""}`}
               onClick={() => setEngine("legacy")}
             >
               Current
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="bare"
               className={`dictionary-engineToggle__button ${engine === "beta" ? "is-active" : ""}`}
               onClick={() => setEngine("beta")}
             >
               Beta
-            </button>
+            </Button>
             <span className="dictionary-engineToggle__hint">
               Mode: {engine === "beta" ? "Beta normalized dictionary" : "Current dictionary"}
             </span>
@@ -472,19 +471,21 @@ export default function DictionaryPage() {
 
         <div className="dictionary-panel__controls">
           <div className="dictionary-panel__wordInput">
-            <Input
+            <Field
               type="text"
+              aria-label="Words to add"
               placeholder="Type words and press Enter or comma"
               value={wordInput}
               onChange={(event) => setWordInput(event.target.value)}
               onKeyDown={handleInputKeyDown}
             />
-            <BaseButton onClick={addTagsFromInput}>Add</BaseButton>
+            <Button onClick={addTagsFromInput}>Add</Button>
           </div>
 
           <div className="dictionary-panel__toolbar">
             <label htmlFor="source-language">Start Language</label>
-            <select
+            <Select
+              variant="bare"
               id="source-language"
               value={sourceLanguage}
               onChange={(event) =>
@@ -496,10 +497,11 @@ export default function DictionaryPage() {
                   {label}
                 </option>
               ))}
-            </select>
+            </Select>
 
             <label htmlFor="target-language">Target Meaning</label>
-            <select
+            <Select
+              variant="bare"
               id="target-language"
               value={targetLanguage}
               onChange={(event) =>
@@ -511,10 +513,11 @@ export default function DictionaryPage() {
                   {label}
                 </option>
               ))}
-            </select>
+            </Select>
 
             <label htmlFor="output-format">Output View</label>
-            <select
+            <Select
+              variant="bare"
               id="output-format"
               value={outputFormat}
               onChange={(event) =>
@@ -524,18 +527,17 @@ export default function DictionaryPage() {
               <option value="cards">Card View</option>
               <option value="table">Table View</option>
               <option value="tree">Tree View</option>
-            </select>
+            </Select>
 
-            <BaseButton
-              className="p-3 border border-gray-300 rounded-lg bg-blue-500"
+            <Button
               onClick={processWords}
               disabled={!canProcess}
             >
               {loading ? "Processing..." : "Process"}
-            </BaseButton>
+            </Button>
 
-            <BaseButton
-              className="dictionary-clearButton p-3 border border-gray-300 rounded-md"
+            <Button
+              className="dictionary-clearButton"
               onClick={clearAll}
               disabled={
                 tags.length === 0 &&
@@ -544,23 +546,23 @@ export default function DictionaryPage() {
               }
             >
               Clear
-            </BaseButton>
+            </Button>
 
-            <BaseButton
-              className="dictionary-exportButton p-3 border border-gray-300 rounded-md"
+            <Button
+              className="dictionary-exportButton"
               onClick={handleDownloadExcel}
               disabled={results.length === 0}
             >
               Download Excel
-            </BaseButton>
+            </Button>
 
-            <BaseButton
-              className="dictionary-exportButton p-3 border border-gray-300 rounded-md"
+            <Button
+              className="dictionary-exportButton"
               onClick={handleDownloadPdf}
               disabled={results.length === 0}
             >
               Download PDF
-            </BaseButton>
+            </Button>
           </div>
         </div>
 
@@ -569,16 +571,16 @@ export default function DictionaryPage() {
             <p className="dictionary-empty">No tags yet.</p>
           ) : (
             tags.map((tag) => (
-              <button
+              <Button
+                variant="bare"
                 key={tag}
-                type="button"
                 className="dictionary-tag"
                 onClick={() => removeTag(tag)}
                 title="Remove tag"
               >
                 <span>{tag}</span>
                 <span aria-hidden="true">x</span>
-              </button>
+              </Button>
             ))
           )}
         </div>

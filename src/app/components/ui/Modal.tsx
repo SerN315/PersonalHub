@@ -4,6 +4,7 @@ import React, { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import BasicIcon from "@/app/components/ultis/icons";
 import "@/app/styles/ui/controls.scss";
+import { IconButton } from "./Button";
 
 interface ModalProps {
   open: boolean;
@@ -103,9 +104,9 @@ export default function Modal({ open, onClose, title, width = 520, footer, child
         ) : (
           <div className="modalPanel__header">
             <h2 id={titleId}>{title}</h2>
-            <button type="button" className="iconBtn" onClick={onClose} aria-label="Close">
+            <IconButton onClick={onClose} aria-label="Close">
               <BasicIcon icon="Cancel01Icon" size={20} />
-            </button>
+            </IconButton>
           </div>
         )}
         {bare ? children : <div className="modalPanel__body">{children}</div>}

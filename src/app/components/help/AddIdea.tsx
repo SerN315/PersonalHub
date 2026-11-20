@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useEscape } from "../widgets/radio/useEscape";
+import { Button, Input, Textarea } from "@/app/components/ui";
 
 // "Add an idea": anyone may suggest something; the backend emails it to the owner (rate limited, length limited).
 export default function AddIdea() {
@@ -43,9 +44,9 @@ export default function AddIdea() {
 
   return (
     <>
-      <button type="button" ref={opener} className="help__cta" onClick={() => (setOpen(true), setMessage(""))}>
+      <Button variant="bare" ref={opener} className="help__cta" onClick={() => (setOpen(true), setMessage(""))}>
         Add an idea
-      </button>
+      </Button>
 
       {open && (
         <div className="ideaScrim" onMouseDown={(event) => event.target === event.currentTarget && !sending && setOpen(false)}>
@@ -54,16 +55,16 @@ export default function AddIdea() {
             <p>It goes straight to the owner. Nothing else is collected.</p>
             <label>
               Your idea
-              <textarea ref={firstField} value={idea} onChange={(e) => setIdea(e.target.value)} rows={5} maxLength={2000} placeholder="What would make this hub better for you?" />
+              <Textarea variant="bare" ref={firstField} value={idea} onChange={(e) => setIdea(e.target.value)} rows={5} maxLength={2000} placeholder="What would make this hub better for you?" />
             </label>
             <label>
               Your email (optional, if you would like a reply)
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} placeholder="you@example.com" />
+              <Input variant="bare" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} placeholder="you@example.com" />
             </label>
             {message && <p className="idea__message" role="status">{message}</p>}
             <div className="idea__actions">
-              <button type="button" onClick={() => setOpen(false)} disabled={sending}>Close</button>
-              <button type="submit" className="is-primary" disabled={sending}>{sending ? "Sending..." : "Send"}</button>
+              <Button variant="bare" onClick={() => setOpen(false)} disabled={sending}>Close</Button>
+              <Button variant="bare" type="submit" className="is-primary" disabled={sending}>{sending ? "Sending..." : "Send"}</Button>
             </div>
           </form>
         </div>

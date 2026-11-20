@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import BaseInput from "@/app/components/ui/BaseInput";
-import BaseButton from "@/app/components/ui/BaseButton";
 import { useUserStore } from "@/app/utils/store/userStore";
 import { changePassword, logoutUser } from "@/app/apis/settings";
+import { Button, Field } from "@/app/components/ui";
 
 type Status = { kind: "ok" | "error"; text: string } | null;
 
@@ -21,7 +20,7 @@ export default function SecuritySettings({ onSignedOut }: { onSignedOut: () => v
     return (
       <div className="settingsEmpty">
         <h3>You are not signed in</h3>
-        <BaseButton onClick={() => (window.location.href = "/auth/login")}>Sign in</BaseButton>
+        <Button onClick={() => (window.location.href = "/auth/login")}>Sign in</Button>
       </div>
     );
   }
@@ -66,10 +65,10 @@ export default function SecuritySettings({ onSignedOut }: { onSignedOut: () => v
 
       <form className="settingsCard" onSubmit={submit}>
         <h4>Change password</h4>
-        <BaseInput label="Current password" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+        <Field label="Current password" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
         <div className="settingsGrid">
-          <BaseInput label="New password" type="password" autoComplete="new-password" hint="At least 8 characters." value={next} onChange={(e) => setNext(e.target.value)} />
-          <BaseInput
+          <Field label="New password" type="password" autoComplete="new-password" hint="At least 8 characters." value={next} onChange={(e) => setNext(e.target.value)} />
+          <Field
             label="Confirm new password"
             type="password"
             autoComplete="new-password"
@@ -82,9 +81,9 @@ export default function SecuritySettings({ onSignedOut }: { onSignedOut: () => v
           <p className={`settingsStatus ${status?.kind ?? ""}`} role="status" aria-live="polite">
             {status?.text}
           </p>
-          <BaseButton type="submit" disabled={!ready || saving}>
+          <Button type="submit" disabled={!ready || saving}>
             {saving ? "Updating…" : "Update password"}
-          </BaseButton>
+          </Button>
         </div>
       </form>
 
@@ -93,9 +92,9 @@ export default function SecuritySettings({ onSignedOut }: { onSignedOut: () => v
           <h4>Sign out</h4>
           <p className="muted">End your session on this device.</p>
         </div>
-        <BaseButton variant="ghost" onClick={signOut}>
+        <Button variant="outline" onClick={signOut}>
           Sign out
-        </BaseButton>
+        </Button>
       </div>
 
       <div className="settingsCard settingsCard--row">
@@ -103,9 +102,9 @@ export default function SecuritySettings({ onSignedOut }: { onSignedOut: () => v
           <h4>Delete account</h4>
           <p className="muted">Not available yet. Ask the app&apos;s owner to remove your data.</p>
         </div>
-        <BaseButton variant="danger" disabled>
+        <Button variant="destructive" disabled>
           Delete
-        </BaseButton>
+        </Button>
       </div>
     </div>
   );
